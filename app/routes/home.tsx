@@ -1,10 +1,7 @@
 import type { Route } from "./+types/home";
-import { Input } from "../components/ui/input";
+import { Link } from "react-router";
 import { Button } from "../components/ui/button";
-import { z } from "zod";
-import { redirect } from "react-router";
-import { parseWithZod } from "@conform-to/zod";
-import { Form } from "react-router";
+import { useAuth } from "~/lib/auth-context";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -13,42 +10,72 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-const schema = z.object({
-  email: z
-    .string({ required_error: "Email is required" })
-    .email("Email is invalid"),
-  password: z
-    .string({ required_error: "password is required" })
-    .min(8, "password is too short")
-    .max(100, "password is too long"),
-});
+export default function Home() {
+  const { user, loading, signOut } = useAuth();
 
-export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
-  const submission = parseWithZod(formData, { schema });
-
-  if (submission.status !== "success") {
-    return submission.reply();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div>読み込み中...</div>
+      </div>
+    );
   }
 
-  console.log(submission.value);
-
-  return redirect("/instruments");
-}
-
-export default function Home() {
   return (
-    <Form method="post" className="flex flex-col items-center">
-      <div>
-        <h1 className="text-2xl font-bold mb-4 mt-4">
-          Welcome to Bucket List App
-        </h1>
-        <Input type="email" name="email" placeholder="Email" />
-        <Input type="password" name="password" placeholder="Password" />
-        <Button type="submit" className="mt-4" variant="outline">
-          Sign In
-        </Button>
-      </div>
-    </Form>
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-semibold">Bucket List App</h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <>
+                  <span className="text-gray-700">
+                    こんにちは、{user.email}さん
+                  </span>
+                  <Link to="/instruments">
+                    <Button variant="outline">一覧</Button>
+                  </Link>
+                  <Button onClick={signOut} variant="outline">
+                    ログアウト
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login">
+                    <Button variant="outline">ログイン</Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button>新規登録</Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <div className="text-center">
+            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+              ようこそ
+            </h2>
+            <p className="mt-4 text-lg text-gray-600">
+              {user ? "ログインしてる" : "ログインしてない"}
+            </p>
+            {user && (
+              <div className="mt-8">
+                <Link to="/instruments">
+                  <Button size="lg">一覧を見る</Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
