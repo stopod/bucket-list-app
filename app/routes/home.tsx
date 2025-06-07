@@ -20,7 +20,7 @@ export default function Home() {
       setIsSigningOut(true);
       await signOut();
     } catch (error) {
-      console.error('Sign out failed:', error);
+      console.error("Sign out failed:", error);
     } finally {
       setIsSigningOut(false);
     }
@@ -51,12 +51,12 @@ export default function Home() {
                   <Link to="/instruments">
                     <Button variant="outline">一覧</Button>
                   </Link>
-                  <Button 
-                    onClick={handleSignOut} 
+                  <Button
+                    onClick={handleSignOut}
                     variant="outline"
                     disabled={isSigningOut}
                   >
-                    {isSigningOut ? 'ログアウト中...' : 'ログアウト'}
+                    {isSigningOut ? "ログアウト中..." : "ログアウト"}
                   </Button>
                 </>
               ) : (
