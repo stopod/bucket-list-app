@@ -71,6 +71,10 @@ export default function Home() {
                 <Link to="/instruments">
                   <Button size="lg">一覧を見る</Button>
                 </Link>
+
+                <Link to="/sample">
+                  <Button size="lg">sample</Button>
+                </Link>
               </div>
             )}
           </div>
