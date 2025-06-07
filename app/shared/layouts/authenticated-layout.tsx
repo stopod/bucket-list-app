@@ -34,6 +34,8 @@ export function AuthenticatedLayout({
     try {
       setIsSigningOut(true);
       await signOut();
+      // ログアウト成功後、ログインページにリダイレクト
+      navigate("/login");
     } catch (error) {
       console.error('Sign out failed:', error);
     } finally {
