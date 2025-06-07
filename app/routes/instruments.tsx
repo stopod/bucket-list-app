@@ -1,5 +1,4 @@
 import type { Route } from "./+types/instruments";
-import { useEffect, useState } from "react";
 
 // Supabaseの型ファイル
 import type { Database } from "../supabase";
