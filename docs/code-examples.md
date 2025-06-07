@@ -15,7 +15,7 @@
 ### 1. useAuth フックの詳細実装
 
 ```typescript
-// app/lib/auth-context.tsx
+// app/features/auth/lib/auth-context.tsx
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User, Session, AuthError } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
@@ -252,7 +252,8 @@ export const useRequireAuth = (redirectTo: string = "/login") => {
 ### 1. Higher-Order Component（HOC）パターン
 
 ```typescript
-// app/lib/with-auth.tsx
+// app/features/auth/components/auth-guard.tsx
+// 注意: 現在の実装では withAuth HOC は削除され、AuthenticatedLayout を使用
 import { ComponentType, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth } from "./auth-context";
@@ -365,7 +366,8 @@ export default withAuth(MyProtectedComponent, {
 ### 2. ルートガードパターン
 
 ```typescript
-// app/lib/route-guard.tsx
+// app/features/auth/components/route-guard.tsx
+// 注意: 現在の実装では SSR ベースの認証チェックを loader で行う
 import { useEffect, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "./auth-context";
@@ -422,16 +424,27 @@ export function RouteGuard({
   return <>{children}</>;
 }
 
-// 使用例（routes.ts）
+// 使用例（app/routes.ts）
 export default [
   index("routes/home.tsx"),
-  route("dashboard", "routes/dashboard.tsx", {
-    loader: ({ request }) => {
-      // サーバーサイドでの認証チェック
-      return requireAuthLoader(request);
-    }
-  }),
+  route("instruments", "routes/instruments/instruments.tsx"),
+  route("login", "routes/auth/login.tsx"),
+  route("register", "routes/auth/register.tsx"),
+  route("sample", "routes/sample/sample.tsx"),
 ] satisfies RouteConfig;
+
+// 各認証必須ページの loader で getServerAuth を使用
+// routes/instruments/instruments.tsx
+export async function loader({ request }: Route.LoaderArgs) {
+  const authResult = await getServerAuth(request);
+  if (!authResult.isAuthenticated) {
+    throw new Response(null, {
+      status: 302,
+      headers: { Location: "/login" },
+    });
+  }
+  // データ取得処理...
+}
 ```
 
 ## エラーハンドリング

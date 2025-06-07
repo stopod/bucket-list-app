@@ -34,7 +34,8 @@ docker compose up -d
 ### データベースアーキテクチャ
 
 - **データベース**: Supabase管理PostgreSQL
-- **型定義**: `app/supabase.ts`にSupabase TypeScript型定義
+- **型定義**: `app/shared/types/database.ts`にSupabase TypeScript型定義
+- **認証**: `getServerAuth`パターンによるSSR統合認証システム
 
 ### 主要設定
 

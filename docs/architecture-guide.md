@@ -46,22 +46,21 @@ app/
 │       └── index.ts                 # ユーティリティ関数
 │
 ├── routes/                          # ページルート
+│   ├── auth/                        # 認証関連ページ
+│   │   ├── login.tsx                # ログインページ
+│   │   └── register.tsx             # 登録ページ
 │   ├── home.tsx                     # ホームページ
-│   ├── login.tsx                    # ログインページ
-│   ├── register.tsx                 # 登録ページ
-│   ├── instruments.tsx              # 楽器一覧ページ
 │   ├── instruments/
+│   │   ├── instruments.tsx          # 楽器一覧ページ
 │   │   └── types.ts                 # 楽器関連型定義
-│   ├── sample.tsx                   # サンプルページ
-│   ├── sample/
-│   │   └── types.ts                 # サンプル関連型定義
-│   └── routes.ts                    # ルート設定
+│   └── sample/
+│       ├── sample.tsx               # サンプルページ
+│       └── types.ts                 # サンプル関連型定義
 │
 └── lib/                             # グローバルライブラリ
     ├── supabase.ts                  # Supabaseクライアント設定
     ├── auth-server.ts               # サーバーサイド認証ユーティリティ
-    ├── security-utils.ts            # セキュリティユーティリティ
-    └── utils.ts                     # 汎用ユーティリティ
+    └── security-utils.ts            # セキュリティユーティリティ
 ```
 
 ## 🎭 コンポーネント分類基準
@@ -125,11 +124,10 @@ export function BucketListHeader() {
 現在の実装では、サーバーサイドでの認証チェックとクライアントサイドレイアウト制御を組み合わせています：
 
 ```typescript
-// routes/instruments.tsx（認証必須ページ）
+// routes/instruments/instruments.tsx（認証必須ページ）
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     // サーバーサイド認証チェック
-    const { getServerAuth } = await import("~/lib/auth-server");
     const authResult = await getServerAuth(request);
     
     if (!authResult.isAuthenticated) {
@@ -145,9 +143,23 @@ export async function loader({ request }: Route.LoaderArgs) {
       .from("instruments")
       .select("*");
 
-    return { instruments: instruments || [], error: null };
+    if (error) {
+      throw new Response("Failed to load instruments", {
+        status: 500,
+        statusText: error.message,
+      });
+    }
+
+    return { 
+      instruments: instruments || [], 
+      user: authResult.user 
+    };
   } catch (error) {
-    // エラーハンドリング
+    if (error instanceof Response) {
+      throw error;
+    }
+    console.error("Loader error:", error);
+    throw new Response("Server error", { status: 500 });
   }
 }
 
@@ -204,11 +216,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 ### **SSR-first データ取得**
 
 ```typescript
-// routes/instruments.tsx
+// routes/instruments/instruments.tsx
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     // サーバーサイド認証チェック
-    const { getServerAuth } = await import("~/lib/auth-server");
     const authResult = await getServerAuth(request);
     
     if (!authResult.isAuthenticated) {
@@ -225,36 +236,51 @@ export async function loader({ request }: Route.LoaderArgs) {
       .select("*");
 
     if (error) {
-      console.error("Failed to load instruments:", error.message);
-      return {
-        instruments: [],
-        error: error.message,
-      };
+      throw new Response("Failed to load instruments", {
+        status: 500,
+        statusText: error.message,
+      });
     }
 
     return {
       instruments: instruments || [],
-      error: null,
+      user: authResult.user
     };
   } catch (error) {
     if (error instanceof Response) {
       throw error;
     }
     console.error("Loader error:", error);
-    return {
-      instruments: [],
-      error: "Server error",
-    };
+    throw new Response("Server error", { status: 500 });
   }
 }
 
 export default function InstrumentsPage({ loaderData }: Route.ComponentProps) {
-  const { instruments, error } = loaderData;
+  const { instruments } = loaderData;
   
   return (
     <AuthenticatedLayout title="楽器一覧">
       <div className="container mx-auto px-4 py-8">
-        {/* コンテンツ */}
+        <h1 className="text-2xl font-bold mb-6">楽器一覧</h1>
+        {instruments.length > 0 ? (
+          <div className="max-w-2xl mx-auto">
+            <ul className="divide-y divide-gray-200 bg-white rounded-lg shadow">
+              {instruments.map((instrument) => (
+                <li key={instrument.id} className="p-4 hover:bg-gray-50">
+                  <div className="text-lg font-medium text-gray-900">
+                    {instrument.name} (ID: {instrument.id})
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">
+              楽器が登録されていません。
+            </p>
+          </div>
+        )}
       </div>
     </AuthenticatedLayout>
   );
