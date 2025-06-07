@@ -10,28 +10,77 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// 最高セキュリティのSSR対応ストレージ
-const createUltraSecureStorage = () => {
+// 🔐 最高セキュリティのCookieベースストレージ
+const createUltraSecureCookieStorage = () => {
+  // Cookieヘルパー関数
+  const setCookie = (name: string, value: string, options: {
+    httpOnly?: boolean;
+    secure?: boolean;
+    sameSite?: 'strict' | 'lax' | 'none';
+    maxAge?: number;
+    path?: string;
+  } = {}) => {
+    if (typeof document === 'undefined') return;
+    
+    const {
+      httpOnly = false, // クライアントサイドではhttpOnlyは設定できない
+      secure = location.protocol === 'https:',
+      sameSite = 'strict',
+      maxAge = 24 * 60 * 60, // 24時間
+      path = '/'
+    } = options;
+    
+    let cookieString = `${name}=${encodeURIComponent(value)}`;
+    cookieString += `; Path=${path}`;
+    cookieString += `; Max-Age=${maxAge}`;
+    cookieString += `; SameSite=${sameSite}`;
+    
+    if (secure) {
+      cookieString += '; Secure';
+    }
+    
+    document.cookie = cookieString;
+  };
+  
+  const getCookie = (name: string): string | null => {
+    if (typeof document === 'undefined') return null;
+    
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    
+    if (parts.length === 2) {
+      const cookieValue = parts.pop()?.split(';').shift();
+      return cookieValue ? decodeURIComponent(cookieValue) : null;
+    }
+    
+    return null;
+  };
+  
+  const removeCookie = (name: string) => {
+    if (typeof document === 'undefined') return;
+    
+    document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=strict`;
+  };
+
   return {
     getItem: (key: string) => {
-      // サーバーサイドでは常にnullを返す
+      // サーバーサイドでは常にnullを返す（SSR安全）
       if (typeof window === 'undefined') return null;
       
       try {
-        const item = localStorage.getItem(key);
+        const item = getCookie(key);
         if (!item) return null;
         
-        // 簡易的な検証（実際のトークンかどうか）
+        // 🛡️ 簡易的な検証（実際のトークンかどうか）
         if (key.includes('supabase') && item.length < 10) {
           // 疑わしい値は削除
-          localStorage.removeItem(key);
+          removeCookie(key);
           return null;
         }
         
         return item;
       } catch (error) {
-        // プライベートブラウジングモードやストレージ制限の対応
-        console.warn('Storage access failed:', error);
+        console.warn('Cookie access failed:', error);
         return null;
       }
     },
@@ -43,16 +92,22 @@ const createUltraSecureStorage = () => {
         // 値の検証
         if (!value || value.length === 0) return;
         
-        // ストレージサイズの制限チェック
-        const storageSize = JSON.stringify(localStorage).length;
-        if (storageSize > 4 * 1024 * 1024) { // 4MB制限
-          console.warn('Storage quota exceeded');
+        // 🔐 Cookieサイズ制限チェック（4KB制限）
+        if (value.length > 4 * 1024) {
+          console.warn('Cookie size exceeded (4KB limit)');
           return;
         }
         
-        localStorage.setItem(key, value);
+        // 🛡️ セキュアCookie設定
+        setCookie(key, value, {
+          secure: location.protocol === 'https:', // HTTPS必須
+          sameSite: 'strict', // CSRF対策
+          maxAge: 24 * 60 * 60, // 24時間
+          path: '/' // アプリ全体でアクセス可能
+        });
+        
       } catch (error) {
-        console.warn('Storage write failed:', error);
+        console.warn('Cookie write failed:', error);
       }
     },
     
@@ -60,9 +115,9 @@ const createUltraSecureStorage = () => {
       if (typeof window === 'undefined') return;
       
       try {
-        localStorage.removeItem(key);
+        removeCookie(key);
       } catch (error) {
-        console.warn('Storage remove failed:', error);
+        console.warn('Cookie remove failed:', error);
       }
     },
   };
@@ -76,8 +131,8 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     flowType: "pkce", // 最新のOAuth 2.1準拠
     
-    // 最高セキュリティストレージ
-    storage: createUltraSecureStorage(),
+    // 🔐 最高セキュリティCookieストレージ
+    storage: createUltraSecureCookieStorage(),
     
     // セッション設定
     debug: import.meta.env.DEV, // 開発環境でのみデバッグ

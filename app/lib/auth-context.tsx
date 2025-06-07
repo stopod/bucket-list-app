@@ -234,17 +234,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(null);
       setLastActivity(new Date());
 
-      // セキュリティ強化：ローカルストレージの機密情報をクリア
+      // セキュリティ強化：セッション情報の完全クリア
       if (typeof window !== 'undefined') {
         try {
-          // Supabase関連のキーを全て削除
+          // 🔐 Cookie削除（Supabase認証情報）
+          document.cookie.split(";").forEach(cookie => {
+            const [name] = cookie.split("=");
+            if (name.trim().includes('supabase')) {
+              document.cookie = `${name.trim()}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=strict`;
+            }
+          });
+          
+          // 🛡️ localStorage のフォールバック削除（既存データ対応）
           Object.keys(localStorage).forEach(key => {
             if (key.includes('supabase')) {
               localStorage.removeItem(key);
             }
           });
         } catch (error) {
-          console.warn('Failed to clear storage:', error);
+          console.warn('Failed to clear session data:', error);
         }
       }
 
