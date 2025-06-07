@@ -23,34 +23,21 @@ app/
 │       └── index.ts                 # 再export用インデックス
 │
 ├── features/                         # 機能別モジュール
-│   ├── auth/                        # 認証機能
-│   │   ├── components/
-│   │   │   ├── login-form.tsx       # ログインフォーム
-│   │   │   ├── register-form.tsx    # 登録フォーム
-│   │   │   └── auth-guard.tsx       # 認証ガード（withAuth HOC）
-│   │   ├── hooks/
-│   │   │   └── use-auth.ts          # 認証フック
-│   │   ├── lib/
-│   │   │   ├── auth-context.tsx     # 認証コンテキスト
-│   │   │   └── supabase.ts          # Supabase設定
-│   │   └── index.ts                 # 再export
-│   │
-│   └── bucket-list/                 # やりたいことリスト機能
+│   └── auth/                        # 認証機能
 │       ├── components/
-│       │   ├── item-card.tsx        # アイテムカード
-│       │   ├── item-form.tsx        # アイテムフォーム
-│       │   └── item-list.tsx        # アイテムリスト
+│       │   └── auth-guard.tsx       # 認証ガード（withAuth HOC）
 │       ├── hooks/
-│       │   └── use-bucket-list.ts   # リスト操作フック
+│       │   └── use-auth.ts          # 認証フック
 │       ├── lib/
-│       │   └── api.ts               # API呼び出し関数
-│       ├── types.ts                 # 型定義
+│       │   └── auth-context.tsx     # 認証コンテキスト
+│       ├── types.ts                 # 認証関連型定義
 │       └── index.ts                 # 再export
 │
 ├── shared/                          # 共通モジュール
 │   ├── layouts/
 │   │   ├── app-layout.tsx           # アプリケーション基本レイアウト
-│   │   └── authenticated-layout.tsx # 認証必須レイアウト
+│   │   ├── authenticated-layout.tsx # 認証必須レイアウト
+│   │   └── index.ts                 # レイアウトのexport
 │   ├── types/
 │   │   ├── database.ts              # データベース型定義
 │   │   └── index.ts                 # 共通型のexport
@@ -59,28 +46,20 @@ app/
 │       └── index.ts                 # ユーティリティ関数
 │
 ├── routes/                          # ページルート
-│   ├── _index.tsx                   # ホームページ
-│   ├── login/
-│   │   └── index.tsx                # ログインページ
-│   ├── register/
-│   │   └── index.tsx                # 登録ページ
-│   │
-│   └── bucket-list/                 # やりたいことリスト
-│       ├── index.tsx                # 一覧ページ
-│       ├── loader.ts                # データ取得ロジック
-│       ├── new/
-│       │   ├── index.tsx            # 新規作成ページ
-│       │   └── action.ts            # 作成アクション
-│       ├── $id/
-│       │   ├── index.tsx            # 詳細・編集ページ
-│       │   └── action.ts            # 更新・削除アクション
-│       ├── components/              # ページ固有コンポーネント
-│       │   ├── list-header.tsx      # リストヘッダー
-│       │   └── filter-bar.tsx       # フィルターバー
-│       └── types.ts                 # ページ固有型定義
+│   ├── home.tsx                     # ホームページ
+│   ├── login.tsx                    # ログインページ
+│   ├── register.tsx                 # 登録ページ
+│   ├── instruments.tsx              # 楽器一覧ページ
+│   ├── instruments/
+│   │   └── types.ts                 # 楽器関連型定義
+│   ├── sample.tsx                   # サンプルページ
+│   ├── sample/
+│   │   └── types.ts                 # サンプル関連型定義
+│   └── routes.ts                    # ルート設定
 │
 └── lib/                             # グローバルライブラリ
     ├── supabase.ts                  # Supabaseクライアント設定
+    ├── auth-server.ts               # サーバーサイド認証ユーティリティ
     ├── security-utils.ts            # セキュリティユーティリティ
     └── utils.ts                     # 汎用ユーティリティ
 ```
@@ -141,69 +120,143 @@ export function BucketListHeader() {
 
 ## 🔐 認証アーキテクチャ
 
-### **Layout Level認証制御**
+### **SSR-based認証制御（推奨）**
+
+現在の実装では、サーバーサイドでの認証チェックとクライアントサイドレイアウト制御を組み合わせています：
 
 ```typescript
-// react-router.config.ts
-export default {
-  routes: [
-    // 認証不要ルート
-    { path: "/", element: <HomePage /> },
-    { path: "/login", element: <LoginPage /> },
-    { path: "/register", element: <RegisterPage /> },
+// routes/instruments.tsx（認証必須ページ）
+export async function loader({ request }: Route.LoaderArgs) {
+  try {
+    // サーバーサイド認証チェック
+    const { getServerAuth } = await import("~/lib/auth-server");
+    const authResult = await getServerAuth(request);
     
-    // 認証必須ルート（Layout Levelで制御）
-    {
-      path: "/app",
-      element: <AuthenticatedLayout><Outlet /></AuthenticatedLayout>,
-      children: [
-        { 
-          path: "bucket-list", 
-          element: <Outlet />,
-          children: [
-            { index: true, element: <BucketListPage /> },
-            { path: "new", element: <NewBucketListPage /> },
-            { path: ":id", element: <BucketListDetailPage /> },
-          ]
-        }
-      ]
+    if (!authResult.isAuthenticated) {
+      throw new Response(null, {
+        status: 302,
+        headers: { Location: "/login" },
+      });
     }
-  ]
-} satisfies Config;
+
+    // 認証済みユーザーのみデータ取得
+    const { supabase } = await import("~/lib/supabase");
+    const { data: instruments, error } = await supabase
+      .from("instruments")
+      .select("*");
+
+    return { instruments: instruments || [], error: null };
+  } catch (error) {
+    // エラーハンドリング
+  }
+}
+
+export default function InstrumentsPage({ loaderData }: Route.ComponentProps) {
+  return (
+    <AuthenticatedLayout title="楽器一覧">
+      {/* ページコンテンツ */}
+    </AuthenticatedLayout>
+  );
+}
+```
+
+### **認証アーキテクチャの構成要素**
+
+```typescript
+// lib/auth-server.ts - サーバーサイド認証
+export async function getServerAuth(request: Request): Promise<ServerAuthResult> {
+  // Cookie-based JWT認証チェック
+  // Supabase認証状態の検証
+  // ユーザー情報の取得
+}
+
+// shared/layouts/authenticated-layout.tsx - クライアントサイドレイアウト
+export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
+  const { user, loading } = useAuth();
+  
+  // SSRで認証済みなので、クライアントサイドでは主にUI制御
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <nav>
+        {/* 認証済みユーザー向けナビゲーション */}
+      </nav>
+      <main>{children}</main>
+    </div>
+  );
+}
+
+// features/auth/lib/auth-context.tsx - 認証状態管理
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // クライアントサイド認証状態の管理
+  // Supabaseセッション同期
+  // セキュリティ強化機能
+}
 ```
 
 **メリット**:
-- 🛡️ **一括管理**: 認証制御の漏れがない
-- 📝 **コード削減**: 各ページで認証コードを書く必要がない
-- 🎨 **UI統一**: 認証後のレイアウトが自動で統一される
+- 🛡️ **完全なセキュリティ**: サーバーサイドで認証チェック、クライアントサイドでは表示のみ
+- ⚡ **高性能**: SSRで認証済みページを直接配信
+- 🔒 **Ultra-Secure**: Cookie-based JWT + 多層セキュリティ
+- 🎨 **柔軟なUI**: ページごとに適切なレイアウトを選択可能
 
 ## 📊 データフェッチパターン
 
 ### **SSR-first データ取得**
 
 ```typescript
-// routes/bucket-list/loader.ts
-export async function loader({ request }: LoaderFunctionArgs) {
-  // SSRでデータ取得
-  const { data: items, error } = await supabase
-    .from('bucket_list')
-    .select('*');
+// routes/instruments.tsx
+export async function loader({ request }: Route.LoaderArgs) {
+  try {
+    // サーバーサイド認証チェック
+    const { getServerAuth } = await import("~/lib/auth-server");
+    const authResult = await getServerAuth(request);
     
-  if (error) {
-    throw new Response('Failed to load items', { status: 500 });
+    if (!authResult.isAuthenticated) {
+      throw new Response(null, {
+        status: 302,
+        headers: { Location: "/login" },
+      });
+    }
+
+    // SSRでデータ取得
+    const { supabase } = await import("~/lib/supabase");
+    const { data: instruments, error } = await supabase
+      .from("instruments")
+      .select("*");
+
+    if (error) {
+      console.error("Failed to load instruments:", error.message);
+      return {
+        instruments: [],
+        error: error.message,
+      };
+    }
+
+    return {
+      instruments: instruments || [],
+      error: null,
+    };
+  } catch (error) {
+    if (error instanceof Response) {
+      throw error;
+    }
+    console.error("Loader error:", error);
+    return {
+      instruments: [],
+      error: "Server error",
+    };
   }
-  
-  return json({ items });
 }
 
-// routes/bucket-list/index.tsx
-export default function BucketListPage() {
-  const { items } = useLoaderData<typeof loader>();
+export default function InstrumentsPage({ loaderData }: Route.ComponentProps) {
+  const { instruments, error } = loaderData;
   
   return (
-    <div>
-      <ItemList items={items} />
-    </div>
+    <AuthenticatedLayout title="楽器一覧">
+      <div className="container mx-auto px-4 py-8">
+        {/* コンテンツ */}
+      </div>
+    </AuthenticatedLayout>
   );
 }
 ```
@@ -241,28 +294,31 @@ export async function action({ request }: ActionFunctionArgs) {
 
 ```typescript
 // ✅ 良い例：使用場所の近くに定義
-// routes/bucket-list/types.ts
-export interface BucketListItem {
-  id: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  created_at: string;
-  user_id: string;
-}
+// routes/instruments/types.ts
+import type { Tables } from "~/shared/types/database";
 
-export interface BucketListFormData {
-  title: string;
-  description?: string;
-}
+export type Instrument = Tables<"instruments">;
 
-// features/bucket-list/types.ts
-export interface BucketListHookReturn {
-  items: BucketListItem[];
+// routes/sample/types.ts  
+import type { Tables } from "~/shared/types/database";
+
+export type Profile = Tables<"profiles">;
+
+// features/auth/types.ts
+import type { User, Session } from "@supabase/supabase-js";
+
+export interface AuthContextType {
+  user: User | null;
+  session: Session | null;
   loading: boolean;
-  createItem: (data: BucketListFormData) => Promise<void>;
-  updateItem: (id: string, data: BucketListFormData) => Promise<void>;
-  deleteItem: (id: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signOut: () => Promise<void>;
+}
+
+export interface AuthFormData {
+  email: string;
+  password: string;
 }
 ```
 
@@ -501,23 +557,31 @@ class SendGridEmailService implements EmailService {
 ## 📋 実装チェックリスト
 
 ### **新規ページ作成時**
-- [ ] `routes/` 下に適切なディレクトリ構造で配置
-- [ ] 必要に応じて `loader.ts` / `action.ts` を分離
-- [ ] 認証が必要な場合は `AuthenticatedLayout` 下に配置
-- [ ] ページ固有のコンポーネントは `components/` フォルダに
-- [ ] 型定義は使用場所近くの `types.ts` に
+- [ ] `routes/` 下に適切な`.tsx`ファイルとして配置
+- [ ] 認証が必要な場合はloaderで`getServerAuth()`チェック実装
+- [ ] 認証必須ページは`AuthenticatedLayout`、公開ページは`AppLayout`を使用
+- [ ] ページ固有の型定義は同名フォルダ内の `types.ts` に配置
+- [ ] SSR-firstでデータ取得ロジックを実装
 
 ### **新規機能追加時**
 - [ ] `features/` 下に機能フォルダを作成
-- [ ] `components/`, `hooks/`, `types.ts`, `index.ts` を適切に配置
-- [ ] ビジネスロジックはcontainer componentまたはhooksに分離
+- [ ] `components/`, `hooks/`, `lib/`, `types.ts`, `index.ts` を適切に配置
+- [ ] ビジネスロジックはhooksまたはcontextに分離
 - [ ] 汎用的なコンポーネントは `components/ui/` への移動を検討
+- [ ] 適切なre-exportで外部からのアクセスを制御
+
+### **認証関連実装時**
+- [ ] サーバーサイド認証チェックを`lib/auth-server.ts`で実装
+- [ ] クライアントサイド認証状態を`features/auth/`で管理
+- [ ] Cookie-based JWT認証を適切に実装
+- [ ] セキュリティベストプラクティスに従った実装
 
 ### **リファクタリング時**
-- [ ] コンポーネントの責任が明確に分離されているか
-- [ ] 型定義が適切な場所に配置されているか
-- [ ] 不要な props drilling が発生していないか
-- [ ] SSRとCSRの境界が適切に設定されているか
+- [ ] SSR-first原則に従っているか
+- [ ] 認証チェックがサーバーサイドで適切に実装されているか
+- [ ] 型定義が使用場所近接の原則に従っているか
+- [ ] セキュリティホールが発生していないか
+- [ ] パフォーマンスに悪影響がないか
 
 ---
 

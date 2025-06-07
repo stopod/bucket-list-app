@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router";
-import { useAuth } from "./auth-context";
+import { useAuth } from "../lib/auth-context";
 import { Button } from "~/components/ui/button";
 
 interface WithAuthOptions {

@@ -9,7 +9,7 @@ import {
 import { useEffect } from "react";
 
 import type { Route } from "./+types/root";
-import { AuthProvider } from "./lib/auth-context";
+import { AuthProvider } from "./features/auth";
 import { initializeSecurity } from "./lib/security-utils";
 import "./app.css";
 
