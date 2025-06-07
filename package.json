@@ -22,15 +22,22 @@
     "tailwind-merge": "^3.3.0"
   },
   "devDependencies": {
+    "@eslint/css": "^0.8.1",
+    "@eslint/js": "^9.28.0",
+    "@eslint/json": "^0.12.0",
     "@react-router/dev": "^7.5.3",
     "@tailwindcss/vite": "^4.1.4",
     "@types/node": "^20",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "eslint": "^9.28.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.2.0",
     "tailwindcss": "^4.1.4",
     "tsx": "^4.19.4",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5.8.3",
+    "typescript-eslint": "^8.33.1",
     "vite": "^6.3.3",
     "vite-tsconfig-paths": "^5.1.4"
   }
