@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Route } from "./+types/home";
 import { Link } from "react-router";
 import { Button } from "../components/ui/button";
@@ -12,6 +13,18 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   const { user, loading, signOut } = useAuth();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      setIsSigningOut(true);
+      await signOut();
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -38,8 +51,12 @@ export default function Home() {
                   <Link to="/instruments">
                     <Button variant="outline">一覧</Button>
                   </Link>
-                  <Button onClick={signOut} variant="outline">
-                    ログアウト
+                  <Button 
+                    onClick={handleSignOut} 
+                    variant="outline"
+                    disabled={isSigningOut}
+                  >
+                    {isSigningOut ? 'ログアウト中...' : 'ログアウト'}
                   </Button>
                 </>
               ) : (

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "~/lib/auth-context";
 import { Button } from "~/components/ui/button";
@@ -12,6 +13,18 @@ export function AuthenticatedLayout({
   title,
 }: AuthenticatedLayoutProps) {
   const { user, signOut } = useAuth();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      setIsSigningOut(true);
+      await signOut();
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -29,8 +42,12 @@ export function AuthenticatedLayout({
                   <span className="text-gray-700">
                     こんにちは、{user.email}さん
                   </span>
-                  <Button onClick={signOut} variant="outline">
-                    ログアウト
+                  <Button 
+                    onClick={handleSignOut} 
+                    variant="outline"
+                    disabled={isSigningOut}
+                  >
+                    {isSigningOut ? 'ログアウト中...' : 'ログアウト'}
                   </Button>
                 </>
               )}
