@@ -71,6 +71,15 @@ export function AuthenticatedLayout({
               ) : (
                 <span className="text-gray-500">認証情報を取得中...</span>
               )}
+              <Link to="/dashboard">
+                <Button variant="outline" size="sm">ダッシュボード</Button>
+              </Link>
+              <Link to="/bucket-list">
+                <Button variant="outline" size="sm">やりたいこと一覧</Button>
+              </Link>
+              <Link to="/public">
+                <Button variant="outline" size="sm">みんなのやりたいこと</Button>
+              </Link>
               <Link to="/instruments">
                 <Button variant="outline" size="sm">楽器一覧</Button>
               </Link>

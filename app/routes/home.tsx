@@ -40,8 +40,14 @@ export default function HomePage() {
       <span className="text-gray-700">
         こんにちは、{user.email}さん
       </span>
+      <Link to="/dashboard">
+        <Button variant="outline">ダッシュボード</Button>
+      </Link>
       <Link to="/bucket-list">
         <Button variant="outline">やりたいこと一覧</Button>
+      </Link>
+      <Link to="/public">
+        <Button variant="outline">みんなのやりたいこと</Button>
       </Link>
       <Button
         onClick={handleSignOut}
@@ -75,8 +81,14 @@ export default function HomePage() {
             </p>
             {user && (
               <div className="mt-8 space-x-4">
+                <Link to="/dashboard">
+                  <Button size="lg">ダッシュボードを見る</Button>
+                </Link>
                 <Link to="/bucket-list">
-                  <Button size="lg">やりたいこと一覧を見る</Button>
+                  <Button size="lg" variant="outline">やりたいこと一覧</Button>
+                </Link>
+                <Link to="/public">
+                  <Button size="lg" variant="outline">みんなのやりたいこと</Button>
                 </Link>
                 <Link to="/sample">
                   <Button size="lg" variant="outline">Sample</Button>

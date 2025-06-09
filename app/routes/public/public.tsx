@@ -1,18 +1,15 @@
-import type { Route } from "./+types/bucket-list";
-import { Link, useSearchParams } from "react-router";
+import type { Route } from "./+types/public";
+import { useSearchParams } from "react-router";
 import { useState } from "react";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth } from "~/lib/auth-server";
-import { assertPriority, assertStatus, assertDueType } from "~/features/bucket-list/types";
+import { assertPriority, assertStatus } from "~/features/bucket-list/types";
 import { createBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { DeleteConfirmationDialog } from "~/features/bucket-list/components/delete-confirmation-dialog";
-import { AchievementStats } from "~/features/bucket-list/components/achievement-stats";
-import { CategoryProgress } from "~/features/bucket-list/components/category-progress";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "やりたいこと一覧" }];
+  return [{ title: "みんなのやりたいこと" }];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -40,23 +37,27 @@ export async function loader({ request }: Route.LoaderArgs) {
     // Repository経由でデータ取得
     const bucketListService = await createBucketListService();
 
-    // フィルター条件付きでデータを取得
-    const [bucketItems, categories, stats] = await Promise.all([
-      bucketListService.getUserBucketItemsWithCategory(authResult.user!.id, filters),
-      bucketListService.getCategories(),
-      bucketListService.getUserStats(authResult.user!.id)
+    // 公開されたやりたいことと全カテゴリを取得
+    const [publicBucketItems, categories] = await Promise.all([
+      bucketListService.getPublicBucketItems(filters),
+      bucketListService.getCategories()
     ]);
+
+    // カテゴリ情報を含むアイテムに変換
+    const itemsWithCategory = publicBucketItems.map(item => ({
+      ...item,
+      category: categories.find(cat => cat.id === item.category_id)!
+    }));
 
     // カテゴリ別にグループ化
     const itemsByCategory = categories.map(category => ({
       category,
-      items: bucketItems.filter(item => item.category_id === category.id)
+      items: itemsWithCategory.filter(item => item.category_id === category.id)
     })).filter(group => group.items.length > 0);
 
     return {
-      bucketItems,
+      publicBucketItems: itemsWithCategory,
       categories,
-      stats,
       itemsByCategory,
       filters,
       user: authResult.user
@@ -70,20 +71,9 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 }
 
-export default function BucketListPage({ loaderData }: Route.ComponentProps) {
-  const { bucketItems, categories, stats, itemsByCategory, filters } = loaderData;
+export default function PublicBucketListPage({ loaderData }: Route.ComponentProps) {
+  const { publicBucketItems, categories, itemsByCategory, filters } = loaderData;
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  // 削除確認ダイアログの状態管理
-  const [deleteDialog, setDeleteDialog] = useState<{
-    isOpen: boolean;
-    item: { id: string; title: string } | null;
-    isSubmitting: boolean;
-  }>({
-    isOpen: false,
-    item: null,
-    isSubmitting: false
-  });
 
   // フィルター更新関数
   const updateFilter = (key: string, value: string | undefined) => {
@@ -101,75 +91,45 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
     setSearchParams(new URLSearchParams());
   };
 
-  // 削除確認ダイアログを開く
-  const openDeleteDialog = (item: { id: string; title: string }) => {
-    setDeleteDialog({
-      isOpen: true,
-      item,
-      isSubmitting: false
-    });
-  };
-
-  // 削除確認ダイアログを閉じる
-  const closeDeleteDialog = () => {
-    setDeleteDialog({
-      isOpen: false,
-      item: null,
-      isSubmitting: false
-    });
-  };
-
-  // 削除実行
-  const handleDelete = async () => {
-    if (!deleteDialog.item) return;
-
-    setDeleteDialog(prev => ({ ...prev, isSubmitting: true }));
-
-    try {
-      // フォームを作成して削除アクションを実行
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = `/bucket-list/delete/${deleteDialog.item.id}`;
-      form.style.display = "none";
-      
-      document.body.appendChild(form);
-      form.submit();
-    } catch (error) {
-      console.error("Delete error:", error);
-      setDeleteDialog(prev => ({ ...prev, isSubmitting: false }));
-    }
-  };
-
   return (
-    <AuthenticatedLayout title="やりたいこと一覧">
+    <AuthenticatedLayout title="みんなのやりたいこと">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">
-              やりたいこと一覧
-            </h1>
-            <Link to="/bucket-list/add">
-              <Button size="lg">
-                + 新しく追加
-              </Button>
-            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                みんなのやりたいこと
+              </h1>
+              <p className="text-gray-600 mt-2">
+                他のユーザーが公開しているやりたいことを見て、インスピレーションを得ましょう
+              </p>
+            </div>
           </div>
           
-          {/* 達成率表示 */}
-          {stats && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <AchievementStats stats={stats} />
-              <CategoryProgress 
-                categories={categories} 
-                items={bucketItems.map(item => ({
-                  id: item.id,
-                  title: item.title,
-                  status: item.status,
-                  category_id: item.category_id
-                }))} 
-              />
+          {/* 統計表示 */}
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">公開状況</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">
+                  {publicBucketItems.length}
+                </div>
+                <div className="text-sm text-gray-600">公開項目数</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {publicBucketItems.filter(item => item.status === 'completed').length}
+                </div>
+                <div className="text-sm text-gray-600">達成済み</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">
+                  {itemsByCategory.length}
+                </div>
+                <div className="text-sm text-gray-600">活動中カテゴリ</div>
+              </div>
             </div>
-          )}
+          </div>
 
           {/* フィルター・検索 */}
           <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -255,10 +215,10 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
           </div>
         </div>
 
-        {/* バケットリスト項目表示 */}
-        {bucketItems.length > 0 ? (
+        {/* 公開バケットリスト項目表示 */}
+        {publicBucketItems.length > 0 ? (
           <div className="space-y-6">
-            {/* カテゴリ別にグループ化（サービスレイヤーで処理済み） */}
+            {/* カテゴリ別にグループ化 */}
             {itemsByCategory.map(({ category, items: categoryItems }) => (
                 <div key={category.id} className="bg-white rounded-lg shadow overflow-hidden">
                   <div 
@@ -348,26 +308,9 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                              item.due_type === 'unspecified' ? '期限: 未定' :
                              item.due_type ? `期限: ${item.due_type}` : '期限: 未定'}
                           </span>
-                          <span className={item.is_public ? 'text-blue-600' : 'text-gray-400'}>
-                            {item.is_public ? '公開' : '非公開'}
+                          <span className="text-blue-600">
+                            公開
                           </span>
-                        </div>
-                        
-                        {/* 編集・削除ボタン */}
-                        <div className="mt-3 pt-2 border-t border-gray-200 flex justify-end space-x-2">
-                          <Link to={`/bucket-list/edit/${item.id}`}>
-                            <Button variant="outline" size="sm">
-                              編集
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openDeleteDialog({ id: item.id, title: item.title })}
-                            className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
-                          >
-                            削除
-                          </Button>
                         </div>
                         
                         {item.completed_at && (
@@ -392,27 +335,15 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
         ) : (
           <div className="text-center py-12 bg-white rounded-lg shadow">
             <p className="text-gray-500 text-lg mb-4">
-              まだやりたいことが登録されていません。
+              公開されているやりたいことが見つかりません。
             </p>
-            <p className="text-gray-400 mb-6">
-              新しい項目を追加して、人生でやりたいことを管理しましょう！
+            <p className="text-gray-400">
+              {filters.search || filters.category_id || filters.priority || filters.status 
+                ? "検索条件を変更してお試しください。" 
+                : "まだ誰も公開設定にしていないようです。"}
             </p>
-            <Link to="/bucket-list/add">
-              <Button size="lg">
-                最初のやりたいことを追加
-              </Button>
-            </Link>
           </div>
         )}
-
-        {/* 削除確認ダイアログ */}
-        <DeleteConfirmationDialog
-          isOpen={deleteDialog.isOpen}
-          onClose={closeDeleteDialog}
-          onConfirm={handleDelete}
-          itemTitle={deleteDialog.item?.title || ""}
-          isSubmitting={deleteDialog.isSubmitting}
-        />
       </div>
     </AuthenticatedLayout>
   );
