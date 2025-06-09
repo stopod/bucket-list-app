@@ -90,9 +90,6 @@ export default function HomePage() {
                 <Link to="/public">
                   <Button size="lg" variant="outline">みんなのやりたいこと</Button>
                 </Link>
-                <Link to="/sample">
-                  <Button size="lg" variant="outline">Sample</Button>
-                </Link>
               </div>
             )}
           </div>

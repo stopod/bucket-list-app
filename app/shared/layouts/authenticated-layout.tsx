@@ -80,12 +80,6 @@ export function AuthenticatedLayout({
               <Link to="/public">
                 <Button variant="outline" size="sm">みんなのやりたいこと</Button>
               </Link>
-              <Link to="/instruments">
-                <Button variant="outline" size="sm">楽器一覧</Button>
-              </Link>
-              <Link to="/sample">
-                <Button variant="outline" size="sm">Sample</Button>
-              </Link>
               <Button 
                 onClick={handleSignOut} 
                 variant="outline"
