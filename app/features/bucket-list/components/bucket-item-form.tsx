@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import type { BucketItemFormData, Category, Priority, DueType } from "../types";
+import type { BucketItemFormData, Category, Priority, DueType, Status } from "../types";
 
 interface BucketItemFormProps {
   categories: Category[];
@@ -28,6 +28,7 @@ export function BucketItemForm({
     description: defaultData?.description || "",
     category_id: defaultData?.category_id || (categories.length > 0 ? categories[0].id : 1),
     priority: defaultData?.priority || "medium",
+    status: defaultData?.status || "not_started",
     due_date: defaultData?.due_date || "",
     due_type: defaultData?.due_type || "unspecified",
     is_public: defaultData?.is_public ?? true,
@@ -113,8 +114,8 @@ export function BucketItemForm({
           />
         </div>
 
-        {/* カテゴリと優先度 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* カテゴリ、優先度、ステータス */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
               カテゴリ <span className="text-red-500">*</span>
@@ -147,6 +148,22 @@ export function BucketItemForm({
               <option value="high">高</option>
               <option value="medium">中</option>
               <option value="low">低</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+              ステータス
+            </label>
+            <select
+              id="status"
+              value={formData.status}
+              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as Status }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="not_started">未着手</option>
+              <option value="in_progress">進行中</option>
+              <option value="completed">完了</option>
             </select>
           </div>
         </div>

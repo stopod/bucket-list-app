@@ -140,6 +140,45 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
     }
   };
 
+  // ステータス変更
+  const handleStatusChange = async (itemId: string, newStatus: string) => {
+    try {
+      // フォームを作成してステータス更新を実行
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = `/bucket-list/edit/${itemId}`;
+      form.style.display = "none";
+
+      // 現在の項目データを取得
+      const item = bucketItems.find(item => item.id === itemId);
+      if (!item) return;
+
+      // 全てのフィールドを含める（ステータス以外は既存値を維持）
+      const fields = {
+        title: item.title,
+        description: item.description || "",
+        category_id: item.category_id.toString(),
+        priority: item.priority,
+        status: newStatus,
+        due_date: item.due_date || "",
+        due_type: item.due_type || "unspecified",
+        is_public: item.is_public.toString()
+      };
+
+      Object.entries(fields).forEach(([key, value]) => {
+        const input = document.createElement("input");
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+    } catch (error) {
+      console.error("Status change error:", error);
+    }
+  };
+
   return (
     <AuthenticatedLayout title="やりたいこと一覧">
       <div className="container mx-auto px-4 py-8">
@@ -353,21 +392,38 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                           </span>
                         </div>
                         
-                        {/* 編集・削除ボタン */}
-                        <div className="mt-3 pt-2 border-t border-gray-200 flex justify-end space-x-2">
-                          <Link to={`/bucket-list/edit/${item.id}`}>
-                            <Button variant="outline" size="sm">
-                              編集
+                        {/* ステータス変更・編集・削除 */}
+                        <div className="mt-3 pt-2 border-t border-gray-200">
+                          {/* ステータス変更 */}
+                          <div className="mb-2">
+                            <label className="block text-xs text-gray-600 mb-1">ステータスを変更</label>
+                            <select
+                              value={item.status}
+                              onChange={(e) => handleStatusChange(item.id, e.target.value)}
+                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            >
+                              <option value="not_started">未着手</option>
+                              <option value="in_progress">進行中</option>
+                              <option value="completed">完了</option>
+                            </select>
+                          </div>
+                          
+                          {/* 編集・削除ボタン */}
+                          <div className="flex justify-end space-x-2">
+                            <Link to={`/bucket-list/edit/${item.id}`}>
+                              <Button variant="outline" size="sm">
+                                編集
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openDeleteDialog({ id: item.id, title: item.title })}
+                              className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                            >
+                              削除
                             </Button>
-                          </Link>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openDeleteDialog({ id: item.id, title: item.title })}
-                            className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
-                          >
-                            削除
-                          </Button>
+                          </div>
                         </div>
                         
                         {item.completed_at && (

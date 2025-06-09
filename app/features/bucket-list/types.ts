@@ -42,6 +42,7 @@ export interface BucketItemFormData {
   description?: string;
   category_id: number;
   priority: Priority;
+  status?: Status;
   due_date?: string;
   due_type?: DueType;
   is_public: boolean;
