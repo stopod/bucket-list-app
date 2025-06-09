@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-このファイルは、このリポジトリでコードを扱う際のClaude Code (claude.ai/code) へのガイダンスを提供します。
+このファイルは、人生でやりたいことリストアプリケーションの開発ガイドラインを提供します。
 
 ## 必須コマンド
 
@@ -24,44 +24,179 @@ docker compose up -d
 
 ## アーキテクチャ概要
 
-これは以下のスタックを使用したReact Router v7アプリケーションです：
+人生でやりたいことリストを管理するWebアプリケーション：
 
-- **フロントエンド**: React Router v7（SSR有効）、スタイリングにTailwindCSS、コンポーネントにshadcn-ui
-- **バックエンド**: Node.js
-- **データベース**: Supabase
+- **フロントエンド**: React Router v7（SSR有効）、TailwindCSS、shadcn-ui
+- **バックエンド**: Node.js with TypeScript
+- **データベース**: Supabase PostgreSQL
+- **認証**: Supabase Auth
 - **デプロイ**: Dockerコンテナ化
 
-### データベースアーキテクチャ
+### アーキテクチャパターン
 
-- **データベース**: Supabase管理PostgreSQL
-- **型定義**: `app/shared/types/database.ts`にSupabase TypeScript型定義
-- **認証**: `getServerAuth`パターンによるSSR統合認証システム
+- **Clean Architecture**: Repository Pattern + Service Layer
+- **Dependency Injection**: Factory Pattern によるDI
+- **Type Safety**: TypeScript による型安全性
+- **SSR**: React Router v7 による Server-Side Rendering
 
-### 主要設定
+## 開発ガイドライン
 
-- `react-router.config.ts`でSSR有効なReact Router設定
-- Vite設定にTailwindCSSとTypeScriptパス解決を含む
-- 環境変数: `SUPABASE_URL`、`SUPABASE_ANON_KEY`
+### コードスタイル
 
-### 開発時の注意点
+1. **Repository Pattern 必須**
+   - データアクセス層の抽象化
+   - Supabaseクライアントとの密結合を回避
+   - テスタビリティの向上
 
-- Docker Composeは開発用（`compose.dev.yaml`）と本番用（`compose.yaml`）で別々の設定
+2. **型安全性**
+   - 全てのAPIレスポンスに型定義
+   - フォームデータの型定義
+   - Database型定義の活用
 
-## バケットリストアプリ仕様
+3. **エラーハンドリング**
+   - Repository層でのエラー変換
+   - ユーザーフレンドリーなエラーメッセージ
+   - 適切なHTTPステータスコード
 
-### データベース設計制約
+### ファイル構成規則
 
-- **ユーザー参照**: `auth.users`ではなく`profiles`テーブルのIDを使用（auth.users参照は非推奨）
-- **日時更新**: データベーストリガーではなくアプリケーション側で処理（DB差し替え対応）
-- **RLS設定**: 必須（データセキュリティ確保）
-- **profiles同期**: auth.users登録時にprofilesテーブルへ自動登録済みを前提
+```
+app/
+├── features/bucket-list/           # 機能単位のモジュール
+│   ├── components/                 # UI コンポーネント
+│   ├── repositories/              # データアクセス層
+│   ├── services/                  # ビジネスロジック層
+│   ├── lib/                       # ファクトリ等のユーティリティ
+│   └── types.ts                   # 型定義
+├── shared/                        # 共通モジュール
+│   ├── layouts/                   # レイアウトコンポーネント
+│   ├── types/                     # 共通型定義
+│   └── utils/                     # 共通ユーティリティ
+└── routes/                        # ページコンポーネント
+```
 
-### アプリケーション仕様
+### データベース設計原則
 
-- **カテゴリ**: 事前定義（旅行・観光、スキル習得・学習、体験・チャレンジ、人間関係、健康・フィットネス、創作・芸術、キャリア・仕事、狂気、その他）
-- **優先度**: 高・中・低の3段階
-- **期限設定**: 具体的日付、未定、年内、来年中
-- **ステータス**: 未着手、進行中、完了
-- **公開設定**: デフォルト公開、設定で非公開可能
-- **表示形式**: カード形式、カテゴリ別グループ表示
-- **機能**: 検索・フィルタ・ソート、達成率表示、他ユーザーリスト閲覧（作成者名マスク）
+1. **テーブル設計**
+   - `profiles` テーブル: auth.users の代替（非推奨回避）
+   - `categories` テーブル: 事前定義カテゴリ
+   - `bucket_items` テーブル: やりたいこと項目
+
+2. **RLS (Row Level Security)**
+   - 全テーブルでRLS有効化必須
+   - ユーザー毎のデータ分離
+   - 公開データのセキュリティ制御
+
+3. **インデックス戦略**
+   - 検索・フィルタ対象カラムにインデックス
+   - 複合インデックスの活用
+
+## 機能仕様
+
+### 実装済み機能
+
+#### 基本CRUD操作
+- ✅ やりたいこと項目の作成・編集・削除・一覧表示
+- ✅ カテゴリ、優先度、ステータス、期限設定
+- ✅ 公開/非公開設定
+
+#### 高度な機能
+- ✅ 検索・フィルタ・ソート機能
+- ✅ リアルタイムステータス変更
+- ✅ 達成率計算・可視化
+- ✅ カテゴリ別進捗表示
+- ✅ 公開リスト閲覧機能
+- ✅ ダッシュボード（統計表示）
+
+#### UI/UX
+- ✅ レスポンシブデザイン
+- ✅ カード形式表示
+- ✅ カテゴリ別グループ化
+- ✅ 削除確認ダイアログ
+- ✅ プログレスバー表示
+
+### データ構造
+
+#### カテゴリ (categories)
+- 旅行・観光、スキル習得・学習、体験・チャレンジ
+- 人間関係、健康・フィットネス、創作・芸術
+- キャリア・仕事、狂気、その他
+
+#### 優先度 (priority)
+- `high`: 高
+- `medium`: 中  
+- `low`: 低
+
+#### ステータス (status)
+- `not_started`: 未着手
+- `in_progress`: 進行中
+- `completed`: 完了
+
+#### 期限タイプ (due_type)
+- `specific_date`: 具体的日付
+- `this_year`: 今年中
+- `next_year`: 来年中
+- `unspecified`: 未定
+
+## セキュリティ考慮事項
+
+### 認証・認可
+- Supabase Auth による認証
+- SSRでの認証状態管理
+- 適切なリダイレクト処理
+
+### データ保護
+- RLS による行レベルセキュリティ
+- XSS対策（入力値サニタイズ）
+- CSRF対策（SameSite Cookie）
+
+### プライバシー
+- 個人データの適切な取り扱い
+- 公開設定の尊重
+- ユーザー同意に基づく機能提供
+
+## パフォーマンス最適化
+
+### データベース
+- 適切なインデックス設計
+- クエリの最適化
+- N+1問題の回避
+
+### フロントエンド
+- コンポーネントの再利用
+- 適切な状態管理
+- 画像最適化
+
+## 技術的負債・注意事項
+
+### RLS (Row Level Security)
+- **現在の状況**: 開発中にRLS無効化（RLS認証問題のため）
+- **リスク**: 本番環境では必ずRLS有効化が必要
+- **対応**: JWTトークンの適切な設定方法の確立
+
+### エラーハンドリング
+- 現在はコンソールログ中心
+- 本番環境では適切なログシステムが必要
+
+### テスト
+- 現在テストコード未実装
+- ユニットテスト・統合テストの追加が必要
+
+## 環境変数
+
+```bash
+# Supabase設定
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key  # サーバーサイド用
+
+# React Router設定
+NODE_ENV=development|production
+```
+
+## 今後のメンテナンス指針
+
+1. **セキュリティ優先**: RLS有効化、適切な認証フロー
+2. **テスト追加**: 品質保証のためのテストコード
+3. **モニタリング**: エラー追跡、パフォーマンス監視
+4. **ドキュメント**: API仕様書、ユーザーマニュアル
