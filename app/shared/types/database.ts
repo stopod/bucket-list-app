@@ -34,6 +34,93 @@ export type Database = {
   };
   public: {
     Tables: {
+      bucket_items: {
+        Row: {
+          category_id: number;
+          completed_at: string | null;
+          completion_comment: string | null;
+          created_at: string | null;
+          description: string | null;
+          due_date: string | null;
+          due_type: string | null;
+          id: string;
+          is_public: boolean;
+          priority: string;
+          profile_id: string;
+          status: string;
+          title: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          category_id: number;
+          completed_at?: string | null;
+          completion_comment?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          due_date?: string | null;
+          due_type?: string | null;
+          id?: string;
+          is_public?: boolean;
+          priority: string;
+          profile_id: string;
+          status?: string;
+          title: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          category_id?: number;
+          completed_at?: string | null;
+          completion_comment?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          due_date?: string | null;
+          due_type?: string | null;
+          id?: string;
+          is_public?: boolean;
+          priority?: string;
+          profile_id?: string;
+          status?: string;
+          title?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bucket_items_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bucket_items_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      categories: {
+        Row: {
+          color: string;
+          created_at: string | null;
+          id: number;
+          name: string;
+        };
+        Insert: {
+          color: string;
+          created_at?: string | null;
+          id?: number;
+          name: string;
+        };
+        Update: {
+          color?: string;
+          created_at?: string | null;
+          id?: number;
+          name?: string;
+        };
+        Relationships: [];
+      };
       instruments: {
         Row: {
           id: number;
@@ -84,7 +171,26 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      user_bucket_stats: {
+        Row: {
+          completed_items: number | null;
+          completion_rate: number | null;
+          display_name: string | null;
+          in_progress_items: number | null;
+          not_started_items: number | null;
+          profile_id: string | null;
+          total_items: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bucket_items_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Functions: {
       [_ in never]: never;

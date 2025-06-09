@@ -6,4 +6,5 @@ export default [
   route("login", "routes/auth/login.tsx"),
   route("register", "routes/auth/register.tsx"),
   route("sample", "routes/sample/sample.tsx"),
+  route("bucket-list", "routes/bucket-list/bucket-list.tsx"),
 ] satisfies RouteConfig;

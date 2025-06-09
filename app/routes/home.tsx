@@ -7,8 +7,8 @@ import { AppLayout } from "~/shared/layouts";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "bucket-list-app" },
-    { name: "description", content: "hello~ ^^" },
+    { title: "人生でやりたいことリスト" },
+    { name: "description", content: "あなたの夢や目標を管理するバケットリストアプリ" },
   ];
 }
 
@@ -40,8 +40,8 @@ export default function HomePage() {
       <span className="text-gray-700">
         こんにちは、{user.email}さん
       </span>
-      <Link to="/instruments">
-        <Button variant="outline">一覧</Button>
+      <Link to="/bucket-list">
+        <Button variant="outline">バケットリスト</Button>
       </Link>
       <Button
         onClick={handleSignOut}
@@ -68,15 +68,15 @@ export default function HomePage() {
         <div className="px-4 py-6 sm:px-0">
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              ようこそ
+              人生でやりたいことリスト
             </h2>
             <p className="mt-4 text-lg text-gray-600">
-              {user ? "ログインしてる" : "ログインしてない"}
+              {user ? "あなたの夢や目標を管理しましょう" : "ログインして始めましょう"}
             </p>
             {user && (
               <div className="mt-8 space-x-4">
-                <Link to="/instruments">
-                  <Button size="lg">一覧を見る</Button>
+                <Link to="/bucket-list">
+                  <Button size="lg">バケットリストを見る</Button>
                 </Link>
                 <Link to="/sample">
                   <Button size="lg" variant="outline">Sample</Button>
