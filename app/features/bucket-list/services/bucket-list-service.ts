@@ -31,6 +31,10 @@ export class BucketListService {
     return this.repository.findById(id);
   }
 
+  async getBucketItemById(id: string) {
+    return this.repository.findById(id);
+  }
+
   async createBucketItem(data: BucketItemInsert) {
     return this.repository.create(data);
   }

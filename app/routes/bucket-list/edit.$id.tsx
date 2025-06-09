@@ -1,17 +1,16 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { redirect } from "react-router";
 import { AuthenticatedLayout } from "~/shared/layouts";
-import { getServerAuth } from "~/lib/auth-server";
+import { getServerAuth, createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
-import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { BucketItemForm } from "~/features/bucket-list/components/bucket-item-form";
-import type { BucketItemFormData } from "~/features/bucket-list/types";
+import type { BucketItemFormData, BucketItem } from "~/features/bucket-list/types";
 
 export function meta() {
-  return [{ title: "やりたいことを追加" }];
+  return [{ title: "やりたいことを編集" }];
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   try {
     // SSR-compatible authentication check
     const authResult = await getServerAuth(request);
@@ -24,49 +23,32 @@ export async function loader({ request }: LoaderFunctionArgs) {
       });
     }
 
-    // 認証済みクライアントでカテゴリ一覧を取得
-    const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
-    
-    // 直接SQLでカテゴリを確認
-    const { data: directCategories, error: directError } = await authenticatedSupabase
-      .from("categories")
-      .select("*");
-    
-    console.log("Direct categories query:", directCategories?.length || 0);
-    if (directError) {
-      console.log("Direct categories error:", directError);
+    const itemId = params.id;
+    if (!itemId) {
+      throw new Response("Item ID is required", { status: 400 });
     }
-    
-    // 基本クライアントでも試してみる（RLSテスト）
-    const { supabase: basicSupabase } = await import("~/lib/supabase");
-    const { data: basicCategories, error: basicError } = await basicSupabase
-      .from("categories")
-      .select("*");
-    
-    console.log("Basic client categories:", basicCategories?.length || 0);
-    if (basicError) {
-      console.log("Basic client error:", basicError);
-    }
-    
-    const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase);
-    const categories = await bucketListService.getCategories();
 
-    console.log("Categories loaded:", categories.length);
-    console.log("User ID:", authResult.user?.id);
+    // 認証済みクライアントでデータを取得
+    const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
+    const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase);
     
-    // プロファイルの存在確認
-    const { data: profile, error: profileError } = await authenticatedSupabase
-      .from("profiles")
-      .select("id")
-      .eq("id", authResult.user!.id)
-      .single();
-    
-    console.log("Profile exists:", !!profile);
-    if (profileError) {
-      console.log("Profile error:", profileError);
+    // バケットリスト項目とカテゴリを取得
+    const [item, categories] = await Promise.all([
+      bucketListService.getBucketItemById(itemId),
+      bucketListService.getCategories()
+    ]);
+
+    if (!item) {
+      throw new Response("Item not found", { status: 404 });
+    }
+
+    // 自分のアイテムかチェック
+    if (item.profile_id !== authResult.user!.id) {
+      throw new Response("Not authorized", { status: 403 });
     }
 
     return {
+      item,
       categories,
       user: authResult.user
     };
@@ -79,7 +61,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   try {
     // 認証チェック
     const authResult = await getServerAuth(request);
@@ -89,6 +71,11 @@ export async function action({ request }: ActionFunctionArgs) {
         status: 302,
         headers: { Location: "/login" },
       });
+    }
+
+    const itemId = params.id;
+    if (!itemId) {
+      throw new Response("Item ID is required", { status: 400 });
     }
 
     // フォームデータを解析
@@ -108,16 +95,12 @@ export async function action({ request }: ActionFunctionArgs) {
       throw new Response("タイトルは必須です", { status: 400 });
     }
 
-    // 認証済みクライアントでデータを保存
+    // 認証済みクライアントでデータを更新
     const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
     const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase);
     
-    console.log("Creating bucket item for user:", authResult.user!.id);
-    console.log("Form data:", data);
-    
-    // 新しい項目を作成
-    await bucketListService.createBucketItem({
-      profile_id: authResult.user!.id,
+    // 項目を更新
+    await bucketListService.updateBucketItem(itemId, {
       title: data.title.trim(),
       description: data.description?.trim() || null,
       category_id: data.category_id,
@@ -126,8 +109,6 @@ export async function action({ request }: ActionFunctionArgs) {
       due_type: data.due_type || null,
       is_public: data.is_public,
     });
-    
-    console.log("Bucket item created successfully");
 
     // 成功時はやりたいこと一覧ページにリダイレクト
     return redirect("/bucket-list");
@@ -135,15 +116,21 @@ export async function action({ request }: ActionFunctionArgs) {
     if (error instanceof Response) {
       throw error;
     }
-    console.error("Action error details:", error);
-    console.error("Error message:", error instanceof Error ? error.message : String(error));
-    console.error("Error stack:", error instanceof Error ? error.stack : "No stack");
+    console.error("Action error:", error);
     throw new Response("保存に失敗しました", { status: 500 });
   }
 }
 
-export default function AddBucketItemPage({ loaderData }: { loaderData: { categories: any[]; user: any } }) {
-  const { categories } = loaderData;
+export default function EditBucketItemPage({ 
+  loaderData 
+}: { 
+  loaderData: { 
+    item: BucketItem; 
+    categories: any[]; 
+    user: any 
+  } 
+}) {
+  const { item, categories } = loaderData;
 
   const handleSubmit = (data: BucketItemFormData) => {
     // フォームデータを送信
@@ -170,13 +157,22 @@ export default function AddBucketItemPage({ loaderData }: { loaderData: { catego
   };
 
   return (
-    <AuthenticatedLayout title="やりたいことを追加">
+    <AuthenticatedLayout title="やりたいことを編集">
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <BucketItemForm
           categories={categories}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
-          mode="create"
+          mode="edit"
+          defaultValues={{
+            title: item.title,
+            description: item.description || undefined,
+            category_id: item.category_id,
+            priority: item.priority,
+            due_date: item.due_date || undefined,
+            due_type: item.due_type || "unspecified",
+            is_public: item.is_public,
+          }}
         />
       </div>
     </AuthenticatedLayout>

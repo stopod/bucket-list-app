@@ -9,6 +9,7 @@ interface BucketItemFormProps {
   onCancel: () => void;
   isSubmitting?: boolean;
   initialData?: Partial<BucketItemFormData>;
+  defaultValues?: Partial<BucketItemFormData>;
   mode?: "create" | "edit";
 }
 
@@ -18,16 +19,18 @@ export function BucketItemForm({
   onCancel,
   isSubmitting = false,
   initialData,
+  defaultValues,
   mode = "create"
 }: BucketItemFormProps) {
+  const defaultData = defaultValues || initialData || {};
   const [formData, setFormData] = useState<BucketItemFormData>({
-    title: initialData?.title || "",
-    description: initialData?.description || "",
-    category_id: initialData?.category_id || (categories.length > 0 ? categories[0].id : 1),
-    priority: initialData?.priority || "medium",
-    due_date: initialData?.due_date || "",
-    due_type: initialData?.due_type || "unspecified",
-    is_public: initialData?.is_public ?? true,
+    title: defaultData?.title || "",
+    description: defaultData?.description || "",
+    category_id: defaultData?.category_id || (categories.length > 0 ? categories[0].id : 1),
+    priority: defaultData?.priority || "medium",
+    due_date: defaultData?.due_date || "",
+    due_type: defaultData?.due_type || "unspecified",
+    is_public: defaultData?.is_public ?? true,
   });
 
   // カテゴリが読み込まれていない場合の表示
@@ -35,7 +38,11 @@ export function BucketItemForm({
     return (
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="text-center py-8">
-          <p className="text-gray-500">カテゴリを読み込み中...</p>
+          <p className="text-gray-500 mb-4">カテゴリが見つかりません</p>
+          <p className="text-sm text-gray-400">
+            データベースにカテゴリが登録されていない可能性があります。<br/>
+            管理者にお問い合わせください。
+          </p>
         </div>
       </div>
     );

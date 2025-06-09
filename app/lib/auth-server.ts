@@ -261,7 +261,7 @@ export async function requireAuth(
  * @param authResult - Result from getServerAuth or requireAuth
  * @returns Supabase client with user context
  */
-export function createAuthenticatedSupabaseClient(authResult: ServerAuthResult) {
+export async function createAuthenticatedSupabaseClient(authResult: ServerAuthResult) {
   if (!authResult.isAuthenticated || !authResult.session?.access_token) {
     throw new Error('Cannot create authenticated client without valid session');
   }
@@ -270,17 +270,20 @@ export function createAuthenticatedSupabaseClient(authResult: ServerAuthResult) 
     throw new Error('Supabase configuration is missing');
   }
   
-  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
-    global: {
-      headers: {
-        Authorization: `Bearer ${authResult.session.access_token}`,
-      },
-    },
+  const client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
   });
+
+  // セッションを明示的に設定
+  await client.auth.setSession({
+    access_token: authResult.session.access_token,
+    refresh_token: authResult.session.refresh_token,
+  });
+  
+  return client;
 }
 
 /**
@@ -296,10 +299,10 @@ export async function withAuth(
   redirectTo: string = "/login"
 ): Promise<{
   auth: ServerAuthResult;
-  supabase: ReturnType<typeof createAuthenticatedSupabaseClient>;
+  supabase: Awaited<ReturnType<typeof createAuthenticatedSupabaseClient>>;
 }> {
   const auth = await requireAuth(request, redirectTo);
-  const supabase = createAuthenticatedSupabaseClient(auth);
+  const supabase = await createAuthenticatedSupabaseClient(auth);
   
   return { auth, supabase };
 }

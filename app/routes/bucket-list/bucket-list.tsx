@@ -195,6 +195,15 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                           </span>
                         </div>
                         
+                        {/* 編集ボタン */}
+                        <div className="mt-3 pt-2 border-t border-gray-200 flex justify-end">
+                          <Link to={`/bucket-list/edit/${item.id}`}>
+                            <Button variant="outline" size="sm">
+                              編集
+                            </Button>
+                          </Link>
+                        </div>
+                        
                         {item.completed_at && (
                           <div className="mt-2 pt-2 border-t border-gray-200">
                             <p className="text-xs text-green-600">
