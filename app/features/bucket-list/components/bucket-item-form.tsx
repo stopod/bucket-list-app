@@ -1,0 +1,247 @@
+import { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import type { BucketItemFormData, Category, Priority, DueType } from "../types";
+
+interface BucketItemFormProps {
+  categories: Category[];
+  onSubmit: (data: BucketItemFormData) => void;
+  onCancel: () => void;
+  isSubmitting?: boolean;
+  initialData?: Partial<BucketItemFormData>;
+  mode?: "create" | "edit";
+}
+
+export function BucketItemForm({
+  categories,
+  onSubmit,
+  onCancel,
+  isSubmitting = false,
+  initialData,
+  mode = "create"
+}: BucketItemFormProps) {
+  const [formData, setFormData] = useState<BucketItemFormData>({
+    title: initialData?.title || "",
+    description: initialData?.description || "",
+    category_id: initialData?.category_id || (categories.length > 0 ? categories[0].id : 1),
+    priority: initialData?.priority || "medium",
+    due_date: initialData?.due_date || "",
+    due_type: initialData?.due_type || "unspecified",
+    is_public: initialData?.is_public ?? true,
+  });
+
+  // カテゴリが読み込まれていない場合の表示
+  if (categories.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="text-center py-8">
+          <p className="text-gray-500">カテゴリを読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title.trim()) return;
+    onSubmit(formData);
+  };
+
+  const handleDueDateChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      due_date: value,
+      due_type: value ? "specific_date" : "unspecified"
+    }));
+  };
+
+  const handleDueTypeChange = (type: DueType) => {
+    setFormData(prev => ({
+      ...prev,
+      due_type: type,
+      due_date: type === "specific_date" ? prev.due_date : ""
+    }));
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">
+          {mode === "create" ? "新しいやりたいことを追加" : "やりたいことを編集"}
+        </h2>
+        <p className="text-gray-600 mt-2">
+          {mode === "create" ? "あなたが人生でやりたいことを追加しましょう" : "項目の内容を編集できます"}
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* タイトル */}
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            タイトル <span className="text-red-500">*</span>
+          </label>
+          <Input
+            id="title"
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            placeholder="例: 富士山に登る"
+            required
+            className="w-full"
+          />
+        </div>
+
+        {/* 説明 */}
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            説明・詳細
+          </label>
+          <textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            placeholder="詳細な説明やメモを記入してください..."
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        {/* カテゴリと優先度 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+              カテゴリ <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="category"
+              value={formData.category_id}
+              onChange={(e) => setFormData(prev => ({ ...prev, category_id: Number(e.target.value) }))}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
+              優先度
+            </label>
+            <select
+              id="priority"
+              value={formData.priority}
+              onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as Priority }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="high">高</option>
+              <option value="medium">中</option>
+              <option value="low">低</option>
+            </select>
+          </div>
+        </div>
+
+        {/* 期限設定 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">期限</label>
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="due_type"
+                  value="unspecified"
+                  checked={formData.due_type === "unspecified"}
+                  onChange={(e) => handleDueTypeChange(e.target.value as DueType)}
+                  className="mr-2"
+                />
+                未定
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="due_type"
+                  value="this_year"
+                  checked={formData.due_type === "this_year"}
+                  onChange={(e) => handleDueTypeChange(e.target.value as DueType)}
+                  className="mr-2"
+                />
+                今年中
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="due_type"
+                  value="next_year"
+                  checked={formData.due_type === "next_year"}
+                  onChange={(e) => handleDueTypeChange(e.target.value as DueType)}
+                  className="mr-2"
+                />
+                来年中
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="due_type"
+                  value="specific_date"
+                  checked={formData.due_type === "specific_date"}
+                  onChange={(e) => handleDueTypeChange(e.target.value as DueType)}
+                  className="mr-2"
+                />
+                具体的な日付
+              </label>
+            </div>
+            
+            {formData.due_type === "specific_date" && (
+              <Input
+                type="date"
+                value={formData.due_date}
+                onChange={(e) => handleDueDateChange(e.target.value)}
+                className="w-full md:w-auto"
+              />
+            )}
+          </div>
+        </div>
+
+        {/* 公開設定 */}
+        <div>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.is_public}
+              onChange={(e) => setFormData(prev => ({ ...prev, is_public: e.target.checked }))}
+              className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              他のユーザーに公開する
+            </span>
+          </label>
+          <p className="text-xs text-gray-500 mt-1 ml-7">
+            公開すると、他のユーザーがあなたのやりたいことを参考として閲覧できます
+          </p>
+        </div>
+
+        {/* ボタン */}
+        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            キャンセル
+          </Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting || !formData.title.trim()}
+          >
+            {isSubmitting ? "保存中..." : mode === "create" ? "追加" : "更新"}
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}

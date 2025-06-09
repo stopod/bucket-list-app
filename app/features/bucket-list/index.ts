@@ -3,3 +3,4 @@ export * from "./types";
 export * from "./repositories";
 export * from "./services";
 export * from "./lib/repository-factory";
+export * from "./components/bucket-item-form";

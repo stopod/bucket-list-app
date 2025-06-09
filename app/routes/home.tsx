@@ -8,7 +8,7 @@ import { AppLayout } from "~/shared/layouts";
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "人生でやりたいことリスト" },
-    { name: "description", content: "あなたの夢や目標を管理するバケットリストアプリ" },
+    { name: "description", content: "あなたの夢や目標を管理するやりたいことリストアプリ" },
   ];
 }
 
@@ -41,7 +41,7 @@ export default function HomePage() {
         こんにちは、{user.email}さん
       </span>
       <Link to="/bucket-list">
-        <Button variant="outline">バケットリスト</Button>
+        <Button variant="outline">やりたいこと一覧</Button>
       </Link>
       <Button
         onClick={handleSignOut}
@@ -76,7 +76,7 @@ export default function HomePage() {
             {user && (
               <div className="mt-8 space-x-4">
                 <Link to="/bucket-list">
-                  <Button size="lg">バケットリストを見る</Button>
+                  <Button size="lg">やりたいこと一覧を見る</Button>
                 </Link>
                 <Link to="/sample">
                   <Button size="lg" variant="outline">Sample</Button>

@@ -1,11 +1,13 @@
 import type { Route } from "./+types/bucket-list";
+import { Link } from "react-router";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth } from "~/lib/auth-server";
 import { assertPriority, assertStatus, assertDueType } from "~/features/bucket-list/types";
 import { createBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { Button } from "~/components/ui/button";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "バケットリスト" }];
+  return [{ title: "やりたいこと一覧" }];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -47,12 +49,19 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   const { bucketItems, categories, stats, itemsByCategory } = loaderData;
 
   return (
-    <AuthenticatedLayout title="バケットリスト">
+    <AuthenticatedLayout title="やりたいこと一覧">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            人生でやりたいことリスト
-          </h1>
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-3xl font-bold text-gray-900">
+              やりたいこと一覧
+            </h1>
+            <Link to="/bucket-list/add">
+              <Button size="lg">
+                + 新しく追加
+              </Button>
+            </Link>
+          </div>
           
           {/* 統計表示 */}
           {stats && (
@@ -208,11 +217,16 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
         ) : (
           <div className="text-center py-12 bg-white rounded-lg shadow">
             <p className="text-gray-500 text-lg mb-4">
-              まだバケットリスト項目が登録されていません。
+              まだやりたいことが登録されていません。
             </p>
-            <p className="text-gray-400">
+            <p className="text-gray-400 mb-6">
               新しい項目を追加して、人生でやりたいことを管理しましょう！
             </p>
+            <Link to="/bucket-list/add">
+              <Button size="lg">
+                最初のやりたいことを追加
+              </Button>
+            </Link>
           </div>
         )}
       </div>
