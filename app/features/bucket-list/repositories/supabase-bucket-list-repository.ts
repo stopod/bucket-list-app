@@ -213,6 +213,9 @@ export class SupabaseBucketListRepository implements BucketListRepository {
   private applyFilters(query: any, filters?: BucketListFilters) {
     if (!filters) return query;
 
+    if (filters.profile_id) {
+      query = query.eq("profile_id", filters.profile_id);
+    }
     if (filters.category_id) {
       query = query.eq("category_id", filters.category_id);
     }

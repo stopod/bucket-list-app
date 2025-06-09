@@ -1,10 +1,13 @@
 import type { Route } from "./+types/bucket-list";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
+import { useState } from "react";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth } from "~/lib/auth-server";
 import { assertPriority, assertStatus, assertDueType } from "~/features/bucket-list/types";
 import { createBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { DeleteConfirmationDialog } from "~/features/bucket-list/components/delete-confirmation-dialog";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "やりたいこと一覧" }];
@@ -23,17 +26,37 @@ export async function loader({ request }: Route.LoaderArgs) {
       });
     }
 
+    // URLパラメータからフィルター条件を取得
+    const url = new URL(request.url);
+    const filters = {
+      search: url.searchParams.get("search") || undefined,
+      category_id: url.searchParams.get("category") ? Number(url.searchParams.get("category")) : undefined,
+      priority: url.searchParams.get("priority") as "high" | "medium" | "low" | undefined,
+      status: url.searchParams.get("status") as "not_started" | "in_progress" | "completed" | undefined,
+    };
+
     // Repository経由でデータ取得
     const bucketListService = await createBucketListService();
 
-    // ダッシュボードデータを取得（並列実行）
-    const dashboardData = await bucketListService.getDashboardData(authResult.user!.id);
+    // フィルター条件付きでデータを取得
+    const [bucketItems, categories, stats] = await Promise.all([
+      bucketListService.getUserBucketItemsWithCategory(authResult.user!.id, filters),
+      bucketListService.getCategories(),
+      bucketListService.getUserStats(authResult.user!.id)
+    ]);
+
+    // カテゴリ別にグループ化
+    const itemsByCategory = categories.map(category => ({
+      category,
+      items: bucketItems.filter(item => item.category_id === category.id)
+    })).filter(group => group.items.length > 0);
 
     return {
-      bucketItems: dashboardData.items,
-      categories: dashboardData.categories,
-      stats: dashboardData.stats,
-      itemsByCategory: dashboardData.itemsByCategory,
+      bucketItems,
+      categories,
+      stats,
+      itemsByCategory,
+      filters,
       user: authResult.user
     };
   } catch (error) {
@@ -46,7 +69,74 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function BucketListPage({ loaderData }: Route.ComponentProps) {
-  const { bucketItems, categories, stats, itemsByCategory } = loaderData;
+  const { bucketItems, categories, stats, itemsByCategory, filters } = loaderData;
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // 削除確認ダイアログの状態管理
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    item: { id: string; title: string } | null;
+    isSubmitting: boolean;
+  }>({
+    isOpen: false,
+    item: null,
+    isSubmitting: false
+  });
+
+  // フィルター更新関数
+  const updateFilter = (key: string, value: string | undefined) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value && value !== "") {
+      newParams.set(key, value);
+    } else {
+      newParams.delete(key);
+    }
+    setSearchParams(newParams);
+  };
+
+  // フィルターリセット関数
+  const resetFilters = () => {
+    setSearchParams(new URLSearchParams());
+  };
+
+  // 削除確認ダイアログを開く
+  const openDeleteDialog = (item: { id: string; title: string }) => {
+    setDeleteDialog({
+      isOpen: true,
+      item,
+      isSubmitting: false
+    });
+  };
+
+  // 削除確認ダイアログを閉じる
+  const closeDeleteDialog = () => {
+    setDeleteDialog({
+      isOpen: false,
+      item: null,
+      isSubmitting: false
+    });
+  };
+
+  // 削除実行
+  const handleDelete = async () => {
+    if (!deleteDialog.item) return;
+
+    setDeleteDialog(prev => ({ ...prev, isSubmitting: true }));
+
+    try {
+      // フォームを作成して削除アクションを実行
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = `/bucket-list/delete/${deleteDialog.item.id}`;
+      form.style.display = "none";
+      
+      document.body.appendChild(form);
+      form.submit();
+    } catch (error) {
+      console.error("Delete error:", error);
+      setDeleteDialog(prev => ({ ...prev, isSubmitting: false }));
+    }
+  };
 
   return (
     <AuthenticatedLayout title="やりたいこと一覧">
@@ -95,6 +185,89 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
               </div>
             </div>
           )}
+
+          {/* フィルター・検索 */}
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">フィルター・検索</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              {/* 検索 */}
+              <div>
+                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                  検索
+                </label>
+                <Input
+                  id="search"
+                  type="text"
+                  placeholder="タイトルや説明を検索..."
+                  defaultValue={filters.search || ""}
+                  onChange={(e) => updateFilter("search", e.target.value)}
+                />
+              </div>
+
+              {/* カテゴリフィルター */}
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                  カテゴリ
+                </label>
+                <select
+                  id="category"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  defaultValue={filters.category_id?.toString() || ""}
+                  onChange={(e) => updateFilter("category", e.target.value)}
+                >
+                  <option value="">すべて</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 優先度フィルター */}
+              <div>
+                <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+                  優先度
+                </label>
+                <select
+                  id="priority"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  defaultValue={filters.priority || ""}
+                  onChange={(e) => updateFilter("priority", e.target.value)}
+                >
+                  <option value="">すべて</option>
+                  <option value="high">高</option>
+                  <option value="medium">中</option>
+                  <option value="low">低</option>
+                </select>
+              </div>
+
+              {/* ステータスフィルター */}
+              <div>
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                  ステータス
+                </label>
+                <select
+                  id="status"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  defaultValue={filters.status || ""}
+                  onChange={(e) => updateFilter("status", e.target.value)}
+                >
+                  <option value="">すべて</option>
+                  <option value="not_started">未着手</option>
+                  <option value="in_progress">進行中</option>
+                  <option value="completed">完了</option>
+                </select>
+              </div>
+            </div>
+
+            {/* フィルターリセットボタン */}
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={resetFilters}>
+                フィルターをリセット
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* バケットリスト項目表示 */}
@@ -195,13 +368,21 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                           </span>
                         </div>
                         
-                        {/* 編集ボタン */}
-                        <div className="mt-3 pt-2 border-t border-gray-200 flex justify-end">
+                        {/* 編集・削除ボタン */}
+                        <div className="mt-3 pt-2 border-t border-gray-200 flex justify-end space-x-2">
                           <Link to={`/bucket-list/edit/${item.id}`}>
                             <Button variant="outline" size="sm">
                               編集
                             </Button>
                           </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openDeleteDialog({ id: item.id, title: item.title })}
+                            className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                          >
+                            削除
+                          </Button>
                         </div>
                         
                         {item.completed_at && (
@@ -238,6 +419,15 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
             </Link>
           </div>
         )}
+
+        {/* 削除確認ダイアログ */}
+        <DeleteConfirmationDialog
+          isOpen={deleteDialog.isOpen}
+          onClose={closeDeleteDialog}
+          onConfirm={handleDelete}
+          itemTitle={deleteDialog.item?.title || ""}
+          isSubmitting={deleteDialog.isSubmitting}
+        />
       </div>
     </AuthenticatedLayout>
   );

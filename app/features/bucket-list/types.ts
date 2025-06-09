@@ -56,6 +56,7 @@ export interface BucketItemCompletionData {
 
 // フィルター・ソート用の型
 export interface BucketListFilters {
+  profile_id?: string;
   category_id?: number;
   priority?: Priority;
   status?: Status;

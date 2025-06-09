@@ -9,4 +9,5 @@ export default [
   route("bucket-list", "routes/bucket-list/bucket-list.tsx"),
   route("bucket-list/add", "routes/bucket-list/add.tsx"),
   route("bucket-list/edit/:id", "routes/bucket-list/edit.$id.tsx"),
+  route("bucket-list/delete/:id", "routes/bucket-list/delete.$id.tsx"),
 ] satisfies RouteConfig;

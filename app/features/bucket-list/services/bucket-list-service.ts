@@ -19,8 +19,15 @@ export class BucketListService {
   }
 
   async getUserBucketItemsWithCategory(profileId: string, filters?: BucketListFilters, sort?: BucketListSort) {
-    const allItems = await this.repository.findAllWithCategory(filters, sort);
-    return allItems.filter(item => item.profile_id === profileId);
+    // プロファイルIDフィルターを追加
+    const userFilters = {
+      ...filters,
+      profile_id: profileId
+    };
+    
+    // Repositoryでフィルタリングを実行
+    const allItems = await this.repository.findAllWithCategory(userFilters, sort);
+    return allItems;
   }
 
   async getPublicBucketItems(filters?: BucketListFilters, sort?: BucketListSort) {
