@@ -113,8 +113,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
     const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase);
     
-    console.log("Creating bucket item for user:", authResult.user!.id);
-    console.log("Form data:", data);
+    // Create new bucket item
     
     // 新しい項目を作成
     await bucketListService.createBucketItem({

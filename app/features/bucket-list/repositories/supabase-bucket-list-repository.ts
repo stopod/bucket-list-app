@@ -20,7 +20,7 @@ import {
 } from "./bucket-list-repository";
 
 export class SupabaseBucketListRepository implements BucketListRepository {
-  constructor(private supabase: SupabaseClient<Database>) {}
+  constructor(private supabase: SupabaseClient<Database>, private userId?: string) {}
 
   async findAll(filters?: BucketListFilters, sort?: BucketListSort): Promise<BucketItem[]> {
     let query = this.supabase.from("bucket_items").select("*");

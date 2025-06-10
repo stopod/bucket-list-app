@@ -2,9 +2,9 @@ import type { Route } from "./+types/public";
 import { useSearchParams } from "react-router";
 import { useState } from "react";
 import { AuthenticatedLayout } from "~/shared/layouts";
-import { getServerAuth } from "~/lib/auth-server";
+import { getServerAuth, createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { assertPriority, assertStatus } from "~/features/bucket-list/types";
-import { createBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { createBucketListService, createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 
@@ -34,8 +34,10 @@ export async function loader({ request }: Route.LoaderArgs) {
       status: url.searchParams.get("status") as "not_started" | "in_progress" | "completed" | undefined,
     };
 
-    // Repository経由でデータ取得
-    const bucketListService = await createBucketListService();
+    // 認証済みクライアントでデータ取得
+    const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
+    const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase);
+    
 
     // 公開されたやりたいことと全カテゴリを取得
     const [publicBucketItems, categories] = await Promise.all([

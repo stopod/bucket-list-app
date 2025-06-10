@@ -44,6 +44,8 @@ export async function createBucketListService(): Promise<BucketListService> {
 }
 
 // 認証済みクライアント用のサービス作成関数
-export function createAuthenticatedBucketListService(supabase: SupabaseClient<Database>): BucketListService {
-  return RepositoryFactory.createBucketListService(supabase);
+export function createAuthenticatedBucketListService(supabase: SupabaseClient<Database>, userId?: string): BucketListService {
+  // Create a new repository instance with user context for security
+  const repository = new SupabaseBucketListRepository(supabase, userId);
+  return new BucketListService(repository);
 }

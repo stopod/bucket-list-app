@@ -2,9 +2,9 @@ import type { Route } from "./+types/bucket-list";
 import { Link, useSearchParams } from "react-router";
 import { useState } from "react";
 import { AuthenticatedLayout } from "~/shared/layouts";
-import { getServerAuth } from "~/lib/auth-server";
+import { getServerAuth, createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { assertPriority, assertStatus, assertDueType } from "~/features/bucket-list/types";
-import { createBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { createBucketListService, createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { DeleteConfirmationDialog } from "~/features/bucket-list/components/delete-confirmation-dialog";
@@ -37,8 +37,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       status: url.searchParams.get("status") as "not_started" | "in_progress" | "completed" | undefined,
     };
 
-    // Repository経由でデータ取得
-    const bucketListService = await createBucketListService();
+    // 認証済みクライアントでデータ取得
+    const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
+    const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase);
 
     // フィルター条件付きでデータを取得
     const [bucketItems, categories, stats] = await Promise.all([
@@ -46,6 +47,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       bucketListService.getCategories(),
       bucketListService.getUserStats(authResult.user!.id)
     ]);
+
 
     // カテゴリ別にグループ化
     const itemsByCategory = categories.map(category => ({

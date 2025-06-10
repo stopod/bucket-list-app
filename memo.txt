@@ -1,0 +1,146 @@
+-- bucket_itemsのデータ確認
+[
+  {
+    "id": "043c23de-73ae-48c2-9a8e-46a0fdb24d26",
+    "title": "aaaa",
+    "profile_id": "1d9c3323-650a-4f5b-9362-b78f93bce8e6",
+    "is_public": true,
+    "status": "not_started",
+    "created_at": "2025-06-10 09:18:29.624+00"
+  },
+  {
+    "id": "4f4848e3-3bd5-4705-9be0-0b01fbc3587a",
+    "title": "やりたいことサンプル",
+    "profile_id": "1d9c3323-650a-4f5b-9362-b78f93bce8e6",
+    "is_public": true,
+    "status": "in_progress",
+    "created_at": "2025-06-10 09:12:44.401+00"
+  },
+  {
+    "id": "ddd60368-ef17-42c7-84bb-dc1d9f6230b0",
+    "title": "石神のぞみを信じる",
+    "profile_id": "09a6cf78-acc5-48f9-b170-300b455e4500",
+    "is_public": true,
+    "status": "not_started",
+    "created_at": "2025-06-10 09:11:49.211+00"
+  },
+  {
+    "id": "69702809-24dd-4823-bf93-4d045abae8b7",
+    "title": "サンプル",
+    "profile_id": "35920cbb-de35-4fa9-bf15-50b0383e6c5b",
+    "is_public": true,
+    "status": "not_started",
+    "created_at": "2025-06-10 08:49:44.194+00"
+  },
+  {
+    "id": "191bb6da-ee3a-47f3-a99d-c9b0fe108ad7",
+    "title": "九州に行く",
+    "profile_id": "35920cbb-de35-4fa9-bf15-50b0383e6c5b",
+    "is_public": true,
+    "status": "not_started",
+    "created_at": "2025-06-10 00:07:15.844+00"
+  },
+  {
+    "id": "64e87f17-5bcb-4a61-98e1-ae9e25a4c33e",
+    "title": "蛇を食べる",
+    "profile_id": "35920cbb-de35-4fa9-bf15-50b0383e6c5b",
+    "is_public": true,
+    "status": "not_started",
+    "created_at": "2025-06-09 14:25:28.86+00"
+  },
+  {
+    "id": "8150653f-98fd-41fd-9968-94eb19e8fee4",
+    "title": "猫を飼う",
+    "profile_id": "c8bcb44f-d721-4b98-9f12-19cc84bcfa9b",
+    "is_public": true,
+    "status": "not_started",
+    "created_at": "2025-06-09 14:20:12.302+00"
+  },
+  {
+    "id": "dfb46a09-ea76-47c3-b52a-c91f2b8fa0e7",
+    "title": "一軒家を建てる",
+    "profile_id": "c8bcb44f-d721-4b98-9f12-19cc84bcfa9b",
+    "is_public": true,
+    "status": "not_started",
+    "created_at": "2025-06-09 14:19:34.555+00"
+  },
+  {
+    "id": "f700ea95-1f09-4522-9ff3-3d32a95ac421",
+    "title": "SNSをやめる",
+    "profile_id": "35920cbb-de35-4fa9-bf15-50b0383e6c5b",
+    "is_public": true,
+    "status": "in_progress",
+    "created_at": "2025-06-09 13:49:35.152+00"
+  },
+  {
+    "id": "b882d23f-eb7d-4ab6-bc84-6867c17edeb7",
+    "title": "蛙を食べる",
+    "profile_id": "35920cbb-de35-4fa9-bf15-50b0383e6c5b",
+    "is_public": true,
+    "status": "not_started",
+    "created_at": "2025-06-09 13:44:48.502+00"
+  },
+  {
+    "id": "6c5b3468-6780-43dc-a3c1-8524e7c37c09",
+    "title": "周央サンゴを信じる",
+    "profile_id": "09a6cf78-acc5-48f9-b170-300b455e4500",
+    "is_public": true,
+    "status": "completed",
+    "created_at": "2025-06-09 13:34:33.233+00"
+  }
+]
+
+ -- プロファイル確認
+[
+  {
+    "id": "35920cbb-de35-4fa9-bf15-50b0383e6c5b",
+    "display_name": null,
+    "full_name": null,
+    "created_at": "2025-06-07 17:46:09.801879+00"
+  },
+  {
+    "id": "09a6cf78-acc5-48f9-b170-300b455e4500",
+    "display_name": null,
+    "full_name": null,
+    "created_at": "2025-06-09 12:09:35.913717+00"
+  },
+  {
+    "id": "c8bcb44f-d721-4b98-9f12-19cc84bcfa9b",
+    "display_name": null,
+    "full_name": null,
+    "created_at": "2025-06-09 14:18:12.300004+00"
+  },
+  {
+    "id": "1d9c3323-650a-4f5b-9362-b78f93bce8e6",
+    "display_name": null,
+    "full_name": null,
+    "created_at": "2025-06-10 00:12:36.591498+00"
+  }
+]
+
+-- 一覧表示したときのログ
+GoTrueClient@0 (2.69.1) 2025-06-10T09:21:38.655Z #getSession() session from storage null
+GoTrueClient@0 (2.69.1) 2025-06-10T09:21:38.655Z #__loadSession() end
+GoTrueClient@0 (2.69.1) 2025-06-10T09:21:38.655Z #_useSession end
+GoTrueClient@0 (2.69.1) 2025-06-10T09:21:38.655Z #_acquireLock lock released for storage key sb-tnnqpkbiekknhiquyztz-auth-token
+GoTrueClient@0 (2.69.1) 2025-06-10T09:21:38.656Z #_acquireLock end
+Bucket list loader results: {
+  bucketItemsCount: 0,
+  categoriesCount: 9,
+  stats: {
+    profile_id: '1d9c3323-650a-4f5b-9362-b78f93bce8e6',
+    display_name: null,
+    total_items: 2,
+    completed_items: 0,
+    in_progress_items: 1,
+    not_started_items: 1,
+    completion_rate: 0
+  },
+  filters: {
+    search: undefined,
+    category_id: undefined,
+    priority: null,
+    status: null
+  },
+  userId: '1d9c3323-650a-4f5b-9362-b78f93bce8e6'
+}

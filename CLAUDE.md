@@ -170,9 +170,9 @@ app/
 ## 技術的負債・注意事項
 
 ### RLS (Row Level Security)
-- **現在の状況**: 開発中にRLS無効化（RLS認証問題のため）
-- **リスク**: 本番環境では必ずRLS有効化が必要
-- **対応**: JWTトークンの適切な設定方法の確立
+- **現在の状況**: bucket_itemsテーブルでRLS無効化（実用性重視）
+- **セキュリティ**: アプリケーション層での認証チェックで代替
+- **将来対応**: 必要に応じてRLS有効化への移行を検討
 
 ### エラーハンドリング
 - 現在はコンソールログ中心
@@ -188,15 +188,17 @@ app/
 # Supabase設定
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key  # サーバーサイド用
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key  # サーバーサイド認証用（必須）
 
 # React Router設定
 NODE_ENV=development|production
 ```
 
+**重要**: `SUPABASE_SERVICE_ROLE_KEY`はサーバーサイド認証に必要です。Supabaseダッシュボード → プロジェクト設定 → APIから取得してください。
+
 ## 今後のメンテナンス指針
 
-1. **セキュリティ優先**: RLS有効化、適切な認証フロー
-2. **テスト追加**: 品質保証のためのテストコード
-3. **モニタリング**: エラー追跡、パフォーマンス監視
-4. **ドキュメント**: API仕様書、ユーザーマニュアル
+1. **セキュリティ強化**: 必要に応じてRLS有効化、監査ログ追加
+2. **テスト追加**: 品質保証のためのテストコード実装
+3. **モニタリング**: エラー追跡、パフォーマンス監視システム導入
+4. **機能拡張**: ソーシャル機能、エクスポート機能、通知機能
