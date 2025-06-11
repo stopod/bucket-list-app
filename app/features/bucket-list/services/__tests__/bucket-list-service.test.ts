@@ -82,10 +82,15 @@ describe('BucketListService', () => {
 
       const createdItem: BucketItem = {
         id: '1',
-        ...newItem,
+        title: 'New Item',
         description: null,
+        profile_id: 'user-1',
+        category_id: 1,
+        priority: 'high',
+        status: 'not_started',
         due_date: null,
         due_type: null,
+        is_public: false,
         completed_at: null,
         completion_comment: null,
         created_at: '2024-01-01T00:00:00Z',

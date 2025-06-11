@@ -1,22 +1,23 @@
-import type { Category } from "~/features/bucket-list/types";
-
-interface CategoryItem {
-  id: string;
-  title: string;
-  status: "not_started" | "in_progress" | "completed";
-  category_id: number;
-}
+import type { Category, BucketItem, CategoryDisplayItem } from "~/features/bucket-list/types";
 
 interface CategoryProgressProps {
   categories: Category[];
-  items: CategoryItem[];
+  items: BucketItem[];  // 完全型を受け取る
   className?: string;
 }
 
 export function CategoryProgress({ categories, items, className = "" }: CategoryProgressProps) {
+  // 内部で必要な変換を実行（型安全性を保持）
+  const displayItems: CategoryDisplayItem[] = items.map(item => ({
+    id: item.id,
+    title: item.title,
+    status: item.status,
+    category_id: item.category_id
+  }))
+
   // カテゴリ別の統計を計算
   const categoryStats = categories.map(category => {
-    const categoryItems = items.filter(item => item.category_id === category.id);
+    const categoryItems = displayItems.filter(item => item.category_id === category.id);
     const totalItems = categoryItems.length;
     const completedItems = categoryItems.filter(item => item.status === 'completed').length;
     const inProgressItems = categoryItems.filter(item => item.status === 'in_progress').length;

@@ -202,12 +202,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
               <AchievementStats stats={stats} />
               <CategoryProgress 
                 categories={categories} 
-                items={bucketItems.map(item => ({
-                  id: item.id,
-                  title: item.title,
-                  status: assertStatus(item.status),
-                  category_id: item.category_id
-                }))} 
+                items={bucketItems} 
               />
             </div>
           )}
