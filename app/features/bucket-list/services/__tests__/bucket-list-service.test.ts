@@ -27,7 +27,7 @@ describe('BucketListService', () => {
   })
 
   describe('getUserBucketItems', () => {
-    it('should return user bucket items from repository', async () => {
+    it('ユーザーIDを指定した場合、そのユーザーのバケットリスト項目が取得できること', async () => {
       const profileId = 'user-1'
       const mockItems: BucketItem[] = [
         {
@@ -56,7 +56,7 @@ describe('BucketListService', () => {
       expect(result).toEqual(mockItems)
     })
 
-    it('should pass filters and sort to repository', async () => {
+    it('フィルターとソート条件を指定した場合、それらの条件がリポジトリに正しく渡されること', async () => {
       const profileId = 'user-1'
       const filters = { status: 'completed' as const }
       const sort = { field: 'created_at' as const, direction: 'desc' as const }
@@ -70,7 +70,7 @@ describe('BucketListService', () => {
   })
 
   describe('createBucketItem', () => {
-    it('should create bucket item through repository', async () => {
+    it('新規項目データを渡した場合、リポジトリ経由で項目が作成されること', async () => {
       const newItem: BucketItemInsert = {
         title: 'New Item',
         profile_id: 'user-1',
@@ -102,7 +102,7 @@ describe('BucketListService', () => {
   })
 
   describe('getBucketItem', () => {
-    it('should return bucket item by id', async () => {
+    it('項目IDを指定した場合、対応するバケットリスト項目が取得できること', async () => {
       const itemId = '1'
       const mockItem: BucketItem = {
         id: itemId,
@@ -129,7 +129,7 @@ describe('BucketListService', () => {
       expect(result).toEqual(mockItem)
     })
 
-    it('should return null when item not found', async () => {
+    it('存在しない項目IDを指定した場合、nullが返されること', async () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(null)
 
       const result = await service.getBucketItem('nonexistent')
@@ -139,7 +139,7 @@ describe('BucketListService', () => {
   })
 
   describe('getCategories', () => {
-    it('should return all categories', async () => {
+    it('カテゴリ一覧を要求した場合、全てのカテゴリが取得できること', async () => {
       const mockCategories: Category[] = [
         { id: 1, name: 'Travel', color: 'blue', created_at: '2024-01-01T00:00:00Z' },
         { id: 2, name: 'Learning', color: 'green', created_at: '2024-01-01T00:00:00Z' },
@@ -155,7 +155,7 @@ describe('BucketListService', () => {
   })
 
   describe('getUserStats', () => {
-    it('should return user statistics', async () => {
+    it('ユーザーIDを指定した場合、そのユーザーの統計情報が取得できること', async () => {
       const profileId = 'user-1'
       const mockStats: UserBucketStats = {
         profile_id: profileId,
@@ -175,7 +175,7 @@ describe('BucketListService', () => {
       expect(result).toEqual(mockStats)
     })
 
-    it('should return null when no stats available', async () => {
+    it('統計情報が存在しないユーザーIDを指定した場合、nullが返されること', async () => {
       const profileId = 'user-1'
 
       vi.mocked(mockRepository.getUserStats).mockResolvedValue(null)
@@ -187,7 +187,7 @@ describe('BucketListService', () => {
   })
 
   describe('getPublicBucketItems', () => {
-    it('should return public bucket items', async () => {
+    it('公開リスト要求時、公開設定されたバケットリスト項目のみが取得できること', async () => {
       const mockPublicItems: BucketItem[] = [
         {
           id: '1',

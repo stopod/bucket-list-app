@@ -62,28 +62,28 @@ describe('CategoryProgress', () => {
     },
   ]
 
-  it('should render category name and progress correctly', () => {
+  it('カテゴリと項目データを渡した場合、カテゴリ名と進捗情報が正しく表示されること', () => {
     render(<CategoryProgress categories={mockCategories} items={mockItems} />)
 
     expect(screen.getByRole('heading', { name: 'カテゴリ別達成状況' })).toBeInTheDocument()
     expect(screen.getByText('1/3')).toBeInTheDocument()
   })
 
-  it('should display correct completion percentage', () => {
+  it('一部完了項目を含むデータの場合、正しい割合で達成率が表示されること', () => {
     render(<CategoryProgress categories={mockCategories} items={mockItems} />)
 
     // 1 completed out of 3 items = 33.33%
     expect(screen.getByText('33%')).toBeInTheDocument()
   })
 
-  it('should handle empty items array', () => {
+  it('空の項目配列を渡した場合、コンポーネントが非表示となること', () => {
     const result = render(<CategoryProgress categories={mockCategories} items={[]} />)
 
     // Should render nothing when no items
     expect(result.container.firstChild).toBeNull()
   })
 
-  it('should handle all completed items', () => {
+  it('全て完了済みの項目データの場合、100%達成と表示されること', () => {
     const allCompletedItems = mockItems.map(item => ({
       ...item,
       status: 'completed' as const,
@@ -95,7 +95,7 @@ describe('CategoryProgress', () => {
     expect(screen.getByText('100%')).toBeInTheDocument()
   })
 
-  it('should display category title and progress', () => {
+  it('カテゴリデータを渡した場合、タイトルとカテゴリ名が表示されること', () => {
     render(<CategoryProgress categories={mockCategories} items={mockItems} />)
 
     expect(screen.getByText('カテゴリ別達成状況')).toBeInTheDocument()

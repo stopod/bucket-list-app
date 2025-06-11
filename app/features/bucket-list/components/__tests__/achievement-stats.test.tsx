@@ -14,7 +14,7 @@ describe('AchievementStats', () => {
     completion_rate: 30,
   }
 
-  it('should render achievement statistics correctly', () => {
+  it('有効な統計データを渡した場合、達成状況が正しく表示されること', () => {
     render(<AchievementStats stats={mockStats} />)
 
     expect(screen.getByText('達成状況')).toBeInTheDocument()
@@ -23,7 +23,7 @@ describe('AchievementStats', () => {
     expect(screen.getByText('3')).toBeInTheDocument() // completed items
   })
 
-  it('should handle missing stats gracefully', () => {
+  it('空の統計データを渡した場合、0%表示で適切に処理されること', () => {
     const emptyStats: UserBucketStats = {
       profile_id: 'test-user',
       display_name: 'Test User',
@@ -41,7 +41,7 @@ describe('AchievementStats', () => {
     expect(screen.getAllByText('0')).toHaveLength(4) // should show 0 for all stats
   })
 
-  it('should display completion rate with correct formatting', () => {
+  it('小数点を含む達成率の場合、正しい形式でパーセント表示されること', () => {
     const statsWithHighCompletion: UserBucketStats = {
       ...mockStats,
       completion_rate: 85.5,
@@ -52,7 +52,7 @@ describe('AchievementStats', () => {
     expect(screen.getByText('85.5%')).toBeInTheDocument()
   })
 
-  it('should show correct labels for different stats', () => {
+  it('統計情報を渡した場合、各カテゴリのラベルが正しく表示されること', () => {
     render(<AchievementStats stats={mockStats} />)
 
     expect(screen.getByText('総項目数')).toBeInTheDocument()
