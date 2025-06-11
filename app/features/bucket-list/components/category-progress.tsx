@@ -1,4 +1,4 @@
-import type { Category } from "../types";
+import type { Category } from "~/features/bucket-list/types";
 
 interface CategoryItem {
   id: string;
