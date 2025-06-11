@@ -1,4 +1,4 @@
-import type { BucketListRepository } from "../repositories";
+import type { BucketListRepository } from "~/features/bucket-list/repositories";
 import type { 
   BucketItem, 
   BucketItemInsert, 
@@ -7,7 +7,7 @@ import type {
   UserBucketStats,
   BucketListFilters,
   BucketListSort
-} from "../types";
+} from "~/features/bucket-list/types";
 
 // サービス層：ビジネスロジックを含む高レベルの操作
 export class BucketListService {

@@ -8,7 +8,7 @@ import type {
   UserBucketStats,
   BucketListFilters,
   BucketListSort
-} from "../types";
+} from "~/features/bucket-list/types";
 import type { 
   BucketListRepository,
   RepositoryResult

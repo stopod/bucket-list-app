@@ -6,7 +6,7 @@ import type {
   UserBucketStats,
   BucketListFilters,
   BucketListSort
-} from "../types";
+} from "~/features/bucket-list/types";
 
 // Repository インターフェース
 export interface BucketListRepository {
