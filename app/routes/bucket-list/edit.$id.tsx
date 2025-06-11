@@ -5,6 +5,7 @@ import { getServerAuth, createAuthenticatedSupabaseClient } from "~/lib/auth-ser
 import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { BucketItemForm } from "~/features/bucket-list/components/bucket-item-form";
 import type { BucketItemFormData, BucketItem } from "~/features/bucket-list/types";
+import { assertPriority, assertStatus, assertDueType } from "~/features/bucket-list/types";
 
 export function meta() {
   return [{ title: "やりたいことを編集" }];
@@ -170,10 +171,10 @@ export default function EditBucketItemPage({
             title: item.title,
             description: item.description || undefined,
             category_id: item.category_id,
-            priority: item.priority,
-            status: item.status,
+            priority: assertPriority(item.priority),
+            status: assertStatus(item.status),
             due_date: item.due_date || undefined,
-            due_type: item.due_type || "unspecified",
+            due_type: assertDueType(item.due_type || "unspecified"),
             is_public: item.is_public,
           }}
         />

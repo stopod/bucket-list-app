@@ -205,7 +205,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                 items={bucketItems.map(item => ({
                   id: item.id,
                   title: item.title,
-                  status: item.status,
+                  status: assertStatus(item.status),
                   category_id: item.category_id
                 }))} 
               />
