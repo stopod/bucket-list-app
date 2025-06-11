@@ -4,12 +4,12 @@ import { CategoryProgress } from '../category-progress'
 import type { Category, BucketItem } from '~/features/bucket-list/types'
 
 describe('CategoryProgress', () => {
-  const mockCategory: Category = {
+  const mockCategories: Category[] = [{
     id: 1,
     name: 'Travel',
     color: 'blue',
     created_at: '2024-01-01T00:00:00Z',
-  }
+  }]
 
   const mockItems: BucketItem[] = [
     {
@@ -63,25 +63,24 @@ describe('CategoryProgress', () => {
   ]
 
   it('should render category name and progress correctly', () => {
-    render(<CategoryProgress category={mockCategory} items={mockItems} />)
+    render(<CategoryProgress categories={mockCategories} items={mockItems} />)
 
-    expect(screen.getByText('Travel')).toBeInTheDocument()
-    expect(screen.getByText('1/3 完了')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'カテゴリ別達成状況' })).toBeInTheDocument()
+    expect(screen.getByText('1/3')).toBeInTheDocument()
   })
 
   it('should display correct completion percentage', () => {
-    render(<CategoryProgress category={mockCategory} items={mockItems} />)
+    render(<CategoryProgress categories={mockCategories} items={mockItems} />)
 
     // 1 completed out of 3 items = 33.33%
     expect(screen.getByText('33%')).toBeInTheDocument()
   })
 
   it('should handle empty items array', () => {
-    render(<CategoryProgress category={mockCategory} items={[]} />)
+    const result = render(<CategoryProgress categories={mockCategories} items={[]} />)
 
-    expect(screen.getByText('Travel')).toBeInTheDocument()
-    expect(screen.getByText('0/0 完了')).toBeInTheDocument()
-    expect(screen.getByText('0%')).toBeInTheDocument()
+    // Should render nothing when no items
+    expect(result.container.firstChild).toBeNull()
   })
 
   it('should handle all completed items', () => {
@@ -90,19 +89,16 @@ describe('CategoryProgress', () => {
       status: 'completed' as const,
     }))
 
-    render(<CategoryProgress category={mockCategory} items={allCompletedItems} />)
+    render(<CategoryProgress categories={mockCategories} items={allCompletedItems} />)
 
-    expect(screen.getByText('3/3 完了')).toBeInTheDocument()
+    expect(screen.getByText('3/3')).toBeInTheDocument()
     expect(screen.getByText('100%')).toBeInTheDocument()
   })
 
-  it('should display progress bar with correct accessibility', () => {
-    render(<CategoryProgress category={mockCategory} items={mockItems} />)
+  it('should display category title and progress', () => {
+    render(<CategoryProgress categories={mockCategories} items={mockItems} />)
 
-    const progressBar = screen.getByRole('progressbar')
-    expect(progressBar).toBeInTheDocument()
-    expect(progressBar).toHaveAttribute('aria-valuenow', '33')
-    expect(progressBar).toHaveAttribute('aria-valuemin', '0')
-    expect(progressBar).toHaveAttribute('aria-valuemax', '100')
+    expect(screen.getByText('カテゴリ別達成状況')).toBeInTheDocument()
+    expect(screen.getAllByText('Travel')).toHaveLength(2) // appears in category name and highlight
   })
 })
