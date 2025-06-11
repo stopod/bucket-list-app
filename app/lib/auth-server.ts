@@ -287,7 +287,7 @@ export async function createAuthenticatedSupabaseClient(authResult: ServerAuthRe
       global: {
         headers: {
           // Add user context for application-level security
-          'X-User-ID': authResult.user.id,
+          'X-User-ID': authResult.user?.id || '',
         },
       },
     }

@@ -13,22 +13,25 @@ export type Status = "not_started" | "in_progress" | "completed";
 export type DueType = "specific_date" | "this_year" | "next_year" | "unspecified";
 
 // データベース型との整合性を保つためのアサーション関数
-export function assertPriority(priority: string): asserts priority is Priority {
+export function assertPriority(priority: string): Priority {
   if (!["high", "medium", "low"].includes(priority)) {
     throw new Error(`Invalid priority: ${priority}`);
   }
+  return priority as Priority;
 }
 
-export function assertStatus(status: string): asserts status is Status {
+export function assertStatus(status: string): Status {
   if (!["not_started", "in_progress", "completed"].includes(status)) {
     throw new Error(`Invalid status: ${status}`);
   }
+  return status as Status;
 }
 
-export function assertDueType(dueType: string): asserts dueType is DueType {
+export function assertDueType(dueType: string): DueType {
   if (!["specific_date", "this_year", "next_year", "unspecified"].includes(dueType)) {
     throw new Error(`Invalid due type: ${dueType}`);
   }
+  return dueType as DueType;
 }
 
 // UIで使用するための拡張型

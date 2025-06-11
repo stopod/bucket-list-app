@@ -95,7 +95,7 @@ export function AchievementStats({ stats, className = "" }: AchievementStatsProp
       </div>
 
       {/* 次のステップの提案 */}
-      {stats.not_started_items > 0 && (
+      {(stats.not_started_items ?? 0) > 0 && (
         <div className="mt-4 p-4 bg-purple-50 rounded-lg">
           <h3 className="text-sm font-medium text-purple-900 mb-2">💡 次のステップ</h3>
           <p className="text-sm text-purple-800">
@@ -105,7 +105,7 @@ export function AchievementStats({ stats, className = "" }: AchievementStatsProp
       )}
 
       {/* 達成を祝福するメッセージ */}
-      {stats.completed_items > 0 && completionRate >= 50 && (
+      {(stats.completed_items ?? 0) > 0 && completionRate >= 50 && (
         <div className="mt-4 p-4 bg-green-50 rounded-lg">
           <h3 className="text-sm font-medium text-green-900 mb-2">🎉 おめでとうございます！</h3>
           <p className="text-sm text-green-800">

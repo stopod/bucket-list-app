@@ -6,6 +6,7 @@ import { createBucketListService } from "~/features/bucket-list/lib/repository-f
 import { Button } from "~/components/ui/button";
 import { AchievementStats } from "~/features/bucket-list/components/achievement-stats";
 import { CategoryProgress } from "~/features/bucket-list/components/category-progress";
+import { assertStatus } from "~/features/bucket-list/types";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "ダッシュボード - やりたいこと一覧" }];
@@ -105,7 +106,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
                 items={bucketItems.map(item => ({
                   id: item.id,
                   title: item.title,
-                  status: item.status,
+                  status: assertStatus(item.status),
                   category_id: item.category_id
                 }))} 
               />
