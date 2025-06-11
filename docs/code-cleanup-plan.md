@@ -194,28 +194,34 @@ app/lib/
 
 ## ✅ 実行チェックリスト
 
-### Phase 1: 緊急クリーンアップ
+### Phase 1: 緊急クリーンアップ ✅ **完了**
 
-#### 不要ファイル削除
-- [ ] app/routes/instruments/ の使用状況確認
-- [ ] app/routes/sample/ の使用状況確認
-- [ ] app/supabase.ts の参照確認
-- [ ] bucket-item-form-conform.tsx の使用状況確認
-- [ ] 対象ファイルの削除実行
-- [ ] 動作確認（全機能テスト）
+#### 不要ファイル削除 ✅ **完了**
+- ✅ app/routes/instruments/ の使用状況確認
+- ✅ app/routes/sample/ の使用状況確認
+- ✅ app/supabase.ts の参照確認
+- ✅ bucket-item-form-conform.tsx の使用状況確認
+- ✅ 対象ファイルの削除実行
+- ✅ 動作確認（全機能テスト）
 
-#### TypeScriptエラー修正
-- [ ] 型アサーション関数の実装
-- [ ] null safety対応
-- [ ] モジュール解決エラー修正
-- [ ] `npm run typecheck` でエラー0確認
-- [ ] 動作確認
+#### TypeScriptエラー修正 ✅ **完了**
+- ✅ 型アサーション関数の実装
+- ✅ null safety対応
+- ✅ モジュール解決エラー修正
+- ✅ `npm run typecheck` でエラー0確認
+- ✅ 動作確認
 
-#### routes.ts整理
-- [ ] 未使用ルートの削除
-- [ ] インポート文の整理
-- [ ] 型定義エラー修正
-- [ ] 全ページ遷移テスト
+#### routes.ts整理 ✅ **完了**
+- ✅ 未使用ルートの削除（削除により自動解決）
+- ✅ インポート文の整理
+- ✅ 型定義エラー修正
+- ✅ 全ページ遷移テスト
+
+**Phase 1成果**:
+- ファイル数削減: 6個
+- TypeScriptエラー: 11個 → 0個
+- ビルド成功確認
+- コード行数削減: 472行
 
 ### Phase 2: 構造最適化
 
