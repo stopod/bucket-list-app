@@ -37,7 +37,7 @@ export function AuthenticatedLayout({
       // ログアウト成功後、ログインページにリダイレクト
       navigate("/login");
     } catch (error) {
-      console.error('Sign out failed:', error);
+      console.error("Sign out failed:", error);
     } finally {
       setIsSigningOut(false);
     }
@@ -58,7 +58,7 @@ export function AuthenticatedLayout({
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Link to="/">
-                <h1 className="text-xl font-semibold">Bucket List App</h1>
+                <h1 className="text-xl font-semibold">人生でやりたいこと</h1>
               </Link>
             </div>
             <div className="flex items-center space-x-4">
@@ -72,20 +72,26 @@ export function AuthenticatedLayout({
                 <span className="text-gray-500">認証情報を取得中...</span>
               )}
               <Link to="/dashboard">
-                <Button variant="outline" size="sm">ダッシュボード</Button>
+                <Button variant="outline" size="sm">
+                  ダッシュボード
+                </Button>
               </Link>
               <Link to="/bucket-list">
-                <Button variant="outline" size="sm">やりたいこと一覧</Button>
+                <Button variant="outline" size="sm">
+                  やりたいこと一覧
+                </Button>
               </Link>
               <Link to="/public">
-                <Button variant="outline" size="sm">みんなのやりたいこと</Button>
+                <Button variant="outline" size="sm">
+                  みんなのやりたいこと
+                </Button>
               </Link>
-              <Button 
-                onClick={handleSignOut} 
+              <Button
+                onClick={handleSignOut}
                 variant="outline"
                 disabled={isSigningOut || loading}
               >
-                {isSigningOut ? 'ログアウト中...' : 'ログアウト'}
+                {isSigningOut ? "ログアウト中..." : "ログアウト"}
               </Button>
             </div>
           </div>
