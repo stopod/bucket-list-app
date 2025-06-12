@@ -161,7 +161,7 @@ export default function EditBucketItemPage({
 
   return (
     <AuthenticatedLayout title="やりたいことを編集">
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 pb-12 max-w-2xl">
         <BucketItemForm
           categories={categories}
           onSubmit={handleSubmit}
