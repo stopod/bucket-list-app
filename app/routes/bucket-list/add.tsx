@@ -172,7 +172,7 @@ export default function AddBucketItemPage({ loaderData }: { loaderData: { catego
 
   return (
     <AuthenticatedLayout title="やりたいことを追加">
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 pb-12 max-w-2xl">
         <BucketItemForm
           categories={categories}
           onSubmit={handleSubmit}

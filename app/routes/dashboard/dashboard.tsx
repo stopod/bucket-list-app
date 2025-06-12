@@ -72,7 +72,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
 
   return (
     <AuthenticatedLayout title="ダッシュボード">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-12">
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
             <div>
