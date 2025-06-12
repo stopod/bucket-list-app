@@ -38,6 +38,28 @@ export class SupabaseBucketListRepository implements BucketListRepository {
   }
 
   async findAllWithCategory(filters?: BucketListFilters, sort?: BucketListSort): Promise<(BucketItem & { category: Category })[]> {
+    // まず総データ数を確認
+    const { count: totalCount } = await this.supabase
+      .from("bucket_items")
+      .select("*", { count: "exact" });
+    
+    console.log("Total bucket_items count in database:", totalCount);
+    
+    // profile_idでフィルターしない場合の件数も確認
+    let testQuery = this.supabase
+      .from("bucket_items")
+      .select(`
+        *,
+        category:categories(*)
+      `);
+    
+    const { data: allData, error: allError } = await testQuery;
+    console.log("All items without profile filter:", { 
+      count: allData?.length || 0, 
+      error: allError?.message 
+    });
+    
+    // 実際のフィルター付きクエリ
     let query = this.supabase
       .from("bucket_items")
       .select(`
@@ -45,10 +67,18 @@ export class SupabaseBucketListRepository implements BucketListRepository {
         category:categories(*)
       `);
     
+    console.log("findAllWithCategory filters:", filters);
+    
     query = this.applyFilters(query, filters);
     query = this.applySort(query, sort);
 
     const { data, error } = await query;
+    
+    console.log("findAllWithCategory result:", { 
+      dataCount: data?.length || 0, 
+      error: error?.message,
+      sampleData: data?.slice(0, 2)
+    });
     
     if (error) {
       throw new BucketListRepositoryError(`Failed to fetch bucket items with categories: ${error.message}`, error.code);
@@ -211,12 +241,16 @@ export class SupabaseBucketListRepository implements BucketListRepository {
 
   // プライベートヘルパーメソッド
   private applyFilters(query: any, filters?: BucketListFilters) {
+    console.log("applyFilters called with:", filters);
+    
     if (!filters) return query;
 
     if (filters.profile_id) {
+      console.log("Applying profile_id filter:", filters.profile_id);
       query = query.eq("profile_id", filters.profile_id);
     }
     if (filters.category_id) {
+      console.log("Applying category_id filter:", filters.category_id);
       query = query.eq("category_id", filters.category_id);
     }
     if (filters.priority) {

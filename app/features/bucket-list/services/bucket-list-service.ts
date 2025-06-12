@@ -25,8 +25,13 @@ export class BucketListService {
       profile_id: profileId
     };
     
+    console.log("getUserBucketItemsWithCategory called with:", { profileId, userFilters });
+    
     // Repositoryでフィルタリングを実行
     const allItems = await this.repository.findAllWithCategory(userFilters, sort);
+    
+    console.log("getUserBucketItemsWithCategory result:", allItems.length);
+    
     return allItems;
   }
 

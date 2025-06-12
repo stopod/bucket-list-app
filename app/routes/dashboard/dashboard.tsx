@@ -16,7 +16,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   try {
     // SSR-compatible authentication check
     const authResult = await getServerAuth(request);
-    
+
     // 認証されていない場合はリダイレクト
     if (!authResult.isAuthenticated) {
       throw new Response(null, {
@@ -29,24 +29,36 @@ export async function loader({ request }: Route.LoaderArgs) {
     const bucketListService = await createBucketListService();
 
     // ダッシュボードデータを取得
-    const dashboardData = await bucketListService.getDashboardData(authResult.user!.id);
+    const dashboardData = await bucketListService.getDashboardData(
+      authResult.user!.id,
+    );
+    console.log("Dashboard data items count:", dashboardData.items.length);
+    console.log("User ID:", authResult.user!.id);
+    console.log("Sample items:", dashboardData.items.slice(0, 3));
 
     // 最近完了した項目（直近5件）
     const recentCompletedItems = dashboardData.items
-      .filter(item => item.status === 'completed' && item.completed_at)
-      .sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime())
+      .filter((item) => item.status === "completed" && item.completed_at)
+      .sort(
+        (a, b) =>
+          new Date(b.completed_at!).getTime() -
+          new Date(a.completed_at!).getTime(),
+      )
       .slice(0, 5);
 
     // 期限が近い項目（今後30日以内）
     const upcomingItems = dashboardData.items
-      .filter(item => {
-        if (!item.due_date || item.status === 'completed') return false;
+      .filter((item) => {
+        if (!item.due_date || item.status === "completed") return false;
         const dueDate = new Date(item.due_date);
         const thirtyDaysFromNow = new Date();
         thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
         return dueDate <= thirtyDaysFromNow && dueDate >= new Date();
       })
-      .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
+      .sort(
+        (a, b) =>
+          new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime(),
+      )
       .slice(0, 5);
 
     return {
@@ -56,7 +68,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       itemsByCategory: dashboardData.itemsByCategory,
       recentCompletedItems,
       upcomingItems,
-      user: authResult.user
+      user: authResult.user,
     };
   } catch (error) {
     if (error instanceof Response) {
@@ -68,7 +80,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function DashboardPage({ loaderData }: Route.ComponentProps) {
-  const { bucketItems, categories, stats, recentCompletedItems, upcomingItems } = loaderData;
+  const {
+    bucketItems,
+    categories,
+    stats,
+    recentCompletedItems,
+    upcomingItems,
+  } = loaderData;
 
   return (
     <AuthenticatedLayout title="ダッシュボード">
@@ -85,14 +103,10 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
             </div>
             <div className="space-x-2">
               <Link to="/bucket-list/add">
-                <Button>
-                  + 新しく追加
-                </Button>
+                <Button>+ 新しく追加</Button>
               </Link>
               <Link to="/bucket-list">
-                <Button variant="outline">
-                  やりたいこと一覧
-                </Button>
+                <Button variant="outline">やりたいこと一覧</Button>
               </Link>
             </div>
           </div>
@@ -101,10 +115,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
           {stats && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               <AchievementStats stats={stats} />
-              <CategoryProgress 
-                categories={categories} 
-                items={bucketItems} 
-              />
+              <CategoryProgress categories={categories} items={bucketItems} />
             </div>
           )}
 
@@ -112,23 +123,36 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* 最近完了した項目 */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">🎉 最近の達成</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                🎉 最近の達成
+              </h2>
               {recentCompletedItems.length > 0 ? (
                 <div className="space-y-3">
                   {recentCompletedItems.map((item) => {
-                    const category = categories.find(cat => cat.id === item.category_id);
+                    const category = categories.find(
+                      (cat) => cat.id === item.category_id,
+                    );
                     return (
-                      <div key={item.id} className="border border-green-200 rounded-lg p-3 bg-green-50">
+                      <div
+                        key={item.id}
+                        className="border border-green-200 rounded-lg p-3 bg-green-50"
+                      >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
-                            <div 
+                            <div
                               className="w-3 h-3 rounded-full mr-2"
-                              style={{ backgroundColor: category?.color || '#666' }}
+                              style={{
+                                backgroundColor: category?.color || "#666",
+                              }}
                             ></div>
-                            <h3 className="font-medium text-gray-900">{item.title}</h3>
+                            <h3 className="font-medium text-gray-900">
+                              {item.title}
+                            </h3>
                           </div>
                           <span className="text-xs text-green-600">
-                            {new Date(item.completed_at!).toLocaleDateString('ja-JP')}
+                            {new Date(item.completed_at!).toLocaleDateString(
+                              "ja-JP",
+                            )}
                           </span>
                         </div>
                         {item.completion_comment && (
@@ -142,7 +166,8 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
                 </div>
               ) : (
                 <p className="text-gray-500 text-center py-4">
-                  まだ完了した項目がありません。<br/>
+                  まだ完了した項目がありません。
+                  <br />
                   最初の目標を達成してみましょう！
                 </p>
               )}
@@ -150,31 +175,48 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
 
             {/* 期限が近い項目 */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">⏰ 期限が近い項目</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                ⏰ 期限が近い項目
+              </h2>
               {upcomingItems.length > 0 ? (
                 <div className="space-y-3">
                   {upcomingItems.map((item) => {
-                    const category = categories.find(cat => cat.id === item.category_id);
+                    const category = categories.find(
+                      (cat) => cat.id === item.category_id,
+                    );
                     const daysUntilDue = Math.ceil(
-                      (new Date(item.due_date!).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+                      (new Date(item.due_date!).getTime() -
+                        new Date().getTime()) /
+                        (1000 * 60 * 60 * 24),
                     );
                     const isUrgent = daysUntilDue <= 7;
-                    
+
                     return (
-                      <div key={item.id} className={`border rounded-lg p-3 ${
-                        isUrgent ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'
-                      }`}>
+                      <div
+                        key={item.id}
+                        className={`border rounded-lg p-3 ${
+                          isUrgent
+                            ? "border-red-200 bg-red-50"
+                            : "border-yellow-200 bg-yellow-50"
+                        }`}
+                      >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
-                            <div 
+                            <div
                               className="w-3 h-3 rounded-full mr-2"
-                              style={{ backgroundColor: category?.color || '#666' }}
+                              style={{
+                                backgroundColor: category?.color || "#666",
+                              }}
                             ></div>
-                            <h3 className="font-medium text-gray-900">{item.title}</h3>
+                            <h3 className="font-medium text-gray-900">
+                              {item.title}
+                            </h3>
                           </div>
-                          <span className={`text-xs ${
-                            isUrgent ? 'text-red-600' : 'text-yellow-600'
-                          }`}>
+                          <span
+                            className={`text-xs ${
+                              isUrgent ? "text-red-600" : "text-yellow-600"
+                            }`}
+                          >
                             あと{daysUntilDue}日
                           </span>
                         </div>
@@ -191,7 +233,8 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
                 </div>
               ) : (
                 <p className="text-gray-500 text-center py-4">
-                  期限が近い項目はありません。<br/>
+                  期限が近い項目はありません。
+                  <br />
                   新しい目標に期限を設定してみませんか？
                 </p>
               )}
@@ -200,7 +243,9 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
 
           {/* クイックアクション */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">🚀 クイックアクション</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              🚀 クイックアクション
+            </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Link to="/bucket-list/add">
                 <div className="text-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
