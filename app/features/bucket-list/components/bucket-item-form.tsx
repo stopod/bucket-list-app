@@ -64,11 +64,26 @@ export function BucketItemForm({
   };
 
   const handleDueTypeChange = (type: DueType) => {
-    setFormData(prev => ({
-      ...prev,
-      due_type: type,
-      due_date: type === "specific_date" ? prev.due_date : ""
-    }));
+    setFormData(prev => {
+      const newData = { ...prev, due_type: type };
+      
+      // 期限タイプに応じて自動的に日付を設定
+      if (type === "this_year") {
+        // 今年の12月31日を設定
+        newData.due_date = `${new Date().getFullYear()}-12-31`;
+      } else if (type === "next_year") {
+        // 来年の12月31日を設定
+        newData.due_date = `${new Date().getFullYear() + 1}-12-31`;
+      } else if (type === "unspecified") {
+        // 未定の場合は日付をクリア
+        newData.due_date = "";
+      } else if (type === "specific_date") {
+        // 具体的な日付の場合は既存の日付を保持（空の場合はそのまま）
+        newData.due_date = prev.due_date || "";
+      }
+      
+      return newData;
+    });
   };
 
   return (
