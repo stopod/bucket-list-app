@@ -10,6 +10,8 @@ import { Input } from "~/components/ui/input";
 import { DeleteConfirmationDialog } from "~/features/bucket-list/components/delete-confirmation-dialog";
 import { AchievementStats } from "~/features/bucket-list/components/achievement-stats";
 import { CategoryProgress } from "~/features/bucket-list/components/category-progress";
+import { ControlledExpandableText } from "~/features/bucket-list/components/expandable-text";
+import { useExpandableList } from "~/features/bucket-list/hooks/use-expandable-list";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "やりたいこと一覧" }];
@@ -75,6 +77,18 @@ export async function loader({ request }: Route.LoaderArgs) {
 export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   const { bucketItems, categories, stats, itemsByCategory, filters } = loaderData;
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // 展開状態管理
+  const {
+    getCategoryShowCount,
+    isTextExpanded,
+    needsShowMoreButton,
+    getRemainingCount,
+    isCategoryFullyExpanded,
+    expandCategory,
+    collapseCategory,
+    toggleTextExpansion
+  } = useExpandableList();
   
   // 削除確認ダイアログの状態管理
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -295,18 +309,31 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
         {bucketItems.length > 0 ? (
           <div className="space-y-6">
             {/* カテゴリ別にグループ化（サービスレイヤーで処理済み） */}
-            {itemsByCategory.map(({ category, items: categoryItems }) => (
+            {itemsByCategory.map(({ category, items: categoryItems }) => {
+              const categoryId = category.id.toString();
+              const showCount = getCategoryShowCount(categoryId, categoryItems.length);
+              const visibleItems = categoryItems.slice(0, showCount);
+              const hasMore = needsShowMoreButton(categoryId, categoryItems.length);
+              const remainingCount = getRemainingCount(categoryId, categoryItems.length);
+              const isFullyExpanded = isCategoryFullyExpanded(categoryId, categoryItems.length);
+
+              return (
                 <div key={category.id} className="bg-white rounded-lg shadow overflow-hidden">
                   <div 
-                    className="px-6 py-4 border-l-4"
+                    className="px-6 py-4 border-l-4 flex justify-between items-center"
                     style={{ borderLeftColor: category.color }}
                   >
                     <h3 className="text-lg font-semibold text-gray-900">
                       {category.name} ({categoryItems.length})
                     </h3>
+                    {categoryItems.length > 5 && (
+                      <span className="text-sm text-gray-500">
+                        {showCount}件中{categoryItems.length}件を表示
+                      </span>
+                    )}
                   </div>
                   <div className="grid gap-4 p-6 md:grid-cols-2 lg:grid-cols-3">
-                    {categoryItems.map((item) => {
+                    {visibleItems.map((item) => {
                       // 型安全性を確保
                       const priorityDisplay = (() => {
                         try {
@@ -371,9 +398,15 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                         </div>
                         
                         {item.description && (
-                          <p className="text-sm text-gray-600 mb-3">
-                            {item.description}
-                          </p>
+                          <div className="mb-3">
+                            <ControlledExpandableText
+                              text={item.description}
+                              isExpanded={isTextExpanded(item.id)}
+                              onToggle={() => toggleTextExpansion(item.id)}
+                              maxLength={100}
+                              className="text-sm text-gray-600"
+                            />
+                          </div>
                         )}
                         
                         <div className="flex justify-between items-center text-xs text-gray-500">
@@ -439,8 +472,34 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                       );
                     })}
                   </div>
+                  
+                  {/* もっと見る / 折りたたむ ボタン */}
+                  {categoryItems.length > 5 && (
+                    <div className="px-6 pb-4 border-t border-gray-100">
+                      <div className="flex justify-center pt-4">
+                        {hasMore ? (
+                          <Button
+                            variant="outline"
+                            onClick={() => expandCategory(categoryId, 5)}
+                            className="text-sm"
+                          >
+                            もっと見る ({remainingCount}件)
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            onClick={() => collapseCategory(categoryId)}
+                            className="text-sm"
+                          >
+                            折りたたむ
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-12 bg-white rounded-lg shadow">
