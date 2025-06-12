@@ -12,6 +12,7 @@ import { AchievementStats } from "~/features/bucket-list/components/achievement-
 import { CategoryProgress } from "~/features/bucket-list/components/category-progress";
 import { ControlledExpandableText } from "~/features/bucket-list/components/expandable-text";
 import { useExpandableList } from "~/features/bucket-list/hooks/use-expandable-list";
+import { BucketItemDetailDialog } from "~/features/bucket-list/components/bucket-item-detail-dialog";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "やりたいこと一覧" }];
@@ -90,6 +91,15 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
     toggleTextExpansion
   } = useExpandableList();
   
+  // 詳細ダイアログの状態管理
+  const [detailDialog, setDetailDialog] = useState<{
+    isOpen: boolean;
+    item: typeof bucketItems[0] | null;
+  }>({
+    isOpen: false,
+    item: null
+  });
+
   // 削除確認ダイアログの状態管理
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
@@ -115,6 +125,22 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   // フィルターリセット関数
   const resetFilters = () => {
     setSearchParams(new URLSearchParams());
+  };
+
+  // 詳細ダイアログを開く
+  const openDetailDialog = (item: typeof bucketItems[0]) => {
+    setDetailDialog({
+      isOpen: true,
+      item
+    });
+  };
+
+  // 詳細ダイアログを閉じる
+  const closeDetailDialog = () => {
+    setDetailDialog({
+      isOpen: false,
+      item: null
+    });
   };
 
   // 削除確認ダイアログを開く
@@ -379,13 +405,15 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                       return (
                       <div 
                         key={item.id}
-                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer min-h-[120px] flex flex-col"
+                        onClick={() => openDetailDialog(item)}
                       >
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-medium text-gray-900 flex-1">
+                        {/* タイトルとバッジ */}
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="font-medium text-gray-900 flex-1 line-clamp-2">
                             {item.title}
                           </h4>
-                          <div className="flex gap-2 ml-2">
+                          <div className="flex gap-1 ml-2 shrink-0">
                             {/* 優先度バッジ */}
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${priorityColor}`}>
                               {priorityDisplay}
@@ -397,75 +425,36 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                           </div>
                         </div>
                         
-                        {item.description && (
-                          <div className="mb-3">
-                            <ControlledExpandableText
-                              text={item.description}
-                              isExpanded={isTextExpanded(item.id)}
-                              onToggle={() => toggleTextExpansion(item.id)}
-                              maxLength={100}
-                              className="text-sm text-gray-600"
-                            />
-                          </div>
-                        )}
-                        
-                        <div className="flex justify-between items-center text-xs text-gray-500">
-                          <span>
-                            {item.due_date ? `期限: ${item.due_date}` : 
-                             item.due_type === 'this_year' ? '期限: 今年中' :
-                             item.due_type === 'next_year' ? '期限: 来年中' : 
-                             item.due_type === 'unspecified' ? '期限: 未定' :
-                             item.due_type ? `期限: ${item.due_type}` : '期限: 未定'}
-                          </span>
-                          <span className={item.is_public ? 'text-blue-600' : 'text-gray-400'}>
-                            {item.is_public ? '公開' : '非公開'}
-                          </span>
-                        </div>
-                        
-                        {/* ステータス変更・編集・削除 */}
-                        <div className="mt-3 pt-2 border-t border-gray-200">
-                          {/* ステータス変更 */}
-                          <div className="mb-2">
-                            <label className="block text-xs text-gray-600 mb-1">ステータスを変更</label>
-                            <select
-                              value={item.status}
-                              onChange={(e) => handleStatusChange(item.id, e.target.value)}
-                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            >
-                              <option value="not_started">未着手</option>
-                              <option value="in_progress">進行中</option>
-                              <option value="completed">完了</option>
-                            </select>
+                        {/* カテゴリと期限情報 */}
+                        <div className="mt-auto space-y-1 text-xs text-gray-500">
+                          <div className="flex items-center">
+                            <div 
+                              className="w-2 h-2 rounded-full mr-2" 
+                              style={{ backgroundColor: item.category.color }}
+                            ></div>
+                            <span>{item.category.name}</span>
                           </div>
                           
-                          {/* 編集・削除ボタン */}
-                          <div className="flex justify-end space-x-2">
-                            <Link to={`/bucket-list/edit/${item.id}`}>
-                              <Button variant="outline" size="sm">
-                                編集
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openDeleteDialog({ id: item.id, title: item.title })}
-                              className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
-                            >
-                              削除
-                            </Button>
+                          <div className="flex justify-between items-center">
+                            <span>
+                              {item.due_date ? `期限: ${item.due_date}` : 
+                               item.due_type === 'this_year' ? '期限: 今年中' :
+                               item.due_type === 'next_year' ? '期限: 来年中' : 
+                               item.due_type === 'unspecified' ? '期限: 未定' :
+                               item.due_type ? `期限: ${item.due_type}` : '期限: 未定'}
+                            </span>
+                            <span className={item.is_public ? 'text-blue-600' : 'text-gray-400'}>
+                              {item.is_public ? '公開' : '非公開'}
+                            </span>
                           </div>
                         </div>
                         
+                        {/* 達成情報（完了時のみ） */}
                         {item.completed_at && (
                           <div className="mt-2 pt-2 border-t border-gray-200">
                             <p className="text-xs text-green-600">
                               達成日: {new Date(item.completed_at).toLocaleDateString('ja-JP')}
                             </p>
-                            {item.completion_comment && (
-                              <p className="text-xs text-gray-600 mt-1">
-                                {item.completion_comment}
-                              </p>
-                            )}
                           </div>
                         )}
                       </div>
@@ -516,6 +505,17 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
             </Link>
           </div>
         )}
+
+        {/* 詳細ダイアログ */}
+        <BucketItemDetailDialog
+          isOpen={detailDialog.isOpen}
+          onClose={closeDetailDialog}
+          item={detailDialog.item}
+          categories={categories}
+          onDelete={openDeleteDialog}
+          onStatusChange={handleStatusChange}
+          isSubmitting={deleteDialog.isSubmitting}
+        />
 
         {/* 削除確認ダイアログ */}
         <DeleteConfirmationDialog

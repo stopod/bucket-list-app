@@ -8,31 +8,31 @@
 
 **実装・保守に必要な技術情報**
 
-| ドキュメント                                       | 概要                         | 対象読者                 |
-| -------------------------------------------------- | ---------------------------- | ------------------------ |
-| [🏗 アーキテクチャ](./development/architecture.md) | システム設計・構成・パターン | 開発者・アーキテクト     |
-| [🔐 認証システム](./development/authentication.md) | 認証実装・セキュリティ・実例 | 開発者・セキュリティ担当 |
-| [🧪 テスト戦略](./development/testing.md)          | テスト実装・規約・自動化     | 開発者・QA担当           |
-| [🗄️ データベース](./development/database.md)       | DB設計・運用・最適化         | 開発者・DBA              |
+| ドキュメント                                            | 概要                         | 対象読者                 |
+| ------------------------------------------------------- | ---------------------------- | ------------------------ |
+| [🏗 アーキテクチャ](./docs/development/architecture.md) | システム設計・構成・パターン | 開発者・アーキテクト     |
+| [🔐 認証システム](./docs/development/authentication.md) | 認証実装・セキュリティ・実例 | 開発者・セキュリティ担当 |
+| [🧪 テスト戦略](./docs/development/testing.md)          | テスト実装・規約・自動化     | 開発者・QA担当           |
+| [🗄️ データベース](./docs/development/database.md)       | DB設計・運用・最適化         | 開発者・DBA              |
 
 ### 📊 プロジェクト管理
 
 **プロジェクトの進捗・計画・要件**
 
-| ドキュメント                               | 概要                           | 対象読者             |
-| ------------------------------------------ | ------------------------------ | -------------------- |
-| [📋 要件定義](./project/requirements.md)   | 機能要件・非機能要件・仕様     | 全員                 |
-| [📈 プロジェクト状況](./project/status.md) | 進捗・品質指標・次のアクション | PM・開発者           |
-| [🗺️ ロードマップ](./project/roadmap.md)    | 今後の計画・機能拡張予定       | PM・ステークホルダー |
+| ドキュメント                                    | 概要                           | 対象読者             |
+| ----------------------------------------------- | ------------------------------ | -------------------- |
+| [📋 要件定義](./docs/project/requirements.md)   | 機能要件・非機能要件・仕様     | 全員                 |
+| [📈 プロジェクト状況](./docs/project/status.md) | 進捗・品質指標・次のアクション | PM・開発者           |
+| [🗺️ ロードマップ](./docs/project/roadmap.md)    | 今後の計画・機能拡張予定       | PM・ステークホルダー |
 
 ### 📚 アーカイブ・参考資料
 
 **過去の分析・学習コンテンツ**
 
-| ドキュメント                                           | 概要                         | 対象読者             |
-| ------------------------------------------------------ | ---------------------------- | -------------------- |
-| [🔍 クリーンアップ分析](./archive/cleanup-analysis.md) | コード品質分析・改善レポート | 開発者・アーキテクト |
-| [📖 学習コンテンツ](./archive/learning-materials.md)   | 演習・クイズ・教育コンテンツ | 学習者・新規参加者   |
+| ドキュメント                                                | 概要                         | 対象読者             |
+| ----------------------------------------------------------- | ---------------------------- | -------------------- |
+| [🔍 クリーンアップ分析](./docs/archive/cleanup-analysis.md) | コード品質分析・改善レポート | 開発者・アーキテクト |
+| [📖 学習コンテンツ](./docs/archive/learning-materials.md)   | 演習・クイズ・教育コンテンツ | 学習者・新規参加者   |
 
 ## 📝 ドキュメント作成ガイド
 
@@ -40,11 +40,11 @@
 
 新しいドキュメント作成時は、適切なテンプレートを使用してください：
 
-| 用途             | テンプレート                                                   | 使用例                 |
-| ---------------- | -------------------------------------------------------------- | ---------------------- |
-| 機能実装ガイド   | [implementation-guide.md](./templates/implementation-guide.md) | 新機能の実装手順書     |
-| プロジェクト状況 | [project-status.md](./templates/project-status.md)             | 週次・月次進捗レポート |
-| 要件定義         | [requirements.md](./templates/requirements.md)                 | 新機能の要件定義書     |
+| 用途             | テンプレート                                                        | 使用例                 |
+| ---------------- | ------------------------------------------------------------------- | ---------------------- |
+| 機能実装ガイド   | [implementation-guide.md](./docs/templates/implementation-guide.md) | 新機能の実装手順書     |
+| プロジェクト状況 | [project-status.md](./docs/templates/project-status.md)             | 週次・月次進捗レポート |
+| 要件定義         | [requirements.md](./docs/templates/requirements.md)                 | 新機能の要件定義書     |
 
 ### ドキュメント作成規約
 
@@ -82,21 +82,21 @@ templates/      # ドキュメントテンプレート
 
 ### 実装に関する情報
 
-- **新機能開発**: [アーキテクチャ](./development/architecture.md) → [テスト戦略](./development/testing.md)
-- **認証まわり**: [認証システム](./development/authentication.md)
+- **新機能開発**: [アーキテクチャ](./docs/development/architecture.md) → [テスト戦略](./development/testing.md)
+- **認証まわり**: [認証システム](./docs/development/authentication.md)
 - **データベース**: [データベース設計](./development/database.md)
 
 ### プロジェクト情報
 
-- **現在の状況**: [プロジェクト状況](./project/status.md)
-- **何ができる？**: [要件定義](./project/requirements.md)
-- **今後の予定**: [ロードマップ](./project/roadmap.md)
+- **現在の状況**: [プロジェクト状況](./docs/project/status.md)
+- **何ができる？**: [要件定義](./docs/project/requirements.md)
+- **今後の予定**: [ロードマップ](./docs/project/roadmap.md)
 
 ### 困ったときは
 
 - **エラー解決**: 各実装ガイドの「🔧 トラブルシューティング」セクション
-- **コード例**: [認証システム](./development/authentication.md)、[アーキテクチャ](./development/architecture.md)
-- **過去の改善**: [クリーンアップ分析](./archive/cleanup-analysis.md)
+- **コード例**: [認証システム](./docs/development/authentication.md)、[アーキテクチャ](./docs/development/architecture.md)
+- **過去の改善**: [クリーンアップ分析](./docs/archive/cleanup-analysis.md)
 
 ## 🤝 ドキュメント改善
 

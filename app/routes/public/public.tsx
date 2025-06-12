@@ -7,6 +7,7 @@ import { assertPriority, assertStatus } from "~/features/bucket-list/types";
 import { createBucketListService, createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { BucketItemDetailDialog } from "~/features/bucket-list/components/bucket-item-detail-dialog";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "みんなのやりたいこと" }];
@@ -76,6 +77,31 @@ export async function loader({ request }: Route.LoaderArgs) {
 export default function PublicBucketListPage({ loaderData }: Route.ComponentProps) {
   const { publicBucketItems, categories, itemsByCategory, filters } = loaderData;
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // 詳細ダイアログの状態管理
+  const [detailDialog, setDetailDialog] = useState<{
+    isOpen: boolean;
+    item: typeof publicBucketItems[0] | null;
+  }>({
+    isOpen: false,
+    item: null
+  });
+
+  // 詳細ダイアログを開く
+  const openDetailDialog = (item: typeof publicBucketItems[0]) => {
+    setDetailDialog({
+      isOpen: true,
+      item
+    });
+  };
+
+  // 詳細ダイアログを閉じる
+  const closeDetailDialog = () => {
+    setDetailDialog({
+      isOpen: false,
+      item: null
+    });
+  };
 
   // フィルター更新関数
   const updateFilter = (key: string, value: string | undefined) => {
@@ -278,13 +304,15 @@ export default function PublicBucketListPage({ loaderData }: Route.ComponentProp
                       return (
                       <div 
                         key={item.id}
-                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer min-h-[120px] flex flex-col"
+                        onClick={() => openDetailDialog(item)}
                       >
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-medium text-gray-900 flex-1">
+                        {/* タイトルとバッジ */}
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="font-medium text-gray-900 flex-1 line-clamp-2">
                             {item.title}
                           </h4>
-                          <div className="flex gap-2 ml-2">
+                          <div className="flex gap-1 ml-2 shrink-0">
                             {/* 優先度バッジ */}
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${priorityColor}`}>
                               {priorityDisplay}
@@ -296,23 +324,28 @@ export default function PublicBucketListPage({ loaderData }: Route.ComponentProp
                           </div>
                         </div>
                         
-                        {item.description && (
-                          <p className="text-sm text-gray-600 mb-3">
-                            {item.description}
-                          </p>
-                        )}
-                        
-                        <div className="flex justify-between items-center text-xs text-gray-500">
-                          <span>
-                            {item.due_date ? `期限: ${item.due_date}` : 
-                             item.due_type === 'this_year' ? '期限: 今年中' :
-                             item.due_type === 'next_year' ? '期限: 来年中' : 
-                             item.due_type === 'unspecified' ? '期限: 未定' :
-                             item.due_type ? `期限: ${item.due_type}` : '期限: 未定'}
-                          </span>
-                          <span className="text-blue-600">
-                            公開
-                          </span>
+                        {/* カテゴリと期限情報 */}
+                        <div className="mt-auto space-y-1 text-xs text-gray-500">
+                          <div className="flex items-center">
+                            <div 
+                              className="w-2 h-2 rounded-full mr-2" 
+                              style={{ backgroundColor: item.category.color }}
+                            ></div>
+                            <span>{item.category.name}</span>
+                          </div>
+                          
+                          <div className="flex justify-between items-center">
+                            <span>
+                              {item.due_date ? `期限: ${item.due_date}` : 
+                               item.due_type === 'this_year' ? '期限: 今年中' :
+                               item.due_type === 'next_year' ? '期限: 来年中' : 
+                               item.due_type === 'unspecified' ? '期限: 未定' :
+                               item.due_type ? `期限: ${item.due_type}` : '期限: 未定'}
+                            </span>
+                            <span className="text-blue-600">
+                              公開
+                            </span>
+                          </div>
                         </div>
                         
                         {item.completed_at && (
@@ -346,6 +379,18 @@ export default function PublicBucketListPage({ loaderData }: Route.ComponentProp
             </p>
           </div>
         )}
+
+        {/* 詳細ダイアログ（公開リスト用：読み取り専用） */}
+        <BucketItemDetailDialog
+          isOpen={detailDialog.isOpen}
+          onClose={closeDetailDialog}
+          item={detailDialog.item}
+          categories={categories}
+          onDelete={() => {}} // 読み取り専用のため未使用
+          onStatusChange={() => {}} // 読み取り専用のため未使用
+          isSubmitting={false}
+          readOnly={true}
+        />
       </div>
     </AuthenticatedLayout>
   );
