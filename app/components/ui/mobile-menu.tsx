@@ -21,7 +21,7 @@ export function MobileMenu({ user, onSignOut, isSigningOut }: MobileMenuProps) {
       {/* ハンバーガーメニューボタン */}
       <button
         onClick={toggleMenu}
-        className="md:hidden p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
         aria-label="メニューを開く"
       >
         <svg
@@ -46,14 +46,14 @@ export function MobileMenu({ user, onSignOut, isSigningOut }: MobileMenuProps) {
       {/* オーバーレイ */}
       {isOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
           onClick={closeMenu}
         />
       )}
 
       {/* スライドアウトメニュー */}
       <div
-        className={`md:hidden fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 ${
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

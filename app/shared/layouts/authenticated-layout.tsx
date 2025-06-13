@@ -65,49 +65,8 @@ export function AuthenticatedLayout({
               </Link>
             </div>
 
-            {/* デスクトップナビゲーション */}
-            <div className="hidden md:flex items-center space-x-4">
-              {/* ユーザー情報（デスクトップのみ） */}
-              <div className="text-sm text-gray-700">
-                {loading ? (
-                  <span className="text-gray-500">読み込み中...</span>
-                ) : user ? (
-                  <span className="max-w-48 truncate">
-                    こんにちは、{user.email}さん
-                  </span>
-                ) : (
-                  <span className="text-gray-500">認証情報を取得中...</span>
-                )}
-              </div>
-              
-              {/* ナビゲーションボタン */}
-              <Link to="/dashboard">
-                <Button variant="outline" size="sm">
-                  ダッシュボード
-                </Button>
-              </Link>
-              <Link to="/bucket-list">
-                <Button variant="outline" size="sm">
-                  やりたいこと一覧
-                </Button>
-              </Link>
-              <Link to="/public">
-                <Button variant="outline" size="sm">
-                  みんなのやりたいこと
-                </Button>
-              </Link>
-              <Button
-                onClick={handleSignOut}
-                variant="outline"
-                size="sm"
-                disabled={isSigningOut || loading}
-              >
-                {isSigningOut ? "ログアウト中..." : "ログアウト"}
-              </Button>
-            </div>
-
-            {/* モバイルナビゲーション */}
-            <div className="md:hidden flex items-center">
+            {/* ハンバーガーメニュー（全画面サイズ対応） */}
+            <div className="flex items-center">
               <MobileMenu
                 user={user}
                 onSignOut={handleSignOut}

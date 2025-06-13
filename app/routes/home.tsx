@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Route } from "./+types/home";
 import { Link } from "react-router";
-import { Button } from "~/components/ui/button";
+import { Button, MobileMenu } from "~/components/ui";
 import { useAuth } from "~/features/auth";
 import { AppLayout } from "~/shared/layouts";
 
@@ -36,27 +36,11 @@ export default function HomePage() {
   }
 
   const navigationContent = user ? (
-    <>
-      <span className="text-gray-700">
-        こんにちは、{user.email}さん
-      </span>
-      <Link to="/dashboard">
-        <Button variant="outline">ダッシュボード</Button>
-      </Link>
-      <Link to="/bucket-list">
-        <Button variant="outline">やりたいこと一覧</Button>
-      </Link>
-      <Link to="/public">
-        <Button variant="outline">みんなのやりたいこと</Button>
-      </Link>
-      <Button
-        onClick={handleSignOut}
-        variant="outline"
-        disabled={isSigningOut}
-      >
-        {isSigningOut ? "ログアウト中..." : "ログアウト"}
-      </Button>
-    </>
+    <MobileMenu
+      user={user}
+      onSignOut={handleSignOut}
+      isSigningOut={isSigningOut}
+    />
   ) : (
     <>
       <Link to="/login">
