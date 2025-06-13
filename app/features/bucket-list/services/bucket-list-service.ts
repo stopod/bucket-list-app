@@ -1,12 +1,12 @@
 import type { BucketListRepository } from "~/features/bucket-list/repositories";
-import type { 
-  BucketItem, 
-  BucketItemInsert, 
-  BucketItemUpdate, 
-  Category, 
+import type {
+  BucketItem,
+  BucketItemInsert,
+  BucketItemUpdate,
+  Category,
   UserBucketStats,
   BucketListFilters,
-  BucketListSort
+  BucketListSort,
 } from "~/features/bucket-list/types";
 
 // サービス層：ビジネスロジックを含む高レベルの操作
@@ -14,28 +14,38 @@ export class BucketListService {
   constructor(private repository: BucketListRepository) {}
 
   // バケットリスト項目の操作
-  async getUserBucketItems(profileId: string, filters?: BucketListFilters, sort?: BucketListSort) {
+  async getUserBucketItems(
+    profileId: string,
+    filters?: BucketListFilters,
+    sort?: BucketListSort,
+  ) {
     return this.repository.findByProfileId(profileId, filters, sort);
   }
 
-  async getUserBucketItemsWithCategory(profileId: string, filters?: BucketListFilters, sort?: BucketListSort) {
+  async getUserBucketItemsWithCategory(
+    profileId: string,
+    filters?: BucketListFilters,
+    sort?: BucketListSort,
+  ) {
     // プロファイルIDフィルターを追加
     const userFilters = {
       ...filters,
-      profile_id: profileId
+      profile_id: profileId,
     };
-    
-    console.log("getUserBucketItemsWithCategory called with:", { profileId, userFilters });
-    
+
     // Repositoryでフィルタリングを実行
-    const allItems = await this.repository.findAllWithCategory(userFilters, sort);
-    
-    console.log("getUserBucketItemsWithCategory result:", allItems.length);
-    
+    const allItems = await this.repository.findAllWithCategory(
+      userFilters,
+      sort,
+    );
+
     return allItems;
   }
 
-  async getPublicBucketItems(filters?: BucketListFilters, sort?: BucketListSort) {
+  async getPublicBucketItems(
+    filters?: BucketListFilters,
+    sort?: BucketListSort,
+  ) {
     return this.repository.findPublic(filters, sort);
   }
 
@@ -86,14 +96,16 @@ export class BucketListService {
   async getBucketItemsByCategory(profileId: string) {
     const [items, categories] = await Promise.all([
       this.getUserBucketItemsWithCategory(profileId),
-      this.getCategories()
+      this.getCategories(),
     ]);
 
     // カテゴリ別にグループ化
-    const itemsByCategory = categories.map(category => ({
-      category,
-      items: items.filter(item => item.category_id === category.id)
-    })).filter(group => group.items.length > 0);
+    const itemsByCategory = categories
+      .map((category) => ({
+        category,
+        items: items.filter((item) => item.category_id === category.id),
+      }))
+      .filter((group) => group.items.length > 0);
 
     return itemsByCategory;
   }
@@ -102,14 +114,14 @@ export class BucketListService {
     const [items, categories, stats] = await Promise.all([
       this.getUserBucketItemsWithCategory(profileId),
       this.getCategories(),
-      this.getUserStats(profileId)
+      this.getUserStats(profileId),
     ]);
 
     return {
       items,
       categories,
       stats,
-      itemsByCategory: await this.getBucketItemsByCategory(profileId)
+      itemsByCategory: await this.getBucketItemsByCategory(profileId),
     };
   }
 }

@@ -2,7 +2,8 @@ import type { Route } from "./+types/dashboard";
 import { Link } from "react-router";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth } from "~/lib/auth-server";
-import { createBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { Button } from "~/components/ui/button";
 import { AchievementStats } from "~/features/bucket-list/components/achievement-stats";
 import { CategoryProgress } from "~/features/bucket-list/components/category-progress";
@@ -25,16 +26,14 @@ export async function loader({ request }: Route.LoaderArgs) {
       });
     }
 
-    // Repository経由でデータ取得
-    const bucketListService = await createBucketListService();
+    // 認証済みSupabaseクライアントでRepository経由でデータ取得
+    const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
+    const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase, authResult.user!.id);
 
     // ダッシュボードデータを取得
     const dashboardData = await bucketListService.getDashboardData(
       authResult.user!.id,
     );
-    console.log("Dashboard data items count:", dashboardData.items.length);
-    console.log("User ID:", authResult.user!.id);
-    console.log("Sample items:", dashboardData.items.slice(0, 3));
 
     // 最近完了した項目（直近5件）
     const recentCompletedItems = dashboardData.items
