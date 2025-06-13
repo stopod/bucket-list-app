@@ -116,7 +116,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // Create new bucket item
     
     // 新しい項目を作成
-    await bucketListService.createBucketItem({
+    const newItem = await bucketListService.createBucketItem({
       profile_id: authResult.user!.id,
       title: data.title.trim(),
       description: data.description?.trim() || null,
@@ -127,6 +127,11 @@ export async function action({ request }: ActionFunctionArgs) {
       due_type: data.due_type || null,
       is_public: data.is_public,
     });
+
+    // 新規作成時に「completed」ステータスで作成された場合、completed_atを設定
+    if ((data.status || "not_started") === "completed") {
+      await bucketListService.completeBucketItem(newItem.id);
+    }
     
     console.log("Bucket item created successfully");
 
