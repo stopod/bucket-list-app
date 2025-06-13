@@ -90,21 +90,21 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
     <AuthenticatedLayout title="ダッシュボード">
       <div className="container mx-auto px-4 py-8 pb-12">
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col space-y-4 mb-6 md:flex-row md:justify-between md:items-center md:space-y-0">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                 ダッシュボード
               </h1>
               <p className="text-gray-600 mt-2">
                 あなたのやりたいことの達成状況を一覧で確認できます
               </p>
             </div>
-            <div className="space-x-2">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
               <Link to="/bucket-list/add">
-                <Button>+ 新しく追加</Button>
+                <Button className="w-full sm:w-auto">+ 新しく追加</Button>
               </Link>
               <Link to="/bucket-list">
-                <Button variant="outline">やりたいこと一覧</Button>
+                <Button variant="outline" className="w-full sm:w-auto">やりたいこと一覧</Button>
               </Link>
             </div>
           </div>
@@ -120,7 +120,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
           {/* 最近の達成とこれからの予定 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* 最近完了した項目 */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 🎉 最近の達成
               </h2>
@@ -172,7 +172,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
             </div>
 
             {/* 期限が近い項目 */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 ⏰ 期限が近い項目
               </h2>
@@ -244,29 +244,29 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               🚀 クイックアクション
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               <Link to="/bucket-list/add">
-                <div className="text-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors min-h-[80px] sm:min-h-[100px] flex flex-col justify-center items-center">
                   <div className="text-2xl mb-2">➕</div>
-                  <div className="text-sm font-medium">新規追加</div>
+                  <div className="text-xs sm:text-sm font-medium">新規追加</div>
                 </div>
               </Link>
               <Link to="/bucket-list?status=in_progress">
-                <div className="text-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors min-h-[80px] sm:min-h-[100px] flex flex-col justify-center items-center">
                   <div className="text-2xl mb-2">🔄</div>
-                  <div className="text-sm font-medium">進行中を確認</div>
+                  <div className="text-xs sm:text-sm font-medium">進行中を確認</div>
                 </div>
               </Link>
               <Link to="/public">
-                <div className="text-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors min-h-[80px] sm:min-h-[100px] flex flex-col justify-center items-center">
                   <div className="text-2xl mb-2">👥</div>
-                  <div className="text-sm font-medium">みんなのリスト</div>
+                  <div className="text-xs sm:text-sm font-medium">みんなのリスト</div>
                 </div>
               </Link>
               <Link to="/bucket-list?status=completed">
-                <div className="text-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors min-h-[80px] sm:min-h-[100px] flex flex-col justify-center items-center">
                   <div className="text-2xl mb-2">🏆</div>
-                  <div className="text-sm font-medium">達成済みを見る</div>
+                  <div className="text-xs sm:text-sm font-medium">達成済みを見る</div>
                 </div>
               </Link>
             </div>

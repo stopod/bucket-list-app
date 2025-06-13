@@ -28,12 +28,12 @@ export function AchievementStats({ stats, className = "" }: AchievementStatsProp
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
+    <div className={`bg-white rounded-lg shadow p-4 sm:p-6 ${className}`}>
       <h2 className="text-lg font-semibold text-gray-900 mb-6">達成状況</h2>
       
       {/* メイン達成率表示 */}
       <div className="text-center mb-6">
-        <div className="text-4xl font-bold text-gray-900 mb-2">
+        <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
           {completionRate}%
         </div>
         <div className="text-sm text-gray-600 mb-4">

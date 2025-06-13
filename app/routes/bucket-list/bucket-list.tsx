@@ -225,12 +225,12 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
     <AuthenticatedLayout title="やりたいこと一覧">
       <div className="container mx-auto px-4 py-8 pb-12">
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">
+          <div className="flex flex-col space-y-3 mb-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               やりたいこと一覧
             </h1>
             <Link to="/bucket-list/add">
-              <Button size="lg">
+              <Button size="lg" className="w-full sm:w-auto">
                 + 新しく追加
               </Button>
             </Link>
@@ -248,9 +248,9 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
           )}
 
           {/* フィルター・検索 */}
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">フィルター・検索</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               {/* 検索 */}
               <div>
                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
@@ -358,7 +358,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                       </span>
                     )}
                   </div>
-                  <div className="grid gap-4 p-6 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-4 p-4 sm:p-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {visibleItems.map((item) => {
                       // 型安全性を確保
                       const priorityDisplay = (() => {
@@ -405,7 +405,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                       return (
                       <div 
                         key={item.id}
-                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer min-h-[120px] flex flex-col"
+                        className="border border-gray-200 rounded-lg p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer min-h-[120px] sm:min-h-[140px] flex flex-col"
                         onClick={() => openDetailDialog(item)}
                       >
                         {/* タイトルとバッジ */}
