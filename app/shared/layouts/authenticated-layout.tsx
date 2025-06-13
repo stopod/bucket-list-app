@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "~/features/auth";
-import { Button } from "~/components/ui/button";
+import { Button, MobileMenu } from "~/components/ui";
 
 interface AuthenticatedLayoutProps {
   children: React.ReactNode;
@@ -56,21 +56,31 @@ export function AuthenticatedLayout({
       <nav className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
+            {/* ロゴ・タイトル */}
             <div className="flex items-center">
               <Link to="/">
-                <h1 className="text-xl font-semibold">人生でやりたいこと</h1>
+                <h1 className="text-lg sm:text-xl font-semibold text-gray-900 hover:text-gray-700 transition-colors">
+                  人生でやりたいこと
+                </h1>
               </Link>
             </div>
-            <div className="flex items-center space-x-4">
-              {loading ? (
-                <span className="text-gray-500">読み込み中...</span>
-              ) : user ? (
-                <span className="text-gray-700">
-                  こんにちは、{user.email}さん
-                </span>
-              ) : (
-                <span className="text-gray-500">認証情報を取得中...</span>
-              )}
+
+            {/* デスクトップナビゲーション */}
+            <div className="hidden md:flex items-center space-x-4">
+              {/* ユーザー情報（デスクトップのみ） */}
+              <div className="text-sm text-gray-700">
+                {loading ? (
+                  <span className="text-gray-500">読み込み中...</span>
+                ) : user ? (
+                  <span className="max-w-48 truncate">
+                    こんにちは、{user.email}さん
+                  </span>
+                ) : (
+                  <span className="text-gray-500">認証情報を取得中...</span>
+                )}
+              </div>
+              
+              {/* ナビゲーションボタン */}
               <Link to="/dashboard">
                 <Button variant="outline" size="sm">
                   ダッシュボード
@@ -89,10 +99,20 @@ export function AuthenticatedLayout({
               <Button
                 onClick={handleSignOut}
                 variant="outline"
+                size="sm"
                 disabled={isSigningOut || loading}
               >
                 {isSigningOut ? "ログアウト中..." : "ログアウト"}
               </Button>
+            </div>
+
+            {/* モバイルナビゲーション */}
+            <div className="md:hidden flex items-center">
+              <MobileMenu
+                user={user}
+                onSignOut={handleSignOut}
+                isSigningOut={isSigningOut || loading}
+              />
             </div>
           </div>
         </div>

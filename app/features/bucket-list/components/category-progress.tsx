@@ -37,7 +37,7 @@ export function CategoryProgress({ categories, items, className = "" }: Category
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
+    <div className={`bg-white rounded-lg shadow p-4 sm:p-6 ${className}`}>
       <h2 className="text-lg font-semibold text-gray-900 mb-6">カテゴリ別達成状況</h2>
       
       <div className="space-y-4">
