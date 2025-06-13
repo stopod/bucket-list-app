@@ -60,7 +60,7 @@ export function AuthenticatedLayout({
             <div className="flex items-center">
               <Link to="/">
                 <h1 className="text-lg sm:text-xl font-semibold text-gray-900 hover:text-gray-700 transition-colors">
-                  人生でやりたいこと
+                  死ぬまでにやること
                 </h1>
               </Link>
             </div>

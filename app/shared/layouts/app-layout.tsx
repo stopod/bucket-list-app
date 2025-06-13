@@ -22,7 +22,7 @@ export function AppLayout({
             <div className="flex justify-between h-16">
               <div className="flex items-center">
                 <Link to="/">
-                  <h1 className="text-xl font-semibold">人生でやりたいこと</h1>
+                  <h1 className="text-xl font-semibold">死ぬまでにやること</h1>
                 </Link>
               </div>
               {navigationContent && (
