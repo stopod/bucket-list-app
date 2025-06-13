@@ -7,7 +7,6 @@ import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { Button } from "~/components/ui/button";
 import { AchievementStats } from "~/features/bucket-list/components/achievement-stats";
 import { CategoryProgress } from "~/features/bucket-list/components/category-progress";
-import { assertStatus } from "~/features/bucket-list/types";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "ダッシュボード - やりたいこと一覧" }];

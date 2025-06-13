@@ -11,12 +11,9 @@ import type {
 } from "~/features/bucket-list/types";
 import type {
   BucketListRepository,
-  RepositoryResult,
 } from "./bucket-list-repository";
 import {
   BucketListRepositoryError,
-  createSuccess,
-  createError,
 } from "./bucket-list-repository";
 
 export class SupabaseBucketListRepository implements BucketListRepository {
