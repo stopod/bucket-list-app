@@ -58,7 +58,7 @@ export function AuthenticatedLayout({
           <div className="flex justify-between h-16">
             {/* ロゴ・タイトル */}
             <div className="flex items-center">
-              <Link to="/">
+              <Link to="/dashboard">
                 <h1 className="text-lg sm:text-xl font-semibold text-gray-900 hover:text-gray-700 transition-colors">
                   死ぬまでにやること
                 </h1>
