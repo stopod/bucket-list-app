@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { LoadingOverlay } from "~/components/ui";
 import type { BucketItemFormData, Category, Priority, DueType, Status } from "../types";
 
 interface BucketItemFormProps {
@@ -87,17 +88,22 @@ export function BucketItemForm({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
-          {mode === "create" ? "新しいやりたいことを追加" : "やりたいことを編集"}
-        </h2>
-        <p className="text-gray-600 mt-2">
-          {mode === "create" ? "あなたが人生でやりたいことを追加しましょう" : "項目の内容を編集できます"}
-        </p>
-      </div>
+    <>
+      <LoadingOverlay 
+        isVisible={isSubmitting} 
+        message={mode === "create" ? "追加中..." : "更新中..."}
+      />
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {mode === "create" ? "新しいやりたいことを追加" : "やりたいことを編集"}
+          </h2>
+          <p className="text-gray-600 mt-2">
+            {mode === "create" ? "あなたが人生でやりたいことを追加しましょう" : "項目の内容を編集できます"}
+          </p>
+        </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
         {/* タイトル */}
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
@@ -281,6 +287,7 @@ export function BucketItemForm({
           </Button>
         </div>
       </form>
-    </div>
+      </div>
+    </>
   );
 }

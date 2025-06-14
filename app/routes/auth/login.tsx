@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { useAuth } from "~/features/auth";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { LoadingOverlay } from "~/components/ui";
 import { AppLayout } from "~/shared/layouts";
 
 export default function LoginPage() {
@@ -30,8 +31,10 @@ export default function LoginPage() {
   };
 
   return (
-    <AppLayout>
-      <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <>
+      <LoadingOverlay isVisible={loading} message="サインイン中..." />
+      <AppLayout>
+        <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -89,7 +92,8 @@ export default function LoginPage() {
             </div>
           </form>
         </div>
-      </div>
-    </AppLayout>
+        </div>
+      </AppLayout>
+    </>
   );
 }
