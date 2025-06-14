@@ -170,6 +170,9 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
     isSubmitting: false
   });
 
+  // ステータス変更のローディング状態管理
+  const [statusChanging, setStatusChanging] = useState<Set<string>>(new Set());
+
   // フィルター更新関数
   const updateFilter = (key: string, value: string | undefined) => {
     const newParams = new URLSearchParams(searchParams);
@@ -243,7 +246,13 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
 
   // ステータス変更
   const handleStatusChange = async (itemId: string, newStatus: string) => {
+    // ローディング状態を開始
+    setStatusChanging(prev => new Set(prev).add(itemId));
+    
     try {
+      // 短い遅延でローディング状態を表示
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       // フォームを作成してステータス更新を実行
       const form = document.createElement("form");
       form.method = "POST";
@@ -252,7 +261,14 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
 
       // 現在の項目データを取得
       const item = bucketItems.find(item => item.id === itemId);
-      if (!item) return;
+      if (!item) {
+        setStatusChanging(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+        return;
+      }
 
       // 全てのフィールドを含める（ステータス以外は既存値を維持）
       const fields = {
@@ -277,6 +293,12 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
       form.submit();
     } catch (error) {
       console.error("Status change error:", error);
+      // エラーが発生した場合はローディング状態を解除
+      setStatusChanging(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
     }
   };
 
@@ -574,6 +596,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
           onDelete={openDeleteDialog}
           onStatusChange={handleStatusChange}
           isSubmitting={deleteDialog.isSubmitting}
+          statusChangingIds={statusChanging}
         />
 
         {/* 削除確認ダイアログ */}
