@@ -5,12 +5,14 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigation,
 } from "react-router";
 import { useEffect } from "react";
 
 import type { Route } from "./+types/root";
 import { AuthProvider } from "./features/auth";
 import { initializeSecurity } from "./lib/security-utils";
+import { Spinner } from "./components/ui";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
@@ -45,6 +47,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const navigation = useNavigation();
+
   useEffect(() => {
     // セキュリティ初期化（クライアントサイドのみ）
     initializeSecurity();
@@ -52,6 +56,12 @@ export default function App() {
 
   return (
     <AuthProvider>
+      {/* ルート遷移中のローディング表示 */}
+      {navigation.state === "loading" && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-blue-600 h-1">
+          <div className="h-full bg-blue-800 animate-pulse" />
+        </div>
+      )}
       <Outlet />
     </AuthProvider>
   );
