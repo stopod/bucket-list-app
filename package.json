@@ -1,5 +1,9 @@
 {
   "name": "bucket-list-app",
+  "version": "1.0.0",
+  "description": "人生でやりたいことリスト管理アプリケーション",
+  "author": "stopod",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
