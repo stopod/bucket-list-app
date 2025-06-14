@@ -1,0 +1,106 @@
+# Third-Party Licenses
+
+このプロジェクトは以下のオープンソースライブラリを使用しています。各ライブラリのライセンス条項に従って利用しています。
+
+## Runtime Dependencies
+
+### React (MIT License)
+- **Package**: react, react-dom
+- **Version**: ^19.1.0
+- **License**: MIT
+- **Copyright**: Copyright (c) Facebook, Inc. and its affiliates.
+- **URL**: https://github.com/facebook/react
+
+### React Router (MIT License)
+- **Package**: react-router, @react-router/node, @react-router/serve
+- **Version**: ^7.5.3
+- **License**: MIT
+- **Copyright**: Copyright (c) React Training 2015-2019, Copyright (c) Remix Software Inc. 2020-2021
+- **URL**: https://github.com/remix-run/react-router
+
+### Supabase JavaScript Client (MIT License)
+- **Package**: @supabase/supabase-js
+- **Version**: ^2.49.9
+- **License**: MIT
+- **Copyright**: Copyright (c) 2020 Supabase
+- **URL**: https://github.com/supabase/supabase-js
+
+### Radix UI (MIT License)
+- **Package**: @radix-ui/react-slot
+- **Version**: ^1.2.3
+- **License**: MIT
+- **Copyright**: Copyright (c) 2022 WorkOS
+- **URL**: https://github.com/radix-ui/primitives
+
+### Tailwind CSS Utilities (MIT License)
+- **Package**: tailwind-merge, clsx, class-variance-authority
+- **License**: MIT
+- **URL**: 
+  - tailwind-merge: https://github.com/dcastil/tailwind-merge
+  - clsx: https://github.com/lukeed/clsx
+  - class-variance-authority: https://github.com/joe-bell/cva
+
+### Lucide React (ISC License)
+- **Package**: lucide-react
+- **Version**: ^0.513.0
+- **License**: ISC
+- **Copyright**: Copyright (c) 2022 Lucide Contributors
+- **URL**: https://github.com/lucide-icons/lucide
+
+### Form Validation (MIT License)
+- **Package**: @conform-to/react, @conform-to/zod
+- **Version**: ^1.6.1
+- **License**: MIT
+- **URL**: https://github.com/edmundhung/conform
+
+### Utilities (MIT License)
+- **Package**: isbot
+- **Version**: ^5.1.27
+- **License**: MIT
+- **URL**: https://github.com/omrilotan/isbot
+
+## Development Dependencies
+
+### Testing (MIT License)
+- **Package**: @testing-library/react, @testing-library/jest-dom, @testing-library/user-event
+- **License**: MIT
+- **URL**: https://github.com/testing-library
+
+### Vitest (MIT License)
+- **Package**: vitest, @vitest/ui
+- **License**: MIT
+- **URL**: https://github.com/vitest-dev/vitest
+
+### TailwindCSS (MIT License)
+- **Package**: tailwindcss, @tailwindcss/vite
+- **License**: MIT
+- **URL**: https://github.com/tailwindlabs/tailwindcss
+
+### ESLint (MIT License)
+- **Package**: eslint, @eslint/js, @eslint/css, @eslint/json, eslint-plugin-react
+- **License**: MIT
+- **URL**: https://github.com/eslint/eslint
+
+### TypeScript & Node.js Types (MIT License)
+- **Package**: @types/node, @types/react, @types/react-dom
+- **License**: MIT
+- **URL**: https://github.com/DefinitelyTyped/DefinitelyTyped
+
+### Build Tools (MIT License)
+- **Package**: tsx, prettier, jsdom
+- **License**: MIT
+
+## License Compatibility
+
+すべての使用ライブラリは MIT License または ISC License の下で提供されており、
+本プロジェクトの MIT License との互換性があります。
+
+## License Texts
+
+各ライブラリの完全なライセンステキストは、それぞれのGitHubリポジトリまたは
+node_modules/{package}/LICENSE ファイルで確認できます。
+
+---
+
+**注意**: このファイルは主要な依存関係のみを記載しています。
+完全な依存関係リストは package.json および package-lock.json を参照してください。
