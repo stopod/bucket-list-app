@@ -20,12 +20,8 @@ export default function HomePage() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const navigate = useNavigate();
 
-  // 認証済みユーザーをダッシュボードにリダイレクト
-  useEffect(() => {
-    if (!loading && user) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [user, loading, navigate]);
+  // 認証済みユーザーのリダイレクトは削除
+  // タイトルクリックで直接ダッシュボードに行くように変更
 
   const handleSignOut = async () => {
     try {
@@ -77,16 +73,35 @@ export default function HomePage() {
               夢や目標を整理し、達成までの道のりを可視化。あなたの「やりたいこと」を実現するためのデジタルバケットリストです。
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/register">
-                <Button size="lg" className="text-lg px-8 py-4 w-full sm:w-auto">
-                  無料で始める
-                </Button>
-              </Link>
-              <Link to="/public">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-4 w-full sm:w-auto">
-                  みんなのリストを見る
-                </Button>
-              </Link>
+              {user ? (
+                // 認証済みユーザー向けのボタン
+                <>
+                  <Link to="/dashboard">
+                    <Button size="lg" className="text-lg px-8 py-4 w-full sm:w-auto">
+                      ダッシュボードへ
+                    </Button>
+                  </Link>
+                  <Link to="/bucket-list">
+                    <Button size="lg" variant="outline" className="text-lg px-8 py-4 w-full sm:w-auto">
+                      やりたいこと一覧
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                // 未認証ユーザー向けのボタン
+                <>
+                  <Link to="/register">
+                    <Button size="lg" className="text-lg px-8 py-4 w-full sm:w-auto">
+                      無料で始める
+                    </Button>
+                  </Link>
+                  <Link to="/public">
+                    <Button size="lg" variant="outline" className="text-lg px-8 py-4 w-full sm:w-auto">
+                      みんなのリストを見る
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
