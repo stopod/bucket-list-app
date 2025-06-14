@@ -1,5 +1,5 @@
 import type { Route } from "./+types/bucket-list";
-import { Link, useSearchParams } from "react-router";
+import { Link, useSearchParams, useNavigation } from "react-router";
 import { useState } from "react";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth, createAuthenticatedSupabaseClient } from "~/lib/auth-server";
@@ -13,6 +13,7 @@ import { CategoryProgress } from "~/features/bucket-list/components/category-pro
 import { ControlledExpandableText } from "~/features/bucket-list/components/expandable-text";
 import { useExpandableList } from "~/features/bucket-list/hooks/use-expandable-list";
 import { BucketItemDetailDialog } from "~/features/bucket-list/components/bucket-item-detail-dialog";
+import { BucketItemSkeleton } from "~/components/ui";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "やりたいこと一覧" }];
@@ -75,9 +76,67 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 }
 
+// スケルトンローディング表示コンポーネント
+function BucketListSkeleton() {
+  return (
+    <AuthenticatedLayout title="やりたいこと一覧">
+      <div className="container mx-auto px-4 py-8 pb-12">
+        <div className="mb-8">
+          <div className="flex flex-col space-y-4 mb-6 md:flex-row md:justify-between md:items-center md:space-y-0">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                やりたいこと一覧
+              </h1>
+              <p className="text-gray-600 mt-2">
+                あなたが人生でやりたいことを管理・達成していきましょう
+              </p>
+            </div>
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+              <Button className="w-full sm:w-auto">+ 新しく追加</Button>
+              <Button variant="outline" className="w-full sm:w-auto">達成状況</Button>
+            </div>
+          </div>
+
+          {/* フィルタースケルトン */}
+          <div className="bg-white rounded-lg shadow p-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-4 bg-gray-300 rounded w-16 mb-2"></div>
+                  <div className="h-10 bg-gray-300 rounded"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* アイテムスケルトン */}
+          <div className="space-y-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i}>
+                <div className="h-6 bg-gray-300 rounded w-32 mb-4 animate-pulse"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(6)].map((_, j) => (
+                    <BucketItemSkeleton key={j} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </AuthenticatedLayout>
+  );
+}
+
 export default function BucketListPage({ loaderData }: Route.ComponentProps) {
+  const navigation = useNavigation();
   const { bucketItems, categories, stats, itemsByCategory, filters } = loaderData;
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // ナビゲーション中はスケルトンを表示
+  if (navigation.state === "loading") {
+    return <BucketListSkeleton />;
+  }
   
   // 展開状態管理
   const {

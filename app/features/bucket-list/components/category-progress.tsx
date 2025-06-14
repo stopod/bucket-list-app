@@ -1,12 +1,19 @@
 import type { Category, BucketItem, CategoryDisplayItem } from "~/features/bucket-list/types";
+import { ProgressCardSkeleton } from "~/components/ui";
 
 interface CategoryProgressProps {
-  categories: Category[];
-  items: BucketItem[];  // 完全型を受け取る
+  categories?: Category[];
+  items?: BucketItem[];  // 完全型を受け取る
   className?: string;
+  loading?: boolean;
 }
 
-export function CategoryProgress({ categories, items, className = "" }: CategoryProgressProps) {
+export function CategoryProgress({ categories, items, className = "", loading = false }: CategoryProgressProps) {
+  // ローディング中またはデータがない場合はスケルトンを表示
+  if (loading || !categories || !items) {
+    return <ProgressCardSkeleton />;
+  }
+  
   // 内部で必要な変換を実行（型安全性を保持）
   const displayItems: CategoryDisplayItem[] = items.map(item => ({
     id: item.id,
