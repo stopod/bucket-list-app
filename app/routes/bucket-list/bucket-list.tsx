@@ -1,5 +1,5 @@
 import type { Route } from "./+types/bucket-list";
-import { Link, useSearchParams } from "react-router";
+import { Link, useSearchParams, useNavigation } from "react-router";
 import { useState } from "react";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth, createAuthenticatedSupabaseClient } from "~/lib/auth-server";
@@ -13,6 +13,7 @@ import { CategoryProgress } from "~/features/bucket-list/components/category-pro
 import { ControlledExpandableText } from "~/features/bucket-list/components/expandable-text";
 import { useExpandableList } from "~/features/bucket-list/hooks/use-expandable-list";
 import { BucketItemDetailDialog } from "~/features/bucket-list/components/bucket-item-detail-dialog";
+import { BucketItemSkeleton } from "~/components/ui";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "やりたいこと一覧" }];
@@ -75,10 +76,63 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 }
 
+// スケルトンローディング表示コンポーネント
+function BucketListSkeleton() {
+  return (
+    <AuthenticatedLayout title="やりたいこと一覧">
+      <div className="container mx-auto px-4 py-8 pb-12">
+        <div className="mb-8">
+          <div className="flex flex-col space-y-4 mb-6 md:flex-row md:justify-between md:items-center md:space-y-0">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                やりたいこと一覧
+              </h1>
+              <p className="text-gray-600 mt-2">
+                あなたが人生でやりたいことを管理・達成していきましょう
+              </p>
+            </div>
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+              <Button className="w-full sm:w-auto">+ 新しく追加</Button>
+              <Button variant="outline" className="w-full sm:w-auto">達成状況</Button>
+            </div>
+          </div>
+
+          {/* フィルタースケルトン */}
+          <div className="bg-white rounded-lg shadow p-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-4 bg-gray-300 rounded w-16 mb-2"></div>
+                  <div className="h-10 bg-gray-300 rounded"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* アイテムスケルトン */}
+          <div className="space-y-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i}>
+                <div className="h-6 bg-gray-300 rounded w-32 mb-4 animate-pulse"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(6)].map((_, j) => (
+                    <BucketItemSkeleton key={j} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </AuthenticatedLayout>
+  );
+}
+
 export default function BucketListPage({ loaderData }: Route.ComponentProps) {
+  const navigation = useNavigation();
   const { bucketItems, categories, stats, itemsByCategory, filters } = loaderData;
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // 展開状態管理
   const {
     getCategoryShowCount,
@@ -110,6 +164,9 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
     item: null,
     isSubmitting: false
   });
+
+  // ステータス変更のローディング状態管理
+  const [statusChanging, setStatusChanging] = useState<Set<string>>(new Set());
 
   // フィルター更新関数
   const updateFilter = (key: string, value: string | undefined) => {
@@ -145,6 +202,9 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
 
   // 削除確認ダイアログを開く
   const openDeleteDialog = (item: { id: string; title: string }) => {
+    // 詳細ダイアログを即座にクローズ
+    closeDetailDialog();
+    
     setDeleteDialog({
       isOpen: true,
       item,
@@ -154,11 +214,14 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
 
   // 削除確認ダイアログを閉じる
   const closeDeleteDialog = () => {
-    setDeleteDialog({
-      isOpen: false,
-      item: null,
-      isSubmitting: false
-    });
+    // 送信中でない場合のみ閉じることができる
+    if (!deleteDialog.isSubmitting) {
+      setDeleteDialog({
+        isOpen: false,
+        item: null,
+        isSubmitting: false
+      });
+    }
   };
 
   // 削除実行
@@ -176,15 +239,28 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
       
       document.body.appendChild(form);
       form.submit();
+      
+      // 削除処理が正常に開始された場合はダイアログを閉じる
+      // （ページリダイレクトが発生するため、通常はここには到達しない）
     } catch (error) {
       console.error("Delete error:", error);
+      // エラー時は送信状態を解除してダイアログを維持
       setDeleteDialog(prev => ({ ...prev, isSubmitting: false }));
+      
+      // TODO: 将来的にはユーザーにエラーメッセージを表示
+      alert("削除に失敗しました。もう一度お試しください。");
     }
   };
 
   // ステータス変更
   const handleStatusChange = async (itemId: string, newStatus: string) => {
+    // ローディング状態を開始
+    setStatusChanging(prev => new Set(prev).add(itemId));
+    
     try {
+      // 短い遅延でローディング状態を表示
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       // フォームを作成してステータス更新を実行
       const form = document.createElement("form");
       form.method = "POST";
@@ -193,7 +269,14 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
 
       // 現在の項目データを取得
       const item = bucketItems.find(item => item.id === itemId);
-      if (!item) return;
+      if (!item) {
+        setStatusChanging(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+        return;
+      }
 
       // 全てのフィールドを含める（ステータス以外は既存値を維持）
       const fields = {
@@ -218,8 +301,19 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
       form.submit();
     } catch (error) {
       console.error("Status change error:", error);
+      // エラーが発生した場合はローディング状態を解除
+      setStatusChanging(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
     }
   };
+
+  // ナビゲーション中はスケルトンを表示
+  if (navigation.state === "loading") {
+    return <BucketListSkeleton />;
+  }
 
   return (
     <AuthenticatedLayout title="やりたいこと一覧">
@@ -515,6 +609,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
           onDelete={openDeleteDialog}
           onStatusChange={handleStatusChange}
           isSubmitting={deleteDialog.isSubmitting}
+          statusChangingIds={statusChanging}
         />
 
         {/* 削除確認ダイアログ */}

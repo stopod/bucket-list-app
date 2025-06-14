@@ -1,5 +1,5 @@
 import type { Route } from "./+types/dashboard";
-import { Link } from "react-router";
+import { Link, useNavigation } from "react-router";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth } from "~/lib/auth-server";
 import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
@@ -7,6 +7,7 @@ import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { Button } from "~/components/ui/button";
 import { AchievementStats } from "~/features/bucket-list/components/achievement-stats";
 import { CategoryProgress } from "~/features/bucket-list/components/category-progress";
+import { StatCardSkeleton, ProgressCardSkeleton } from "~/components/ui";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "ダッシュボード - やりたいこと一覧" }];
@@ -77,7 +78,101 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 }
 
+// ローディング時のスケルトンコンポーネント
+function DashboardSkeleton() {
+  return (
+    <AuthenticatedLayout title="ダッシュボード">
+      <div className="container mx-auto px-4 py-8 pb-12">
+        <div className="mb-8">
+          <div className="flex flex-col space-y-4 mb-6 md:flex-row md:justify-between md:items-center md:space-y-0">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                ダッシュボード
+              </h1>
+              <p className="text-gray-600 mt-2">
+                あなたのやりたいことの達成状況を一覧で確認できます
+              </p>
+            </div>
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+              <Link to="/bucket-list/add">
+                <Button className="w-full sm:w-auto">+ 新しく追加</Button>
+              </Link>
+              <Link to="/bucket-list">
+                <Button variant="outline" className="w-full sm:w-auto">やりたいこと一覧</Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* スケルトンローディング */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <StatCardSkeleton />
+            <ProgressCardSkeleton />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                🎉 最近の達成
+              </h2>
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="border border-gray-200 rounded-lg p-3 animate-pulse">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full mr-2 bg-gray-300"></div>
+                        <div className="h-4 bg-gray-300 rounded w-32"></div>
+                      </div>
+                      <div className="h-3 bg-gray-300 rounded w-16"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                ⏰ 期限が近い項目
+              </h2>
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="border border-gray-200 rounded-lg p-3 animate-pulse">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full mr-2 bg-gray-300"></div>
+                        <div className="h-4 bg-gray-300 rounded w-32"></div>
+                      </div>
+                      <div className="h-3 bg-gray-300 rounded w-16"></div>
+                    </div>
+                    <div className="mt-2 ml-5">
+                      <div className="h-8 bg-gray-300 rounded w-16"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              🚀 クイックアクション
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg min-h-[80px] sm:min-h-[100px] flex flex-col justify-center items-center animate-pulse">
+                  <div className="w-8 h-8 bg-gray-300 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-300 rounded w-16"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </AuthenticatedLayout>
+  );
+}
+
 export default function DashboardPage({ loaderData }: Route.ComponentProps) {
+  const navigation = useNavigation();
   const {
     bucketItems,
     categories,
@@ -85,6 +180,11 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
     recentCompletedItems,
     upcomingItems,
   } = loaderData;
+
+  // ナビゲーション中はスケルトンを表示
+  if (navigation.state === "loading") {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <AuthenticatedLayout title="ダッシュボード">

@@ -1,11 +1,18 @@
 import type { UserBucketStats } from "../types";
+import { StatCardSkeleton } from "~/components/ui";
 
 interface AchievementStatsProps {
-  stats: UserBucketStats;
+  stats?: UserBucketStats;
   className?: string;
+  loading?: boolean;
 }
 
-export function AchievementStats({ stats, className = "" }: AchievementStatsProps) {
+export function AchievementStats({ stats, className = "", loading = false }: AchievementStatsProps) {
+  // ローディング中の場合はスケルトンを表示
+  if (loading || !stats) {
+    return <StatCardSkeleton />;
+  }
+  
   const completionRate = stats.completion_rate || 0;
 
   // プログレスバーの色を達成率に応じて変更

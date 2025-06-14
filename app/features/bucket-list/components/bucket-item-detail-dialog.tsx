@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
+import { Spinner } from "~/components/ui";
 import type { BucketItemWithCategory, Category, Status, Priority } from "../types";
 import { 
   PRIORITY_LABELS, 
@@ -28,6 +29,8 @@ interface BucketItemDetailDialogProps {
   isSubmitting?: boolean;
   /** 読み取り専用モード（公開リスト等で使用） */
   readOnly?: boolean;
+  /** ステータス変更中のアイテムIDのSet */
+  statusChangingIds?: Set<string>;
 }
 
 /**
@@ -42,7 +45,8 @@ export function BucketItemDetailDialog({
   onDelete,
   onStatusChange,
   isSubmitting = false,
-  readOnly = false
+  readOnly = false,
+  statusChangingIds = new Set()
 }: BucketItemDetailDialogProps) {
   if (!isOpen || !item) return null;
 
@@ -210,17 +214,29 @@ export function BucketItemDetailDialog({
           {/* ステータス変更（編集可能モードのみ） */}
           {!readOnly && (
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">ステータス変更</h3>
-              <select
-                value={item.status}
-                onChange={(e) => onStatusChange(item.id, e.target.value)}
-                disabled={isSubmitting}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-              >
-                <option value="not_started">未着手</option>
-                <option value="in_progress">進行中</option>
-                <option value="completed">完了</option>
-              </select>
+              <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                ステータス変更
+                {statusChangingIds.has(item.id) && (
+                  <Spinner size="sm" className="ml-2" />
+                )}
+              </h3>
+              <div className="relative">
+                <select
+                  value={item.status}
+                  onChange={(e) => onStatusChange(item.id, e.target.value)}
+                  disabled={isSubmitting || statusChangingIds.has(item.id)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                >
+                  <option value="not_started">未着手</option>
+                  <option value="in_progress">進行中</option>
+                  <option value="completed">完了</option>
+                </select>
+                {statusChangingIds.has(item.id) && (
+                  <div className="absolute inset-y-0 right-8 flex items-center pointer-events-none">
+                    <div className="text-xs text-blue-600">変更中...</div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

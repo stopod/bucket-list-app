@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { redirect } from "react-router";
+import { useState } from "react";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth } from "~/lib/auth-server";
 import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
@@ -150,25 +151,34 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function AddBucketItemPage({ loaderData }: { loaderData: { categories: any[]; user: any } }) {
   const { categories } = loaderData;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (data: BucketItemFormData) => {
-    // フォームデータを送信
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.style.display = "none";
+    setIsSubmitting(true);
+    
+    try {
+      // フォームデータを送信
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.style.display = "none";
 
-    // フォームフィールドを作成
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== "") {
-        const input = document.createElement("input");
-        input.name = key;
-        input.value = String(value);
-        form.appendChild(input);
-      }
-    });
+      // フォームフィールドを作成
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== "") {
+          const input = document.createElement("input");
+          input.name = key;
+          input.value = String(value);
+          form.appendChild(input);
+        }
+      });
 
-    document.body.appendChild(form);
-    form.submit();
+      document.body.appendChild(form);
+      form.submit();
+    } catch (error) {
+      console.error("Submit error:", error);
+      setIsSubmitting(false);
+      alert("送信に失敗しました。もう一度お試しください。");
+    }
   };
 
   const handleCancel = () => {
@@ -183,6 +193,7 @@ export default function AddBucketItemPage({ loaderData }: { loaderData: { catego
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           mode="create"
+          isSubmitting={isSubmitting}
         />
       </div>
     </AuthenticatedLayout>
