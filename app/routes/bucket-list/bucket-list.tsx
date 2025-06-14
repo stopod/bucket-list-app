@@ -133,11 +133,6 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   const { bucketItems, categories, stats, itemsByCategory, filters } = loaderData;
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // ナビゲーション中はスケルトンを表示
-  if (navigation.state === "loading") {
-    return <BucketListSkeleton />;
-  }
-  
   // 展開状態管理
   const {
     getCategoryShowCount,
@@ -301,6 +296,11 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
       });
     }
   };
+
+  // ナビゲーション中はスケルトンを表示
+  if (navigation.state === "loading") {
+    return <BucketListSkeleton />;
+  }
 
   return (
     <AuthenticatedLayout title="やりたいこと一覧">
