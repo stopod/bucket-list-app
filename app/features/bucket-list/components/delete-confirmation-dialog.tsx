@@ -18,14 +18,29 @@ export function DeleteConfirmationDialog({
 }: DeleteConfirmationDialogProps) {
   if (!isOpen) return null;
 
+  // ESCキーでダイアログを閉じる
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && !isSubmitting) {
+      onClose();
+    }
+  };
+
   return (
     <>
       <LoadingOverlay 
         isVisible={isSubmitting} 
         message="削除中..."
       />
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60"
+        onClick={!isSubmitting ? onClose : undefined}
+        onKeyDown={handleKeyDown}
+        tabIndex={-1}
+      >
+        <div 
+          className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="mb-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               項目を削除しますか？

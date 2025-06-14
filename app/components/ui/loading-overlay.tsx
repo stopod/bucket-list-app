@@ -17,7 +17,7 @@ export function LoadingOverlay({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50",
+        "fixed inset-0 z-70 flex items-center justify-center bg-black bg-opacity-50",
         className
       )}
       role="dialog"

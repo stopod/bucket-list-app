@@ -202,6 +202,9 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
 
   // 削除確認ダイアログを開く
   const openDeleteDialog = (item: { id: string; title: string }) => {
+    // 詳細ダイアログを即座にクローズ
+    closeDetailDialog();
+    
     setDeleteDialog({
       isOpen: true,
       item,
@@ -211,11 +214,14 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
 
   // 削除確認ダイアログを閉じる
   const closeDeleteDialog = () => {
-    setDeleteDialog({
-      isOpen: false,
-      item: null,
-      isSubmitting: false
-    });
+    // 送信中でない場合のみ閉じることができる
+    if (!deleteDialog.isSubmitting) {
+      setDeleteDialog({
+        isOpen: false,
+        item: null,
+        isSubmitting: false
+      });
+    }
   };
 
   // 削除実行
@@ -233,9 +239,16 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
       
       document.body.appendChild(form);
       form.submit();
+      
+      // 削除処理が正常に開始された場合はダイアログを閉じる
+      // （ページリダイレクトが発生するため、通常はここには到達しない）
     } catch (error) {
       console.error("Delete error:", error);
+      // エラー時は送信状態を解除してダイアログを維持
       setDeleteDialog(prev => ({ ...prev, isSubmitting: false }));
+      
+      // TODO: 将来的にはユーザーにエラーメッセージを表示
+      alert("削除に失敗しました。もう一度お試しください。");
     }
   };
 
