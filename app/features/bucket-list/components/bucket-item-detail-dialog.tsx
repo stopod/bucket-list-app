@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui";
+import { Spinner, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui";
 import type { BucketItemWithCategory, Category, Status, Priority } from "../types";
 import { 
   PRIORITY_LABELS, 
@@ -98,61 +98,45 @@ export function BucketItemDetailDialog({
     return '期限: 未定';
   })();
 
-  // ESCキーでダイアログを閉じる
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      onClose();
-    }
-  };
-
-  // 背景クリックでダイアログを閉じる
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={handleBackdropClick}
-      onKeyDown={handleKeyDown}
-      tabIndex={-1}
-    >
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+    <Dialog open={isOpen} onOpenChange={!isSubmitting ? onClose : undefined}>
+      <DialogContent className="max-w-2xl w-full max-h-[90vh] overflow-y-auto p-0">
         {/* ヘッダー */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-start">
-          <div className="flex-1 pr-4">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              {item.title}
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {/* 優先度バッジ */}
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${priorityColor}`}>
-                {priorityDisplay}
-              </span>
-              {/* ステータスバッジ */}
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${statusColor}`}>
-                {statusDisplay}
-              </span>
-              {/* 公開状態 */}
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
-                item.is_public ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200'
-              }`}>
-                {item.is_public ? '公開' : '非公開'}
-              </span>
+        <DialogHeader className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex justify-between items-start">
+            <div className="flex-1 pr-4">
+              <DialogTitle className="text-xl font-semibold text-gray-900 mb-2">
+                {item.title}
+              </DialogTitle>
+              <div className="flex flex-wrap gap-2">
+                {/* 優先度バッジ */}
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${priorityColor}`}>
+                  {priorityDisplay}
+                </span>
+                {/* ステータスバッジ */}
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${statusColor}`}>
+                  {statusDisplay}
+                </span>
+                {/* 公開状態 */}
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
+                  item.is_public ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200'
+                }`}>
+                  {item.is_public ? '公開' : '非公開'}
+                </span>
+              </div>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="shrink-0"
+              disabled={isSubmitting}
+            >
+              ✕
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="shrink-0"
-            disabled={isSubmitting}
-          >
-            ✕
-          </Button>
-        </div>
+        </DialogHeader>
 
         {/* メインコンテンツ */}
         <div className="px-6 py-4 space-y-6">
@@ -221,16 +205,20 @@ export function BucketItemDetailDialog({
                 )}
               </h3>
               <div className="relative">
-                <select
+                <Select
                   value={item.status}
-                  onChange={(e) => onStatusChange(item.id, e.target.value)}
+                  onValueChange={(value) => onStatusChange(item.id, value)}
                   disabled={isSubmitting || statusChangingIds.has(item.id)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
                 >
-                  <option value="not_started">未着手</option>
-                  <option value="in_progress">進行中</option>
-                  <option value="completed">完了</option>
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not_started">未着手</SelectItem>
+                    <SelectItem value="in_progress">進行中</SelectItem>
+                    <SelectItem value="completed">完了</SelectItem>
+                  </SelectContent>
+                </Select>
                 {statusChangingIds.has(item.id) && (
                   <div className="absolute inset-y-0 right-8 flex items-center pointer-events-none">
                     <div className="text-xs text-blue-600">変更中...</div>
@@ -242,7 +230,7 @@ export function BucketItemDetailDialog({
         </div>
 
         {/* フッター（アクションボタン） */}
-        <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-between items-center">
+        <DialogFooter className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-between items-center">
           {!readOnly && (
             <div className="flex space-x-3">
               <Link to={`/bucket-list/edit/${item.id}`}>
@@ -263,8 +251,8 @@ export function BucketItemDetailDialog({
           <Button variant="outline" onClick={onClose} disabled={isSubmitting} className={readOnly ? 'mx-auto' : ''}>
             閉じる
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
