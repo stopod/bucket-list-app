@@ -9,6 +9,51 @@ export type {
   Json 
 } from './database';
 
+// Result type system - 関数型プログラミングアプローチ
+export type { Result } from './result';
+export { 
+  isSuccess, 
+  isFailure, 
+  success, 
+  failure, 
+  getOrElse, 
+  mapResult, 
+  mapError, 
+  flatMapResult 
+} from './result';
+
+// Error types - ドメイン別エラー分類
+export type {
+  ValidationError,
+  DatabaseError,
+  AuthenticationError,
+  NotFoundError,
+  ConflictError,
+  NetworkError,
+  BusinessRuleError,
+  ApplicationError,
+  BucketListError
+} from './errors';
+
+export {
+  createValidationError,
+  createDatabaseError,
+  createAuthenticationError,
+  createNotFoundError,
+  createConflictError,
+  createNetworkError,
+  createBusinessRuleError,
+  createApplicationError,
+  isValidationError,
+  isDatabaseError,
+  isAuthenticationError,
+  isNotFoundError,
+  isConflictError,
+  isNetworkError,
+  isBusinessRuleError,
+  isApplicationError
+} from './errors';
+
 // Common application types
 export interface ApiError {
   message: string;

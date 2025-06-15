@@ -38,6 +38,22 @@ docker compose up -d
 - **Dependency Injection**: Factory Pattern によるDI
 - **Type Safety**: TypeScript による型安全性
 - **SSR**: React Router v7 による Server-Side Rendering
+- **Functional Programming**: Result型による安全なエラーハンドリング（オプション）
+
+### プログラミングアプローチ
+
+#### 1. 従来型アプローチ（既存実装）
+- クラスベースのService層
+- try-catch による例外処理
+- Promise ベースの非同期処理
+
+#### 2. 関数型アプローチ（Result型統合）
+- 関数型Service層（`functional-bucket-list-service.ts`）
+- Result<T, E> による型安全なエラーハンドリング
+- 純粋なビジネスロジック関数（`business-logic.ts`）
+- 関数合成とコンビネーター活用
+
+**選択指針**: 新機能は関数型アプローチを推奨、既存機能は段階的移行または併用
 
 ## 開発ガイドライン
 
@@ -57,6 +73,7 @@ docker compose up -d
    - Repository層でのエラー変換
    - ユーザーフレンドリーなエラーメッセージ
    - 適切なHTTPステータスコード
+   - **Result型推奨**: 新規実装ではResult<T, E>による型安全なエラーハンドリング
 
 ### ファイル構成規則
 
@@ -66,12 +83,21 @@ app/
 │   ├── components/                 # UI コンポーネント
 │   ├── repositories/              # データアクセス層
 │   ├── services/                  # ビジネスロジック層
+│   │   ├── bucket-list-service.ts          # 従来型Service
+│   │   └── functional-bucket-list-service.ts  # 関数型Service（Result型）
 │   ├── lib/                       # ファクトリ等のユーティリティ
+│   │   ├── business-logic.ts      # 純粋なビジネスロジック関数
+│   │   └── repository-factory.ts  # DI ファクトリ
 │   └── types.ts                   # 型定義
 ├── shared/                        # 共通モジュール
 │   ├── layouts/                   # レイアウトコンポーネント
 │   ├── types/                     # 共通型定義
-│   └── utils/                     # 共通ユーティリティ
+│   │   ├── result.ts              # Result<T, E>型定義
+│   │   └── errors.ts              # ドメイン別エラー型
+│   ├── utils/                     # 共通ユーティリティ
+│   │   └── result-helpers.ts      # Result操作ヘルパー関数
+│   └── hooks/                     # 共通hooks
+│       └── use-result-operation.ts  # Result対応hooks
 └── routes/                        # ページコンポーネント
 ```
 
@@ -187,9 +213,11 @@ app/
 
 ### テスト
 - ✅ **テストインフラ**: Vitest + @testing-library/react導入済み
-- ✅ **Service層テスト**: 9テストケース実装済み
-- ✅ **コンポーネントテスト**: AchievementStats、CategoryProgress実装済み
-- 🔄 **追加予定**: より多くのコンポーネントテスト、統合テスト
+- ✅ **包括的テスト実装**: 93テスト実装済み（2025年1月15日時点）
+  - 関数型Service層テスト（functional-bucket-list-service）
+  - ビジネスロジック関数テスト（business-logic）
+  - コンポーネントテスト（AchievementStats、CategoryProgress）
+- ✅ **Result型テスト**: 型安全なエラーハンドリングの検証
 
 ## テスト規約
 
@@ -221,15 +249,39 @@ it('handles empty data', () => {
 ```
 
 #### 2. テスト対象の優先順位
-1. **ビジネスロジック**: Service層、Repository層
-2. **カスタムコンポーネント**: 独自実装のUIコンポーネント
-3. **統合テスト**: コンポーネント間の連携
-4. **外部ライブラリのコンポーネント**: テスト不要（shadcn-ui等）
+1. **ビジネスロジック**: Service層（関数型・従来型両方）、Repository層
+2. **純粋関数**: business-logic.ts内の計算・変換関数
+3. **Result型処理**: エラーハンドリングとResult型変換
+4. **カスタムコンポーネント**: 独自実装のUIコンポーネント
+5. **統合テスト**: コンポーネント間の連携
+6. **外部ライブラリのコンポーネント**: テスト不要（shadcn-ui等）
 
 #### 3. テストファイル構成
 - `__tests__` ディレクトリ内に配置
 - ファイル名: `[対象ファイル名].test.ts(x)`
 - Service層、Component層毎にディレクトリ分割
+
+#### 4. Result型テストの書き方
+```typescript
+// ✅ Good: Result型の成功・失敗両方をテスト
+it('有効なデータの場合、Result<Success>で新しい項目が返されること', async () => {
+  const result = await createBucketItem(repository)(validData)
+  
+  expect(isSuccess(result)).toBe(true)
+  if (isSuccess(result)) {
+    expect(result.data).toEqual(expectedItem)
+  }
+})
+
+it('無効なデータの場合、Result<Failure>で返されること', async () => {
+  const result = await createBucketItem(repository)(invalidData)
+  
+  expect(isFailure(result)).toBe(true)
+  if (isFailure(result)) {
+    expect(result.error.type).toBe('ValidationError')
+  }
+})
+```
 
 ### テスト実行コマンド
 ```bash
