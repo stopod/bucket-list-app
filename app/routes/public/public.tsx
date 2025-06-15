@@ -7,6 +7,7 @@ import { assertPriority, assertStatus } from "~/features/bucket-list/types";
 import { createBucketListService, createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui";
 import { BucketItemDetailDialog } from "~/features/bucket-list/components/bucket-item-detail-dialog";
 
 export function meta({}: Route.MetaArgs) {
@@ -179,58 +180,67 @@ export default function PublicBucketListPage({ loaderData }: Route.ComponentProp
 
               {/* カテゴリフィルター */}
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   カテゴリ
                 </label>
-                <select
-                  id="category"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                <Select
                   defaultValue={filters.category_id?.toString() || ""}
-                  onChange={(e) => updateFilter("category", e.target.value)}
+                  onValueChange={(value) => updateFilter("category", value)}
                 >
-                  <option value="">すべて</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id.toString()}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="すべて" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">すべて</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id.toString()}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* 優先度フィルター */}
               <div>
-                <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   優先度
                 </label>
-                <select
-                  id="priority"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                <Select
                   defaultValue={filters.priority || ""}
-                  onChange={(e) => updateFilter("priority", e.target.value)}
+                  onValueChange={(value) => updateFilter("priority", value)}
                 >
-                  <option value="">すべて</option>
-                  <option value="high">高</option>
-                  <option value="medium">中</option>
-                  <option value="low">低</option>
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="すべて" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">すべて</SelectItem>
+                    <SelectItem value="high">高</SelectItem>
+                    <SelectItem value="medium">中</SelectItem>
+                    <SelectItem value="low">低</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* ステータスフィルター */}
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   ステータス
                 </label>
-                <select
-                  id="status"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                <Select
                   defaultValue={filters.status || ""}
-                  onChange={(e) => updateFilter("status", e.target.value)}
+                  onValueChange={(value) => updateFilter("status", value)}
                 >
-                  <option value="">すべて</option>
-                  <option value="not_started">未着手</option>
-                  <option value="in_progress">進行中</option>
-                  <option value="completed">完了</option>
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="すべて" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">すべて</SelectItem>
+                    <SelectItem value="not_started">未着手</SelectItem>
+                    <SelectItem value="in_progress">進行中</SelectItem>
+                    <SelectItem value="completed">完了</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
