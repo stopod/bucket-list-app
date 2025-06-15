@@ -1,4 +1,5 @@
 import { cn } from "~/shared/utils";
+import { Card, CardContent } from "./card";
 
 interface SkeletonProps {
   className?: string;
@@ -41,32 +42,36 @@ export function Skeleton({
 // 統計カード用のスケルトン
 export function StatCardSkeleton() {
   return (
-    <div className="bg-white p-6 rounded-lg shadow">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-8 w-12" />
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-8 w-12" />
+          </div>
+          <Skeleton variant="circular" className="h-12 w-12" />
         </div>
-        <Skeleton variant="circular" className="h-12 w-12" />
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
 // プログレスバー用のスケルトン
 export function ProgressCardSkeleton() {
   return (
-    <div className="bg-white p-6 rounded-lg shadow space-y-4">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-5 w-24" />
-        <Skeleton className="h-4 w-12" />
-      </div>
-      <Skeleton className="h-2 w-full rounded-full" />
-      <div className="flex justify-between text-sm">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-4 w-16" />
-      </div>
-    </div>
+    <Card>
+      <CardContent className="p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-4 w-12" />
+        </div>
+        <Skeleton className="h-2 w-full rounded-full" />
+        <div className="flex justify-between text-sm">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
