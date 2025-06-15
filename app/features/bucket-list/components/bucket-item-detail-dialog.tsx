@@ -104,8 +104,8 @@ export function BucketItemDetailDialog({
       <DialogContent className="max-w-2xl w-full max-h-[90vh] overflow-y-auto p-0">
         {/* ヘッダー */}
         <DialogHeader className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex justify-between items-start">
-            <div className="flex-1 pr-4">
+          <div>
+            <div className="flex-1">
               <DialogTitle className="text-xl font-semibold text-gray-900 mb-2">
                 {item.title}
               </DialogTitle>
@@ -126,15 +126,6 @@ export function BucketItemDetailDialog({
                 </span>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="shrink-0"
-              disabled={isSubmitting}
-            >
-              ✕
-            </Button>
           </div>
         </DialogHeader>
 
