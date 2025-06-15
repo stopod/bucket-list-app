@@ -7,9 +7,8 @@ import type { BucketListError } from '~/shared/types/errors'
 
 // Mock error for testing
 const mockError: BucketListError = {
-  type: 'application',
+  type: 'ApplicationError',
   message: 'Test error',
-  timestamp: new Date().toISOString(),
 }
 
 describe('useResultOperation', () => {
