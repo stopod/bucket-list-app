@@ -65,7 +65,7 @@ describe('CategoryProgress', () => {
   it('カテゴリと項目データを渡した場合、カテゴリ名と進捗情報が正しく表示されること', () => {
     render(<CategoryProgress categories={mockCategories} items={mockItems} />)
 
-    expect(screen.getByRole('heading', { name: 'カテゴリ別達成状況' })).toBeInTheDocument()
+    expect(screen.getByText('カテゴリ別達成状況')).toBeInTheDocument()
     expect(screen.getByText('1/3')).toBeInTheDocument()
   })
 

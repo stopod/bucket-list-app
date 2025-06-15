@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { LoadingOverlay } from "~/components/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea, LoadingOverlay, Card, CardContent, CardHeader, CardTitle } from "~/components/ui";
 import type { BucketItemFormData, Category, Priority, DueType, Status } from "../types";
 
 interface BucketItemFormProps {
@@ -38,15 +38,15 @@ export function BucketItemForm({
   // カテゴリが読み込まれていない場合の表示
   if (categories.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="text-center py-8">
+      <Card>
+        <CardContent className="text-center py-8">
           <p className="text-gray-500 mb-4">カテゴリが見つかりません</p>
           <p className="text-sm text-gray-400">
             データベースにカテゴリが登録されていない可能性があります。<br/>
             管理者にお問い合わせください。
           </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -93,15 +93,16 @@ export function BucketItemForm({
         isVisible={isSubmitting} 
         message={mode === "create" ? "追加中..." : "更新中..."}
       />
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-gray-900">
             {mode === "create" ? "新しいやりたいことを追加" : "やりたいことを編集"}
-          </h2>
+          </CardTitle>
           <p className="text-gray-600 mt-2">
             {mode === "create" ? "あなたが人生でやりたいことを追加しましょう" : "項目の内容を編集できます"}
           </p>
-        </div>
+        </CardHeader>
+        <CardContent>
 
         <form onSubmit={handleSubmit} className="space-y-6">
         {/* タイトル */}
@@ -125,67 +126,75 @@ export function BucketItemForm({
           <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
             説明・詳細
           </label>
-          <textarea
+          <Textarea
             id="description"
             value={formData.description}
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
             placeholder="詳細な説明やメモを記入してください..."
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full"
           />
         </div>
 
         {/* カテゴリ、優先度、ステータス */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               カテゴリ <span className="text-red-500">*</span>
             </label>
-            <select
-              id="category"
-              value={formData.category_id}
-              onChange={(e) => setFormData(prev => ({ ...prev, category_id: Number(e.target.value) }))}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            <Select
+              value={formData.category_id.toString()}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: Number(value) }))}
             >
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
-            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               優先度
             </label>
-            <select
-              id="priority"
+            <Select
               value={formData.priority}
-              onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as Priority }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value as Priority }))}
             >
-              <option value="high">高</option>
-              <option value="medium">中</option>
-              <option value="low">低</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="high">高</SelectItem>
+                <SelectItem value="medium">中</SelectItem>
+                <SelectItem value="low">低</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               ステータス
             </label>
-            <select
-              id="status"
+            <Select
               value={formData.status}
-              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as Status }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as Status }))}
             >
-              <option value="not_started">未着手</option>
-              <option value="in_progress">進行中</option>
-              <option value="completed">完了</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="not_started">未着手</SelectItem>
+                <SelectItem value="in_progress">進行中</SelectItem>
+                <SelectItem value="completed">完了</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -286,8 +295,9 @@ export function BucketItemForm({
             {isSubmitting ? "保存中..." : mode === "create" ? "追加" : "更新"}
           </Button>
         </div>
-      </form>
-      </div>
+        </form>
+        </CardContent>
+      </Card>
     </>
   );
 }

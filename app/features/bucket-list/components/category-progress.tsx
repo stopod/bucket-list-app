@@ -1,5 +1,5 @@
 import type { Category, BucketItem, CategoryDisplayItem } from "~/features/bucket-list/types";
-import { ProgressCardSkeleton } from "~/components/ui";
+import { ProgressCardSkeleton, Card, CardContent, CardHeader, CardTitle } from "~/components/ui";
 
 interface CategoryProgressProps {
   categories?: Category[];
@@ -44,8 +44,11 @@ export function CategoryProgress({ categories, items, className = "", loading = 
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow p-4 sm:p-6 ${className}`}>
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">カテゴリ別達成状況</h2>
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold text-gray-900">カテゴリ別達成状況</CardTitle>
+      </CardHeader>
+      <CardContent>
       
       <div className="space-y-4">
         {categoryStats.map(({ category, totalItems, completedItems, inProgressItems, completionRate }) => (
@@ -118,6 +121,7 @@ export function CategoryProgress({ categories, items, className = "", loading = 
           })()}
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
