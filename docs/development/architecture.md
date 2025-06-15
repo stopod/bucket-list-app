@@ -11,6 +11,8 @@
 4. **🎯 Route-based**: ページ固有ロジックはルート近くに配置
 5. **🛡️ Layout認証**: レイアウトレベルでの認証制御
 6. **📦 最小依存**: 外部ライブラリへの依存を最小限に抑制
+7. **🧮 Type-safe Error Handling**: Result型による予測可能なエラーハンドリング（推奨）
+8. **🔄 Functional Programming Options**: 純粋関数とResult型による関数型アプローチ
 
 ## 📁 ディレクトリ構造
 
@@ -23,15 +25,24 @@ app/
 │       └── index.ts                 # 再export用インデックス
 │
 ├── features/                         # 機能別モジュール
-│   └── auth/                        # 認証機能
-│       ├── components/
-│       │   └── auth-guard.tsx       # 認証ガード（withAuth HOC）
-│       ├── hooks/
-│       │   └── use-auth.ts          # 認証フック
+│   ├── auth/                        # 認証機能
+│   │   ├── components/
+│   │   │   └── auth-guard.tsx       # 認証ガード（withAuth HOC）
+│   │   ├── hooks/
+│   │   │   └── use-auth.ts          # 認証フック
+│   │   ├── lib/
+│   │   │   └── auth-context.tsx     # 認証コンテキスト
+│   │   ├── types.ts                 # 認証関連型定義
+│   │   └── index.ts                 # 再export
+│   │
+│   └── bucket-list/                 # バケットリスト機能
+│       ├── services/
+│       │   ├── bucket-list-service.ts          # 従来型Service
+│       │   └── functional-bucket-list-service.ts  # 関数型Service（Result型）
 │       ├── lib/
-│       │   └── auth-context.tsx     # 認証コンテキスト
-│       ├── types.ts                 # 認証関連型定義
-│       └── index.ts                 # 再export
+│       │   ├── business-logic.ts    # 純粋なビジネスロジック関数
+│       │   └── repository-factory.ts  # DI ファクトリ
+│       └── types.ts                 # バケットリスト関連型定義
 │
 ├── shared/                          # 共通モジュール
 │   ├── layouts/
@@ -40,10 +51,15 @@ app/
 │   │   └── index.ts                 # レイアウトのexport
 │   ├── types/
 │   │   ├── database.ts              # データベース型定義
+│   │   ├── result.ts                # Result<T, E>型定義
+│   │   ├── errors.ts                # ドメイン別エラー型
 │   │   └── index.ts                 # 共通型のexport
-│   └── utils/
-│       ├── cn.ts                    # クラス名ユーティリティ
-│       └── index.ts                 # ユーティリティ関数
+│   ├── utils/
+│   │   ├── cn.ts                    # クラス名ユーティリティ
+│   │   ├── result-helpers.ts        # Result操作ヘルパー関数
+│   │   └── index.ts                 # ユーティリティ関数
+│   └── hooks/
+│       └── use-result-operation.ts  # Result対応hooks
 │
 ├── routes/                          # ページルート
 │   ├── auth/                        # 認証関連ページ
@@ -423,14 +439,34 @@ export function BucketListItem({ item }: { item: BucketListItem }) {
 ### **React Router標準機能のみ使用**
 
 ```typescript
-// ✅ データ取得：loader
+// ✅ データ取得：loader（従来型）
 export async function loader() {
   return json({ items: await getItems() });
 }
 
-// ✅ データ更新：action
+// ✅ データ取得：loader（Result型）
+export async function loader() {
+  const result = await getUserBucketItems(repository)('user-id');
+  
+  if (isFailure(result)) {
+    throw new Response('Failed to load items', { 
+      status: 500, 
+      statusText: result.error.message 
+    });
+  }
+  
+  return json({ items: result.data });
+}
+
+// ✅ データ更新：action（Result型）
 export async function action({ request }) {
-  const result = await updateItem(request);
+  const formData = await request.formData();
+  const result = await createBucketItem(repository)(formData);
+  
+  if (isFailure(result)) {
+    return json({ error: result.error.message }, { status: 400 });
+  }
+  
   return redirect('/app/bucket-list'); // revalidate
 }
 
@@ -499,6 +535,13 @@ export function BucketListPage() {
 ✅ PascalCase: BucketListItem.tsx (どちらでも可)
 ❌ snake_case: bucket_list_item.tsx
 ❌ camelCase: bucketListItem.tsx
+
+# Result型関連ファイル
+✅ result.ts: Result型定義
+✅ errors.ts: エラー型定義
+✅ result-helpers.ts: Result操作関数
+✅ functional-bucket-list-service.ts: 関数型Service
+✅ business-logic.ts: 純粋関数群
 ```
 
 ### **2. Import/Export規則**
@@ -514,6 +557,8 @@ import { BucketListItem, useBucketList } from '@/features/bucket-list';
 ```
 
 ### **3. エラーハンドリング**
+
+#### **従来型アプローチ（try-catch）**
 ```typescript
 // ✅ SSRでのエラーハンドリング
 export async function loader() {
@@ -533,6 +578,44 @@ export async function loader() {
     throw new Response('Server error', { status: 500 });
   }
 }
+```
+
+#### **関数型アプローチ（Result型）**
+```typescript
+// ✅ Result型によるエラーハンドリング
+export async function loader() {
+  const result = await getUserBucketItems(repository)('user-id');
+  
+  if (isFailure(result)) {
+    // 型安全なエラー処理
+    switch (result.error.type) {
+      case 'DatabaseError':
+        throw new Response('Database error', { status: 500 });
+      case 'AuthenticationError':
+        throw new Response('Unauthorized', { status: 401 });
+      default:
+        throw new Response('Server error', { status: 500 });
+    }
+  }
+  
+  return json({ items: result.data });
+}
+
+// ✅ 関数型Service関数
+const createBucketItem = (repository: BucketListRepository) =>
+  async (data: BucketItemInsert): Promise<Result<BucketItem, BucketListError>> => {
+    // バリデーション
+    const validationResult = validateBucketItemInsert(data);
+    if (isFailure(validationResult)) {
+      return validationResult;
+    }
+    
+    // データベース操作をResult型でラップ
+    return wrapAsync(
+      () => repository.create(validationResult.data),
+      (error: unknown) => handleRepositoryError(error, 'createBucketItem')
+    );
+  };
 ```
 
 ## 🔮 将来の拡張性
@@ -593,6 +676,7 @@ class SendGridEmailService implements EmailService {
 - [ ] `features/` 下に機能フォルダを作成
 - [ ] `components/`, `hooks/`, `lib/`, `types.ts`, `index.ts` を適切に配置
 - [ ] ビジネスロジックはhooksまたはcontextに分離
+- [ ] **関数型アプローチを推奨**: 新機能はResult型とビジネスロジック関数で実装
 - [ ] 汎用的なコンポーネントは `components/ui/` への移動を検討
 - [ ] 適切なre-exportで外部からのアクセスを制御
 
@@ -606,6 +690,8 @@ class SendGridEmailService implements EmailService {
 - [ ] SSR-first原則に従っているか
 - [ ] 認証チェックがサーバーサイドで適切に実装されているか
 - [ ] 型定義が使用場所近接の原則に従っているか
+- [ ] **Result型移行検討**: 既存機能の関数型アプローチへの段階的移行
+- [ ] **純粋関数抽出**: ビジネスロジックの`business-logic.ts`への分離
 - [ ] セキュリティホールが発生していないか
 - [ ] パフォーマンスに悪影響がないか
 
