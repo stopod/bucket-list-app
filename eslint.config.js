@@ -3,7 +3,6 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
 import json from "@eslint/json";
-import css from "@eslint/css";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
@@ -17,7 +16,14 @@ export default defineConfig([
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
   },
   tseslint.configs.recommended,
-  pluginReact.configs.flat.recommended,
+  {
+    ...pluginReact.configs.flat.recommended,
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+  },
   {
     files: ["**/*.json"],
     plugins: { json },
@@ -30,10 +36,10 @@ export default defineConfig([
     language: "json/jsonc",
     extends: ["json/recommended"],
   },
+  // Skip CSS files for now to avoid TailwindCSS v4 parsing issues
   {
     files: ["**/*.css"],
-    plugins: { css },
-    language: "css/css",
-    extends: ["css/recommended"],
+    rules: {},
+    ignores: ["**/*.css"],
   },
 ]);

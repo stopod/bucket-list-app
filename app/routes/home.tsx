@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import type { Route } from "./+types/home";
 import { Link, useNavigate } from "react-router";
 import { Button, MobileMenu } from "~/components/ui";

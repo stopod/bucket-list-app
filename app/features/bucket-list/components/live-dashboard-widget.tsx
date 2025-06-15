@@ -3,7 +3,7 @@
  * Result型対応のhookを使用したリアルタイムデータ表示
  */
 
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import type { BucketListRepository } from "~/features/bucket-list/repositories";

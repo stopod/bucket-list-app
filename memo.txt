@@ -1,97 +1,142 @@
-Run npx prettier --check .
-Checking formatting...
-[warn] .github/workflows/ci.yml
-[warn] app/app.css
-[warn] app/components/ui/badge.tsx
-[warn] app/components/ui/button.tsx
-[warn] app/components/ui/card.tsx
-[warn] app/components/ui/checkbox.tsx
-[warn] app/components/ui/dialog.tsx
-[warn] app/components/ui/index.ts
-[warn] app/components/ui/input.tsx
-[warn] app/components/ui/loading-overlay.tsx
-[warn] app/components/ui/mobile-menu.tsx
-[warn] app/components/ui/select.tsx
-[warn] app/components/ui/skeleton-loader.tsx
-[warn] app/components/ui/spinner.tsx
-[warn] app/components/ui/textarea.tsx
-[warn] app/features/auth/components/auth-guard.tsx
-[warn] app/features/auth/hooks/use-auth.ts
-[warn] app/features/auth/index.ts
-[warn] app/features/auth/lib/auth-context.tsx
-[warn] app/features/auth/types.ts
-[warn] app/features/bucket-list/components/__tests__/achievement-stats.test.tsx
-[warn] app/features/bucket-list/components/__tests__/category-progress.test.tsx
-[warn] app/features/bucket-list/components/achievement-stats.tsx
-[warn] app/features/bucket-list/components/bucket-item-detail-dialog.tsx
-[warn] app/features/bucket-list/components/bucket-item-form.tsx
-[warn] app/features/bucket-list/components/category-progress.tsx
-[warn] app/features/bucket-list/components/delete-confirmation-dialog.tsx
-[warn] app/features/bucket-list/components/expandable-text.tsx
-[warn] app/features/bucket-list/components/index.ts
-[warn] app/features/bucket-list/components/live-dashboard-widget.tsx
-[warn] app/features/bucket-list/components/quick-item-creator.tsx
-[warn] app/features/bucket-list/components/quick-status-changer.tsx
-[warn] app/features/bucket-list/hooks/index.ts
-[warn] app/features/bucket-list/hooks/use-bucket-list-operations.ts
-[warn] app/features/bucket-list/hooks/use-expandable-list.ts
-[warn] app/features/bucket-list/lib/__tests__/business-logic.test.ts
-[warn] app/features/bucket-list/lib/business-logic.ts
-[warn] app/features/bucket-list/lib/index.ts
-[warn] app/features/bucket-list/lib/repository-factory.ts
-[warn] app/features/bucket-list/lib/schemas.ts
-[warn] app/features/bucket-list/repositories/bucket-list-repository.ts
-[warn] app/features/bucket-list/repositories/index.ts
-[warn] app/features/bucket-list/repositories/supabase-bucket-list-repository.ts
-[warn] app/features/bucket-list/services/__tests__/bucket-list-service.test.ts
-[warn] app/features/bucket-list/services/__tests__/functional-bucket-list-service.test.ts
-[warn] app/features/bucket-list/services/functional-bucket-list-service.ts
-[warn] app/features/bucket-list/services/index.ts
-[warn] app/features/bucket-list/types.ts
-[warn] app/lib/auth-server.ts
-[warn] app/lib/security-utils.ts
-[warn] app/lib/supabase.ts
-[warn] app/routes/auth/login.tsx
-[warn] app/routes/auth/register.tsx
-[warn] app/routes/bucket-list/add.tsx
-[warn] app/routes/bucket-list/bucket-list.tsx
-[warn] app/routes/bucket-list/delete.$id.tsx
-[warn] app/routes/bucket-list/edit.$id.tsx
-[warn] app/routes/dashboard/dashboard.tsx
-[warn] app/routes/home.tsx
-[warn] app/routes/public/public.tsx
-[warn] app/shared/hooks/__tests__/use-result-operation.test.tsx
-[warn] app/shared/hooks/index.ts
-[warn] app/shared/hooks/use-async-operation.ts
-[warn] app/shared/hooks/use-result-operation.ts
-[warn] app/shared/layouts/app-layout.tsx
-[warn] app/shared/layouts/authenticated-layout.tsx
-[warn] app/shared/layouts/index.ts
-[warn] app/shared/types/errors.ts
-[warn] app/shared/types/index.ts
-[warn] app/shared/types/result.ts
-[warn] app/shared/utils/cn.ts
-[warn] app/shared/utils/index.ts
-[warn] app/shared/utils/result-helpers.ts
-[warn] CLAUDE.md
-[warn] components.json
-[warn] compose.yaml
-[warn] docs/archive/cleanup-analysis.md
-[warn] docs/archive/learning-materials.md
-[warn] docs/development/architecture.md
-[warn] docs/development/auth-sequence-diagrams.md
-[warn] docs/development/authentication.md
-[warn] docs/development/database.md
-[warn] docs/development/result-type-integration-plan.md
-[warn] docs/development/testing.md
-[warn] docs/project/requirements.md
-[warn] docs/project/roadmap.md
-[warn] docs/project/status.md
-[warn] docs/templates/implementation-guide.md
-[warn] docs/templates/project-status.md
-[warn] docs/templates/requirements.md
-[warn] eslint.config.js
-[warn] test-setup.ts
-[warn] vitest.config.ts
-[warn] Code style issues found in 93 files. Run Prettier with --write to fix.
-Error: Process completed with exit code 1.
+Run npx eslint app/ --ext .ts,.tsx,.js,.jsx || echo "ESLint issues found but not blocking CI"
+Warning: React version not specified in eslint-plugin-react settings. See https://github.com/jsx-eslint/eslint-plugin-react#configuration .
+
+/home/runner/work/bucket-list-app/bucket-list-app/app/app.css
+   4:23  error  Parsing error: ")" is expected
+  22:23  error  Parsing error: Semicolon or block is expected
+
+/home/runner/work/bucket-list-app/bucket-list-app/app/components/ui/loading-overlay.tsx
+Error:   18:5  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   27:7  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   28:9  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   29:9  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+
+/home/runner/work/bucket-list-app/bucket-list-app/app/components/ui/mobile-menu.tsx
+Error:    20:5   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    22:7   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    27:9   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    33:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    48:9   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    55:7   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    60:9   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    62:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    63:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    64:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    69:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    75:17  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    87:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    88:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    89:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    96:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:    97:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   102:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   108:17  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   118:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   123:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   129:17  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   139:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   144:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   150:17  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   162:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   163:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+
+/home/runner/work/bucket-list-app/bucket-list-app/app/components/ui/skeleton-loader.tsx
+Error:   29:5   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   45:5   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   46:7   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   47:9   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   285:21  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   286:21  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   293:13  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   294:15  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   303:11  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   306:15  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   310:17  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   314:19  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   318:17  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   374:23  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   380:25  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   381:27  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   384:27  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   386:29  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   392:29  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   401:25  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   402:27  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   403:29  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   407:29  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   410:27  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   411:29  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   424:29  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   429:27  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   430:29  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   437:31  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   451:11  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   452:13  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   455:13  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+Error:   467:9   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+
+/home/runner/work/bucket-list-app/bucket-list-app/app/shared/hooks/use-async-operation.ts
+Error:     4:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:    12:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:    15:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:    16:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:    28:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:    91:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:   164:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:   165:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/runner/work/bucket-list-app/bucket-list-app/app/shared/hooks/use-result-operation.ts
+Error:    34:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:   131:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/runner/work/bucket-list-app/bucket-list-app/app/shared/layouts/app-layout.tsx
+Error:    2:10  error  'MobileMenu' is defined but never used   @typescript-eslint/no-unused-vars
+Error:   18:5   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   20:9   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   21:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   22:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   23:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   24:17  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   25:19  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   29:17  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   38:7   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   40:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   41:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   42:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   50:7   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   51:9   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   52:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   53:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   55:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+
+/home/runner/work/bucket-list-app/bucket-list-app/app/shared/layouts/authenticated-layout.tsx
+Error:    4:10  error  'Button' is defined but never used       @typescript-eslint/no-unused-vars
+Error:   13:3   error  'title' is defined but never used        @typescript-eslint/no-unused-vars
+Error:   55:5   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   56:7   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   57:9   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   58:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   60:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   61:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   62:17  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   69:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   70:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   80:7   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   83:7   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   84:9   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   85:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   86:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+Error:   88:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+
+/home/runner/work/bucket-list-app/bucket-list-app/app/shared/types/index.ts
+Error:   64:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:   70:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/runner/work/bucket-list-app/bucket-list-app/app/shared/utils/result-helpers.ts
+Error:   131:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:   131:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:   132:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 996 problems (996 errors, 0 warnings)
+
+ESLint issues found but not blocking CI

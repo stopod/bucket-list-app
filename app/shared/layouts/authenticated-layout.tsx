@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "~/features/auth";
-import { Button, MobileMenu } from "~/components/ui";
+import { MobileMenu } from "~/components/ui";
 
 interface AuthenticatedLayoutProps {
   children: React.ReactNode;

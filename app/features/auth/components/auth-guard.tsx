@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth } from "../lib/auth-context";
 import { Button } from "~/components/ui/button";

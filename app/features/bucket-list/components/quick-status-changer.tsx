@@ -3,7 +3,7 @@
  * Result型対応のhookを使用したリアルタイム更新
  */
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Button } from "~/components/ui/button";
 import { LoadingOverlay } from "~/components/ui/loading-overlay";
 import type { BucketItem, Status } from "~/features/bucket-list/types";

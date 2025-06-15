@@ -3,7 +3,7 @@
  * Result型対応のhookを使用したインライン項目作成
  */
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { LoadingOverlay } from "~/components/ui/loading-overlay";

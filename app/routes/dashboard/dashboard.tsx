@@ -1,3 +1,4 @@
+import React from "react";
 import type { Route } from "./+types/dashboard";
 import { Link, useNavigation } from "react-router";
 import { AuthenticatedLayout } from "~/shared/layouts";

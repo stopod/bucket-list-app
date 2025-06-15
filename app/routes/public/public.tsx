@@ -1,6 +1,6 @@
+import React, { useState } from "react";
 import type { Route } from "./+types/public";
 import { useSearchParams } from "react-router";
-import { useState } from "react";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import {
   getServerAuth,
