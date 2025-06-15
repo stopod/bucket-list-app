@@ -11,6 +11,12 @@
 - `npm run start` - 本番サーバーを起動
 - `npm run typecheck` - TypeScript型チェックを実行
 
+### テスト・品質管理
+
+- `npm test` - テスト実行
+- `npm run test:ui` - UI付きテスト実行
+- `npm run test:coverage` - カバレッジ測定
+
 ### Docker開発ワークフロー
 
 ```bash
@@ -21,6 +27,21 @@ npm run dev
 # 本番時（全部Docker）
 docker compose up -d
 ```
+
+## CI/CD パイプライン
+
+### GitHub Actions ワークフロー
+
+基本的なCI設定により、以下を自動実行：
+
+#### CI - `.github/workflows/ci.yml`
+**トリガー**: main・developブランチへのpush、PRの作成・更新
+**実行内容**:
+- Node.js 18.x, 20.x でのマトリックステスト
+- TypeScript型チェック
+- 全テスト実行
+- ビルド確認
+- Prettier・ESLint（参考情報として実行）
 
 ## アーキテクチャ概要
 
