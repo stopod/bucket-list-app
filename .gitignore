@@ -5,6 +5,9 @@
 /.react-router/
 /build/
 
+# Coverage reports
+/coverage/
+
 # 環境変数
 .env
 .env.local
