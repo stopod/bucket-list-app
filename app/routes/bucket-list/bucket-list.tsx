@@ -172,7 +172,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   // フィルター更新関数
   const updateFilter = (key: string, value: string | undefined) => {
     const newParams = new URLSearchParams(searchParams);
-    if (value && value !== "") {
+    if (value && value !== "" && value !== "all") {
       newParams.set(key, value);
     } else {
       newParams.delete(key);
@@ -366,14 +366,14 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                   カテゴリ
                 </label>
                 <Select
-                  defaultValue={filters.category_id?.toString() || ""}
+                  defaultValue={filters.category_id?.toString() || "all"}
                   onValueChange={(value) => updateFilter("category", value)}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="すべて" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">すべて</SelectItem>
+                    <SelectItem value="all">すべて</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id.toString()}>
                         {category.name}
@@ -389,14 +389,14 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                   優先度
                 </label>
                 <Select
-                  defaultValue={filters.priority || ""}
+                  defaultValue={filters.priority || "all"}
                   onValueChange={(value) => updateFilter("priority", value)}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="すべて" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">すべて</SelectItem>
+                    <SelectItem value="all">すべて</SelectItem>
                     <SelectItem value="high">高</SelectItem>
                     <SelectItem value="medium">中</SelectItem>
                     <SelectItem value="low">低</SelectItem>
@@ -410,14 +410,14 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                   ステータス
                 </label>
                 <Select
-                  defaultValue={filters.status || ""}
+                  defaultValue={filters.status || "all"}
                   onValueChange={(value) => updateFilter("status", value)}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="すべて" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">すべて</SelectItem>
+                    <SelectItem value="all">すべて</SelectItem>
                     <SelectItem value="not_started">未着手</SelectItem>
                     <SelectItem value="in_progress">進行中</SelectItem>
                     <SelectItem value="completed">完了</SelectItem>
