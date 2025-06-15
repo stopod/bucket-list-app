@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback } from "react";
 import type {
   BucketItem,
   BucketItemInsert,
@@ -7,11 +7,14 @@ import type {
   UserBucketStats,
   BucketListFilters,
   BucketListSort,
-} from '~/features/bucket-list/types';
-import type { BucketListRepository } from '~/features/bucket-list/repositories';
-import type { Result } from '~/shared/types/result';
-import type { BucketListError } from '~/shared/types/errors';
-import { useResultOperation, useParallelResultOperations } from '~/shared/hooks/use-result-operation';
+} from "~/features/bucket-list/types";
+import type { BucketListRepository } from "~/features/bucket-list/repositories";
+import type { Result } from "~/shared/types/result";
+import type { BucketListError } from "~/shared/types/errors";
+import {
+  useResultOperation,
+  useParallelResultOperations,
+} from "~/shared/hooks/use-result-operation";
 import {
   createFunctionalBucketListService,
   getUserBucketItems,
@@ -23,7 +26,7 @@ import {
   getCategories,
   getUserStats,
   getDashboardData,
-} from '~/features/bucket-list/services/functional-bucket-list-service';
+} from "~/features/bucket-list/services/functional-bucket-list-service";
 
 /**
  * バケットリスト項目の取得Hook（Result型対応）
@@ -37,8 +40,13 @@ export function useBucketListItems(repository: BucketListRepository) {
 /**
  * カテゴリ付きバケットリスト項目の取得Hook
  */
-export function useBucketListItemsWithCategory(repository: BucketListRepository) {
-  return useResultOperation<(BucketItem & { category: Category })[], BucketListError>({
+export function useBucketListItemsWithCategory(
+  repository: BucketListRepository,
+) {
+  return useResultOperation<
+    (BucketItem & { category: Category })[],
+    BucketListError
+  >({
     initialData: [],
   });
 }
@@ -58,10 +66,10 @@ export function useCreateBucketItem(
   options: {
     onSuccess?: (item: BucketItem) => void;
     onError?: (error: BucketListError) => void;
-  } = {}
+  } = {},
 ) {
   const { onSuccess, onError } = options;
-  
+
   return useResultOperation<BucketItem, BucketListError>({
     onSuccess,
     onError,
@@ -76,10 +84,10 @@ export function useUpdateBucketItem(
   options: {
     onSuccess?: (item: BucketItem) => void;
     onError?: (error: BucketListError) => void;
-  } = {}
+  } = {},
 ) {
   const { onSuccess, onError } = options;
-  
+
   return useResultOperation<BucketItem, BucketListError>({
     onSuccess,
     onError,
@@ -94,10 +102,10 @@ export function useDeleteBucketItem(
   options: {
     onSuccess?: () => void;
     onError?: (error: BucketListError) => void;
-  } = {}
+  } = {},
 ) {
   const { onSuccess, onError } = options;
-  
+
   return useResultOperation<void, BucketListError>({
     onSuccess,
     onError,
@@ -124,14 +132,20 @@ export function useUserStats(repository: BucketListRepository) {
  * ダッシュボードデータ取得Hook（複合データ）
  */
 export function useDashboardData(repository: BucketListRepository) {
-  return useResultOperation<{
-    items: (BucketItem & { category: Category })[];
-    categories: Category[];
-    stats: UserBucketStats;
-    itemsByCategory: Array<{ category: Category; items: (BucketItem & { category: Category })[] }>;
-    recentCompletedItems: BucketItem[];
-    upcomingItems: BucketItem[];
-  }, BucketListError>({
+  return useResultOperation<
+    {
+      items: (BucketItem & { category: Category })[];
+      categories: Category[];
+      stats: UserBucketStats;
+      itemsByCategory: Array<{
+        category: Category;
+        items: (BucketItem & { category: Category })[];
+      }>;
+      recentCompletedItems: BucketItem[];
+      upcomingItems: BucketItem[];
+    },
+    BucketListError
+  >({
     initialData: {
       items: [],
       categories: [],
@@ -162,7 +176,7 @@ export function useBucketListOperations(
     onItemUpdated?: (item: BucketItem) => void;
     onItemDeleted?: () => void;
     onError?: (error: BucketListError) => void;
-  } = {}
+  } = {},
 ) {
   const { onItemCreated, onItemUpdated, onItemDeleted, onError } = options;
 
@@ -192,75 +206,107 @@ export function useBucketListOperations(
   const operations = {
     // データ取得操作
     loadUserItems: useCallback(
-      async (profileId: string, filters?: BucketListFilters, sort?: BucketListSort) => {
-        return await fetchItems.execute(functionalService.getUserBucketItems, profileId, filters, sort);
+      async (
+        profileId: string,
+        filters?: BucketListFilters,
+        sort?: BucketListSort,
+      ) => {
+        return await fetchItems.execute(
+          functionalService.getUserBucketItems,
+          profileId,
+          filters,
+          sort,
+        );
       },
-      [fetchItems, functionalService]
+      [fetchItems, functionalService],
     ),
 
     loadUserItemsWithCategory: useCallback(
-      async (profileId: string, filters?: BucketListFilters, sort?: BucketListSort) => {
-        return await fetchItemsWithCategory.execute(functionalService.getUserBucketItemsWithCategory, profileId, filters, sort);
+      async (
+        profileId: string,
+        filters?: BucketListFilters,
+        sort?: BucketListSort,
+      ) => {
+        return await fetchItemsWithCategory.execute(
+          functionalService.getUserBucketItemsWithCategory,
+          profileId,
+          filters,
+          sort,
+        );
       },
-      [fetchItemsWithCategory, functionalService]
+      [fetchItemsWithCategory, functionalService],
     ),
 
     loadItem: useCallback(
       async (id: string) => {
         return await fetchItem.execute(functionalService.getBucketItem, id);
       },
-      [fetchItem, functionalService]
+      [fetchItem, functionalService],
     ),
 
     // データ変更操作
     createItem: useCallback(
       async (data: BucketItemInsert) => {
-        return await createItem.execute(functionalService.createBucketItem, data);
+        return await createItem.execute(
+          functionalService.createBucketItem,
+          data,
+        );
       },
-      [createItem, functionalService]
+      [createItem, functionalService],
     ),
 
     updateItem: useCallback(
       async (id: string, data: BucketItemUpdate) => {
-        return await updateItem.execute(functionalService.updateBucketItem, id, data);
+        return await updateItem.execute(
+          functionalService.updateBucketItem,
+          id,
+          data,
+        );
       },
-      [updateItem, functionalService]
+      [updateItem, functionalService],
     ),
 
     completeItem: useCallback(
       async (id: string, comment?: string) => {
-        return await updateItem.execute(functionalService.completeBucketItem, id, comment);
+        return await updateItem.execute(
+          functionalService.completeBucketItem,
+          id,
+          comment,
+        );
       },
-      [updateItem, functionalService]
+      [updateItem, functionalService],
     ),
 
     deleteItem: useCallback(
       async (id: string) => {
         return await deleteItem.execute(functionalService.deleteBucketItem, id);
       },
-      [deleteItem, functionalService]
+      [deleteItem, functionalService],
     ),
 
     // メタデータ取得操作
-    loadCategories: useCallback(
-      async () => {
-        return await fetchCategories.execute(functionalService.getCategories);
-      },
-      [fetchCategories, functionalService]
-    ),
+    loadCategories: useCallback(async () => {
+      return await fetchCategories.execute(functionalService.getCategories);
+    }, [fetchCategories, functionalService]),
 
     loadUserStats: useCallback(
       async (profileId: string) => {
-        return await fetchUserStats.execute(functionalService.getUserStats, profileId);
+        return await fetchUserStats.execute(
+          functionalService.getUserStats,
+          profileId,
+        );
       },
-      [fetchUserStats, functionalService]
+      [fetchUserStats, functionalService],
     ),
 
     loadDashboardData: useCallback(
       async (profileId: string) => {
-        return await fetchDashboardData.execute(functionalService.getDashboardData, profileId);
+        return await fetchDashboardData.execute(
+          functionalService.getDashboardData,
+          profileId,
+        );
       },
-      [fetchDashboardData, functionalService]
+      [fetchDashboardData, functionalService],
     ),
 
     // 状態リセット操作
@@ -275,9 +321,15 @@ export function useBucketListOperations(
       fetchUserStats.reset();
       fetchDashboardData.reset();
     }, [
-      fetchItems, fetchItemsWithCategory, fetchItem,
-      createItem, updateItem, deleteItem,
-      fetchCategories, fetchUserStats, fetchDashboardData
+      fetchItems,
+      fetchItemsWithCategory,
+      fetchItem,
+      createItem,
+      updateItem,
+      deleteItem,
+      fetchCategories,
+      fetchUserStats,
+      fetchDashboardData,
     ]),
 
     // エラークリア操作
@@ -292,9 +344,15 @@ export function useBucketListOperations(
       fetchUserStats.clearError();
       fetchDashboardData.clearError();
     }, [
-      fetchItems, fetchItemsWithCategory, fetchItem,
-      createItem, updateItem, deleteItem,
-      fetchCategories, fetchUserStats, fetchDashboardData
+      fetchItems,
+      fetchItemsWithCategory,
+      fetchItem,
+      createItem,
+      updateItem,
+      deleteItem,
+      fetchCategories,
+      fetchUserStats,
+      fetchDashboardData,
     ]),
   };
 
@@ -339,12 +397,25 @@ export function useBucketListOperations(
     isDashboardLoaded: fetchDashboardData.isSuccess,
 
     // 総合状態
-    hasAnyError: !!(fetchItems.error || fetchItem.error || createItem.error || 
-                   updateItem.error || deleteItem.error || fetchCategories.error ||
-                   fetchUserStats.error || fetchDashboardData.error),
-    isAnyLoading: fetchItems.isLoading || fetchItem.isLoading || createItem.isLoading ||
-                 updateItem.isLoading || deleteItem.isLoading || fetchCategories.isLoading ||
-                 fetchUserStats.isLoading || fetchDashboardData.isLoading,
+    hasAnyError: !!(
+      fetchItems.error ||
+      fetchItem.error ||
+      createItem.error ||
+      updateItem.error ||
+      deleteItem.error ||
+      fetchCategories.error ||
+      fetchUserStats.error ||
+      fetchDashboardData.error
+    ),
+    isAnyLoading:
+      fetchItems.isLoading ||
+      fetchItem.isLoading ||
+      createItem.isLoading ||
+      updateItem.isLoading ||
+      deleteItem.isLoading ||
+      fetchCategories.isLoading ||
+      fetchUserStats.isLoading ||
+      fetchDashboardData.isLoading,
   };
 
   return {

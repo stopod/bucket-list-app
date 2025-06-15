@@ -1,4 +1,8 @@
-import type { Tables, TablesInsert, TablesUpdate } from "~/shared/types/database";
+import type {
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from "~/shared/types/database";
 
 // データベース型のエイリアス
 export type BucketItem = Tables<"bucket_items">;
@@ -10,7 +14,11 @@ export type UserBucketStats = Tables<"user_bucket_stats">;
 // アプリケーション固有の型定義（データベースの制約と一致）
 export type Priority = "high" | "medium" | "low";
 export type Status = "not_started" | "in_progress" | "completed";
-export type DueType = "specific_date" | "this_year" | "next_year" | "unspecified";
+export type DueType =
+  | "specific_date"
+  | "this_year"
+  | "next_year"
+  | "unspecified";
 
 // データベース型との整合性を保つためのアサーション関数
 export function assertPriority(priority: string): Priority {
@@ -28,7 +36,11 @@ export function assertStatus(status: string): Status {
 }
 
 export function assertDueType(dueType: string): DueType {
-  if (!["specific_date", "this_year", "next_year", "unspecified"].includes(dueType)) {
+  if (
+    !["specific_date", "this_year", "next_year", "unspecified"].includes(
+      dueType,
+    )
+  ) {
     throw new Error(`Invalid due type: ${dueType}`);
   }
   return dueType as DueType;
@@ -110,6 +122,12 @@ export const STATUS_COLORS: Record<Status, string> = {
 } as const;
 
 // 派生型定義 - Pick/Omitを使った型安全な部分型
-export type CategoryDisplayItem = Pick<BucketItem, 'id' | 'title' | 'status' | 'category_id'>
-export type StatsSummary = Pick<BucketItem, 'status' | 'completed_at'>
-export type MinimalBucketItem = Pick<BucketItem, 'id' | 'title' | 'status' | 'category_id' | 'priority'>
+export type CategoryDisplayItem = Pick<
+  BucketItem,
+  "id" | "title" | "status" | "category_id"
+>;
+export type StatsSummary = Pick<BucketItem, "status" | "completed_at">;
+export type MinimalBucketItem = Pick<
+  BucketItem,
+  "id" | "title" | "status" | "category_id" | "priority"
+>;

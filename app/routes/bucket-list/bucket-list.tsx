@@ -2,12 +2,28 @@ import type { Route } from "./+types/bucket-list";
 import { Link, useSearchParams, useNavigation } from "react-router";
 import { useState } from "react";
 import { AuthenticatedLayout } from "~/shared/layouts";
-import { getServerAuth, createAuthenticatedSupabaseClient } from "~/lib/auth-server";
-import { assertPriority, assertStatus, assertDueType } from "~/features/bucket-list/types";
-import { createBucketListService, createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import {
+  getServerAuth,
+  createAuthenticatedSupabaseClient,
+} from "~/lib/auth-server";
+import {
+  assertPriority,
+  assertStatus,
+  assertDueType,
+} from "~/features/bucket-list/types";
+import {
+  createBucketListService,
+  createAuthenticatedBucketListService,
+} from "~/features/bucket-list/lib/repository-factory";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui";
 import { DeleteConfirmationDialog } from "~/features/bucket-list/components/delete-confirmation-dialog";
 import { AchievementStats } from "~/features/bucket-list/components/achievement-stats";
 import { CategoryProgress } from "~/features/bucket-list/components/category-progress";
@@ -24,7 +40,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   try {
     // SSR-compatible authentication check
     const authResult = await getServerAuth(request);
-    
+
     // 認証されていない場合はリダイレクト
     if (!authResult.isAuthenticated) {
       throw new Response(null, {
@@ -37,28 +53,45 @@ export async function loader({ request }: Route.LoaderArgs) {
     const url = new URL(request.url);
     const filters = {
       search: url.searchParams.get("search") || undefined,
-      category_id: url.searchParams.get("category") ? Number(url.searchParams.get("category")) : undefined,
-      priority: url.searchParams.get("priority") as "high" | "medium" | "low" | undefined,
-      status: url.searchParams.get("status") as "not_started" | "in_progress" | "completed" | undefined,
+      category_id: url.searchParams.get("category")
+        ? Number(url.searchParams.get("category"))
+        : undefined,
+      priority: url.searchParams.get("priority") as
+        | "high"
+        | "medium"
+        | "low"
+        | undefined,
+      status: url.searchParams.get("status") as
+        | "not_started"
+        | "in_progress"
+        | "completed"
+        | undefined,
     };
 
     // 認証済みクライアントでデータ取得
-    const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase);
+    const authenticatedSupabase =
+      await createAuthenticatedSupabaseClient(authResult);
+    const bucketListService = createAuthenticatedBucketListService(
+      authenticatedSupabase,
+    );
 
     // フィルター条件付きでデータを取得
     const [bucketItems, categories, stats] = await Promise.all([
-      bucketListService.getUserBucketItemsWithCategory(authResult.user!.id, filters),
+      bucketListService.getUserBucketItemsWithCategory(
+        authResult.user!.id,
+        filters,
+      ),
       bucketListService.getCategories(),
-      bucketListService.getUserStats(authResult.user!.id)
+      bucketListService.getUserStats(authResult.user!.id),
     ]);
 
-
     // カテゴリ別にグループ化
-    const itemsByCategory = categories.map(category => ({
-      category,
-      items: bucketItems.filter(item => item.category_id === category.id)
-    })).filter(group => group.items.length > 0);
+    const itemsByCategory = categories
+      .map((category) => ({
+        category,
+        items: bucketItems.filter((item) => item.category_id === category.id),
+      }))
+      .filter((group) => group.items.length > 0);
 
     return {
       bucketItems,
@@ -66,7 +99,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       stats,
       itemsByCategory,
       filters,
-      user: authResult.user
+      user: authResult.user,
     };
   } catch (error) {
     if (error instanceof Response) {
@@ -94,7 +127,9 @@ function BucketListSkeleton() {
             </div>
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
               <Button className="w-full sm:w-auto">+ 新しく追加</Button>
-              <Button variant="outline" className="w-full sm:w-auto">達成状況</Button>
+              <Button variant="outline" className="w-full sm:w-auto">
+                達成状況
+              </Button>
             </div>
           </div>
 
@@ -131,7 +166,8 @@ function BucketListSkeleton() {
 
 export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
-  const { bucketItems, categories, stats, itemsByCategory, filters } = loaderData;
+  const { bucketItems, categories, stats, itemsByCategory, filters } =
+    loaderData;
   const [searchParams, setSearchParams] = useSearchParams();
 
   // 展開状態管理
@@ -143,16 +179,16 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
     isCategoryFullyExpanded,
     expandCategory,
     collapseCategory,
-    toggleTextExpansion
+    toggleTextExpansion,
   } = useExpandableList();
-  
+
   // 詳細ダイアログの状態管理
   const [detailDialog, setDetailDialog] = useState<{
     isOpen: boolean;
-    item: typeof bucketItems[0] | null;
+    item: (typeof bucketItems)[0] | null;
   }>({
     isOpen: false,
-    item: null
+    item: null,
   });
 
   // 削除確認ダイアログの状態管理
@@ -163,7 +199,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   }>({
     isOpen: false,
     item: null,
-    isSubmitting: false
+    isSubmitting: false,
   });
 
   // ステータス変更のローディング状態管理
@@ -186,10 +222,10 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   };
 
   // 詳細ダイアログを開く
-  const openDetailDialog = (item: typeof bucketItems[0]) => {
+  const openDetailDialog = (item: (typeof bucketItems)[0]) => {
     setDetailDialog({
       isOpen: true,
-      item
+      item,
     });
   };
 
@@ -197,7 +233,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   const closeDetailDialog = () => {
     setDetailDialog({
       isOpen: false,
-      item: null
+      item: null,
     });
   };
 
@@ -205,11 +241,11 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   const openDeleteDialog = (item: { id: string; title: string }) => {
     // 詳細ダイアログを即座にクローズ
     closeDetailDialog();
-    
+
     setDeleteDialog({
       isOpen: true,
       item,
-      isSubmitting: false
+      isSubmitting: false,
     });
   };
 
@@ -220,7 +256,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
       setDeleteDialog({
         isOpen: false,
         item: null,
-        isSubmitting: false
+        isSubmitting: false,
       });
     }
   };
@@ -229,7 +265,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   const handleDelete = async () => {
     if (!deleteDialog.item) return;
 
-    setDeleteDialog(prev => ({ ...prev, isSubmitting: true }));
+    setDeleteDialog((prev) => ({ ...prev, isSubmitting: true }));
 
     try {
       // フォームを作成して削除アクションを実行
@@ -237,17 +273,17 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
       form.method = "POST";
       form.action = `/bucket-list/delete/${deleteDialog.item.id}`;
       form.style.display = "none";
-      
+
       document.body.appendChild(form);
       form.submit();
-      
+
       // 削除処理が正常に開始された場合はダイアログを閉じる
       // （ページリダイレクトが発生するため、通常はここには到達しない）
     } catch (error) {
       console.error("Delete error:", error);
       // エラー時は送信状態を解除してダイアログを維持
-      setDeleteDialog(prev => ({ ...prev, isSubmitting: false }));
-      
+      setDeleteDialog((prev) => ({ ...prev, isSubmitting: false }));
+
       // TODO: 将来的にはユーザーにエラーメッセージを表示
       alert("削除に失敗しました。もう一度お試しください。");
     }
@@ -256,12 +292,12 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   // ステータス変更
   const handleStatusChange = async (itemId: string, newStatus: string) => {
     // ローディング状態を開始
-    setStatusChanging(prev => new Set(prev).add(itemId));
-    
+    setStatusChanging((prev) => new Set(prev).add(itemId));
+
     try {
       // 短い遅延でローディング状態を表示
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       // フォームを作成してステータス更新を実行
       const form = document.createElement("form");
       form.method = "POST";
@@ -269,9 +305,9 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
       form.style.display = "none";
 
       // 現在の項目データを取得
-      const item = bucketItems.find(item => item.id === itemId);
+      const item = bucketItems.find((item) => item.id === itemId);
       if (!item) {
-        setStatusChanging(prev => {
+        setStatusChanging((prev) => {
           const newSet = new Set(prev);
           newSet.delete(itemId);
           return newSet;
@@ -288,7 +324,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
         status: newStatus,
         due_date: item.due_date || "",
         due_type: item.due_type || "unspecified",
-        is_public: item.is_public.toString()
+        is_public: item.is_public.toString(),
       };
 
       Object.entries(fields).forEach(([key, value]) => {
@@ -303,7 +339,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
     } catch (error) {
       console.error("Status change error:", error);
       // エラーが発生した場合はローディング状態を解除
-      setStatusChanging(prev => {
+      setStatusChanging((prev) => {
         const newSet = new Set(prev);
         newSet.delete(itemId);
         return newSet;
@@ -330,25 +366,27 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
               </Button>
             </Link>
           </div>
-          
+
           {/* 達成率表示 */}
           {stats && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               <AchievementStats stats={stats} />
-              <CategoryProgress 
-                categories={categories} 
-                items={bucketItems} 
-              />
+              <CategoryProgress categories={categories} items={bucketItems} />
             </div>
           )}
 
           {/* フィルター・検索 */}
           <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">フィルター・検索</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              フィルター・検索
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               {/* 検索 */}
               <div>
-                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="search"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   検索
                 </label>
                 <Input
@@ -375,7 +413,10 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                   <SelectContent>
                     <SelectItem value="all">すべて</SelectItem>
                     {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id.toString()}>
+                      <SelectItem
+                        key={category.id}
+                        value={category.id.toString()}
+                      >
                         {category.name}
                       </SelectItem>
                     ))}
@@ -441,15 +482,30 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
             {/* カテゴリ別にグループ化（サービスレイヤーで処理済み） */}
             {itemsByCategory.map(({ category, items: categoryItems }) => {
               const categoryId = category.id.toString();
-              const showCount = getCategoryShowCount(categoryId, categoryItems.length);
+              const showCount = getCategoryShowCount(
+                categoryId,
+                categoryItems.length,
+              );
               const visibleItems = categoryItems.slice(0, showCount);
-              const hasMore = needsShowMoreButton(categoryId, categoryItems.length);
-              const remainingCount = getRemainingCount(categoryId, categoryItems.length);
-              const isFullyExpanded = isCategoryFullyExpanded(categoryId, categoryItems.length);
+              const hasMore = needsShowMoreButton(
+                categoryId,
+                categoryItems.length,
+              );
+              const remainingCount = getRemainingCount(
+                categoryId,
+                categoryItems.length,
+              );
+              const isFullyExpanded = isCategoryFullyExpanded(
+                categoryId,
+                categoryItems.length,
+              );
 
               return (
-                <div key={category.id} className="bg-white rounded-lg shadow overflow-hidden">
-                  <div 
+                <div
+                  key={category.id}
+                  className="bg-white rounded-lg shadow overflow-hidden"
+                >
+                  <div
                     className="px-6 py-4 border-l-4 flex justify-between items-center"
                     style={{ borderLeftColor: category.color }}
                   >
@@ -468,17 +524,24 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                       const priorityDisplay = (() => {
                         try {
                           assertPriority(item.priority);
-                          return item.priority === 'high' ? '高' : item.priority === 'medium' ? '中' : '低';
+                          return item.priority === "high"
+                            ? "高"
+                            : item.priority === "medium"
+                              ? "中"
+                              : "低";
                         } catch {
                           return item.priority;
                         }
                       })();
-                      
+
                       const statusDisplay = (() => {
                         try {
                           assertStatus(item.status);
-                          return item.status === 'completed' ? '完了' : 
-                                 item.status === 'in_progress' ? '進行中' : '未着手';
+                          return item.status === "completed"
+                            ? "完了"
+                            : item.status === "in_progress"
+                              ? "進行中"
+                              : "未着手";
                         } catch {
                           return item.status;
                         }
@@ -487,85 +550,108 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                       const priorityColor = (() => {
                         try {
                           assertPriority(item.priority);
-                          return item.priority === 'high' ? 'bg-red-100 text-red-800 border-red-200' :
-                                 item.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                                 'bg-green-100 text-green-800 border-green-200';
+                          return item.priority === "high"
+                            ? "bg-red-100 text-red-800 border-red-200"
+                            : item.priority === "medium"
+                              ? "bg-yellow-100 text-yellow-800 border-yellow-200"
+                              : "bg-green-100 text-green-800 border-green-200";
                         } catch {
-                          return 'bg-gray-100 text-gray-800 border-gray-200';
+                          return "bg-gray-100 text-gray-800 border-gray-200";
                         }
                       })();
 
                       const statusColor = (() => {
                         try {
                           assertStatus(item.status);
-                          return item.status === 'completed' ? 'bg-green-100 text-green-800 border-green-200' :
-                                 item.status === 'in_progress' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-                                 'bg-gray-100 text-gray-800 border-gray-200';
+                          return item.status === "completed"
+                            ? "bg-green-100 text-green-800 border-green-200"
+                            : item.status === "in_progress"
+                              ? "bg-blue-100 text-blue-800 border-blue-200"
+                              : "bg-gray-100 text-gray-800 border-gray-200";
                         } catch {
-                          return 'bg-gray-100 text-gray-800 border-gray-200';
+                          return "bg-gray-100 text-gray-800 border-gray-200";
                         }
                       })();
 
                       return (
-                      <div 
-                        key={item.id}
-                        className="border border-gray-200 rounded-lg p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer min-h-[120px] sm:min-h-[140px] flex flex-col"
-                        onClick={() => openDetailDialog(item)}
-                      >
-                        {/* タイトルとバッジ */}
-                        <div className="flex justify-between items-start mb-3">
-                          <h4 className="font-medium text-gray-900 flex-1 line-clamp-2">
-                            {item.title}
-                          </h4>
-                          <div className="flex gap-1 ml-2 shrink-0">
-                            {/* 優先度バッジ */}
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${priorityColor}`}>
-                              {priorityDisplay}
-                            </span>
-                            {/* ステータスバッジ */}
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${statusColor}`}>
-                              {statusDisplay}
-                            </span>
+                        <div
+                          key={item.id}
+                          className="border border-gray-200 rounded-lg p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer min-h-[120px] sm:min-h-[140px] flex flex-col"
+                          onClick={() => openDetailDialog(item)}
+                        >
+                          {/* タイトルとバッジ */}
+                          <div className="flex justify-between items-start mb-3">
+                            <h4 className="font-medium text-gray-900 flex-1 line-clamp-2">
+                              {item.title}
+                            </h4>
+                            <div className="flex gap-1 ml-2 shrink-0">
+                              {/* 優先度バッジ */}
+                              <span
+                                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${priorityColor}`}
+                              >
+                                {priorityDisplay}
+                              </span>
+                              {/* ステータスバッジ */}
+                              <span
+                                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${statusColor}`}
+                              >
+                                {statusDisplay}
+                              </span>
+                            </div>
                           </div>
+
+                          {/* カテゴリと期限情報 */}
+                          <div className="mt-auto space-y-1 text-xs text-gray-500">
+                            <div className="flex items-center">
+                              <div
+                                className="w-2 h-2 rounded-full mr-2"
+                                style={{ backgroundColor: item.category.color }}
+                              ></div>
+                              <span>{item.category.name}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                              <span>
+                                {item.due_date
+                                  ? `期限: ${item.due_date}`
+                                  : item.due_type === "this_year"
+                                    ? "期限: 今年中"
+                                    : item.due_type === "next_year"
+                                      ? "期限: 来年中"
+                                      : item.due_type === "unspecified"
+                                        ? "期限: 未定"
+                                        : item.due_type
+                                          ? `期限: ${item.due_type}`
+                                          : "期限: 未定"}
+                              </span>
+                              <span
+                                className={
+                                  item.is_public
+                                    ? "text-blue-600"
+                                    : "text-gray-400"
+                                }
+                              >
+                                {item.is_public ? "公開" : "非公開"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* 達成情報（完了時のみ） */}
+                          {item.completed_at && (
+                            <div className="mt-2 pt-2 border-t border-gray-200">
+                              <p className="text-xs text-green-600">
+                                達成日:{" "}
+                                {new Date(item.completed_at).toLocaleDateString(
+                                  "ja-JP",
+                                )}
+                              </p>
+                            </div>
+                          )}
                         </div>
-                        
-                        {/* カテゴリと期限情報 */}
-                        <div className="mt-auto space-y-1 text-xs text-gray-500">
-                          <div className="flex items-center">
-                            <div 
-                              className="w-2 h-2 rounded-full mr-2" 
-                              style={{ backgroundColor: item.category.color }}
-                            ></div>
-                            <span>{item.category.name}</span>
-                          </div>
-                          
-                          <div className="flex justify-between items-center">
-                            <span>
-                              {item.due_date ? `期限: ${item.due_date}` : 
-                               item.due_type === 'this_year' ? '期限: 今年中' :
-                               item.due_type === 'next_year' ? '期限: 来年中' : 
-                               item.due_type === 'unspecified' ? '期限: 未定' :
-                               item.due_type ? `期限: ${item.due_type}` : '期限: 未定'}
-                            </span>
-                            <span className={item.is_public ? 'text-blue-600' : 'text-gray-400'}>
-                              {item.is_public ? '公開' : '非公開'}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        {/* 達成情報（完了時のみ） */}
-                        {item.completed_at && (
-                          <div className="mt-2 pt-2 border-t border-gray-200">
-                            <p className="text-xs text-green-600">
-                              達成日: {new Date(item.completed_at).toLocaleDateString('ja-JP')}
-                            </p>
-                          </div>
-                        )}
-                      </div>
                       );
                     })}
                   </div>
-                  
+
                   {/* もっと見る / 折りたたむ ボタン */}
                   {categoryItems.length > 5 && (
                     <div className="px-6 pb-4 border-t border-gray-100">
@@ -603,9 +689,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
               新しい項目を追加して、人生でやりたいことを管理しましょう！
             </p>
             <Link to="/bucket-list/add">
-              <Button size="lg">
-                最初のやりたいことを追加
-              </Button>
+              <Button size="lg">最初のやりたいことを追加</Button>
             </Link>
           </div>
         )}

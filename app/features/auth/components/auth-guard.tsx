@@ -10,7 +10,7 @@ interface WithAuthOptions {
 
 export function withAuth<T extends object>(
   Component: React.ComponentType<T>,
-  options: WithAuthOptions = {}
+  options: WithAuthOptions = {},
 ) {
   const { redirectTo = "/login", showLoadingSpinner = true } = options;
 

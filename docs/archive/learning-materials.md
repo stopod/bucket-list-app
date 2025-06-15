@@ -13,6 +13,7 @@
 ## 基礎知識クイズ
 
 ### Q1: 認証の基本概念
+
 以下の説明で正しいものを選んでください：
 
 A) 認証は「何ができるか」を決める仕組みである
@@ -21,6 +22,7 @@ C) JWTはサーバーサイドでセッション管理を行う仕組みであ�
 D) 認証は「誰であるか」を確認し、認可は「何ができるか」を決める仕組みである
 
 ### Q2: JWTの構造
+
 JWTは3つの部分で構成されています。正しい組み合わせを選んでください：
 
 A) Header, Body, Footer
@@ -29,6 +31,7 @@ C) Type, Data, Hash
 D) Meta, Content, Checksum
 
 ### Q3: Supabaseの認証機能
+
 Supabaseの認証で使用されるキーについて、正しい説明を選んでください：
 
 A) anon keyは秘密鍵でサーバーサイドでのみ使用する
@@ -37,6 +40,7 @@ C) anon keyは公開鍵でフロントエンドで使用できる
 D) すべてのキーはフロントエンドで使用できる
 
 ### Q4: Row Level Security (RLS)
+
 RLSについて正しい説明を選んでください：
 
 A) テーブル全体へのアクセスを制御する機能
@@ -45,6 +49,7 @@ C) カラムレベルでのアクセス制御を行う機能
 D) データベース全体へのアクセスを制御する機能
 
 ### Q5: React Contextの使用理由
+
 認証状態管理にReact Contextを使用する主な理由は：
 
 A) パフォーマンスが向上するため
@@ -59,6 +64,7 @@ D) SEOが向上するため
 **目標：** パスワードリセット機能を実装してください。
 
 **要件：**
+
 1. パスワードリセットページ（`/reset-password`）を作成
 2. メールアドレス入力フォーム
 3. Supabaseのパスワードリセット機能を使用
@@ -66,10 +72,11 @@ D) SEOが向上するため
 5. 成功時のメッセージ表示
 
 **ヒント：**
+
 ```typescript
 // Supabaseのパスワードリセット
 const { error } = await supabase.auth.resetPasswordForEmail(email, {
-  redirectTo: 'http://localhost:3000/update-password'
+  redirectTo: "http://localhost:3000/update-password",
 });
 ```
 
@@ -84,7 +91,7 @@ import { Input } from "~/components/ui/input";
 
 export default function ResetPassword() {
   // ここに実装を追加してください
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center">
       {/* フォームを実装してください */}
@@ -98,6 +105,7 @@ export default function ResetPassword() {
 **目標：** ユーザープロフィール編集機能を実装してください。
 
 **要件：**
+
 1. 認証済みユーザーのみアクセス可能
 2. 現在のメールアドレスを表示
 3. 新しいメールアドレスの変更機能
@@ -112,9 +120,9 @@ import { useAuth } from "~/lib/auth-context";
 
 function ProfileComponent() {
   const { user, updateProfile } = useAuth();
-  
+
   // ここに実装を追加してください
-  
+
   return (
     <div>
       {/* プロフィール編集フォームを実装してください */}
@@ -130,12 +138,14 @@ export default withAuth(ProfileComponent);
 **目標：** ユーザーのログイン履歴を表示する機能を実装してください。
 
 **要件：**
+
 1. Supabaseでログイン履歴テーブルを作成
 2. ログイン時に履歴を記録
 3. 履歴一覧ページの作成
 4. 日時、IPアドレス、デバイス情報の表示
 
 **データベーススキーマ例：**
+
 ```sql
 CREATE TABLE login_history (
   id SERIAL PRIMARY KEY,
@@ -158,6 +168,7 @@ FOR SELECT USING (auth.uid() = user_id);
 **目標：** ユーザーがアクティブなセッションを管理できる機能を実装してください。
 
 **要件：**
+
 1. 現在のアクティブセッション一覧
 2. 他のデバイスからのセッション終了機能
 3. セッション情報（デバイス、場所、最終アクセス時刻）の表示
@@ -180,7 +191,7 @@ function ProtectedRoute() {
   }, [user, navigate]);
 
   if (loading) return <div>Loading...</div>;
-  
+
   return <div>Protected Content</div>;
 }
 ```
@@ -198,10 +209,11 @@ new row violates row-level security policy for table "instruments"
 ```
 
 使用しているコード：
+
 ```typescript
 const { data, error } = await supabase
-  .from('instruments')
-  .insert({ name: 'Guitar' });
+  .from("instruments")
+  .insert({ name: "Guitar" });
 ```
 
 ## 発展課題
@@ -211,6 +223,7 @@ const { data, error } = await supabase
 **目標：** TOTP（Time-based One-Time Password）を使用した多要素認証を実装してください。
 
 **要件：**
+
 1. QRコード生成
 2. 認証アプリでの設定
 3. ログイン時の2段階認証
@@ -221,6 +234,7 @@ const { data, error } = await supabase
 **目標：** Google OAuth を使用したソーシャルログインを実装してください。
 
 **要件：**
+
 1. Google OAuth設定
 2. ソーシャルログインボタン
 3. アカウント連携機能
@@ -231,6 +245,7 @@ const { data, error } = await supabase
 **目標：** 管理者用のユーザー管理ダッシュボードを実装してください。
 
 **要件：**
+
 1. ロールベースアクセス制御
 2. ユーザー一覧表示
 3. ユーザーの有効/無効切り替え
@@ -241,6 +256,7 @@ const { data, error } = await supabase
 **目標：** セキュリティイベントの監査ログ機能を実装してください。
 
 **要件：**
+
 1. 失敗したログイン試行の記録
 2. 疑わしいアクティビティの検出
 3. アラート機能
@@ -285,7 +301,7 @@ export default function ResetPassword() {
 
     try {
       const { error } = await resetPassword(email);
-      
+
       if (error) {
         setError(error.message);
       } else {
@@ -310,7 +326,7 @@ export default function ResetPassword() {
             メールアドレスを入力してください
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div>
             <Input
@@ -354,33 +370,36 @@ export default function ResetPassword() {
 無限リダイレクトの原因は、`loading`状態がtrueの間もリダイレクトが実行されることです。
 
 **修正版：**
+
 ```typescript
 useEffect(() => {
-  if (!loading && !user) {  // loadingがfalseになってから判定
-    navigate('/login');
+  if (!loading && !user) {
+    // loadingがfalseになってから判定
+    navigate("/login");
   }
 }, [user, loading, navigate]);
 ```
 
 **問題2解答：**
 JWT期限切れの対処法：
+
 1. Supabaseが自動的にトークンを更新
 2. ユーザーに再ログインを促す
 3. リフレッシュトークンの確認
 
 **問題3解答：**
 RLSポリシーエラーの原因：
+
 1. `user_id`カラムが設定されていない
 2. 適切なINSERTポリシーが設定されていない
 
 **修正版：**
+
 ```typescript
-const { data, error } = await supabase
-  .from('instruments')
-  .insert({ 
-    name: 'Guitar',
-    user_id: user.id  // ユーザーIDを明示的に設定
-  });
+const { data, error } = await supabase.from("instruments").insert({
+  name: "Guitar",
+  user_id: user.id, // ユーザーIDを明示的に設定
+});
 ```
 
 これらの課題を通じて、認証システムの実装スキルを段階的に向上させることができます。各課題は実際のプロジェクトでよく遭遇する問題に基づいています。

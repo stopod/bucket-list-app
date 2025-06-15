@@ -1,6 +1,7 @@
 # 認証・認可システム 実装ドキュメント
 
 ## 📋 概要
+
 - **目的**: Supabase Auth を使用したハイブリッド認証システムの実装
 - **対象読者**: 開発者、セキュリティ担当者
 - **前提知識**: React Router v7, TypeScript, Supabase Auth, SSR
@@ -9,6 +10,7 @@
 ## 🏗 アーキテクチャ概要
 
 ### 設計思想
+
 - **ハイブリッド認証**: クライアントサイドとサーバーサイドの両方で認証を実装
 - **セキュリティファースト**: XSS/CSRF対策、CSP、入力値検証を重視
 - **SSR完全対応**: React Router v7 による Server-Side Rendering での認証状態管理
@@ -18,6 +20,7 @@
 ### 主要コンポーネント
 
 #### 認証システム構成
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    認証システム全体図                           │
@@ -47,6 +50,7 @@
 ```
 
 ### データフロー
+
 ```
 [ユーザー] → [Login Form] → [AuthContext] → [Supabase Auth]
                 ↓                              ↓
@@ -76,7 +80,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  
+
   // メソッド
   signIn: (email: string, password: string) => Promise<AuthResult>;
   signUp: (email: string, password: string) => Promise<AuthResult>;
@@ -111,23 +115,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // セッション検証
   const validateSession = useCallback(async (currentSession: Session | null) => {
     if (!currentSession) return false;
-    
+
     try {
       // JWT有効期限チェック
       const { exp } = JSON.parse(atob(currentSession.access_token.split('.')[1]));
       const currentTime = Math.floor(Date.now() / 1000);
-      
+
       if (exp < currentTime) {
         console.log('JWT has expired');
         return false;
       }
-      
+
       // アクティビティタイムアウトチェック
       if (Date.now() - lastActivity > ACTIVITY_TIMEOUT) {
         console.log('Activity timeout');
         return false;
       }
-      
+
       return true;
     } catch (error) {
       console.error('Session validation error:', error);
@@ -138,17 +142,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // セッション初期化
   useEffect(() => {
     let mounted = true;
-    
+
     const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        
+
         if (error) {
           console.error('Session initialization error:', error);
           setLoading(false);
           return;
         }
-        
+
         if (session && mounted) {
           const isValid = await validateSession(session);
           if (isValid) {
@@ -176,9 +180,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
-        
+
         console.log('Auth state changed:', event, session?.user?.email);
-        
+
         if (event === 'SIGNED_IN' && session) {
           setSession(session);
           setUser(session.user);
@@ -189,7 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           clearAllAuthCookies();
         }
-        
+
         setLoading(false);
       }
     );
@@ -203,16 +207,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // アクティビティ監視
   useEffect(() => {
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-    
+
     const handleActivity = () => {
       updateActivity();
     };
-    
+
     // グローバルイベントリスナー
     events.forEach(event => {
       document.addEventListener(event, handleActivity, true);
     });
-    
+
     return () => {
       events.forEach(event => {
         document.removeEventListener(event, handleActivity, true);
@@ -241,7 +245,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!validateEmail(sanitizedEmail)) {
         return { error: '有効なメールアドレスを入力してください' };
       }
-      
+
       if (!validatePassword(password)) {
         return { error: 'パスワードは8文字以上で、大文字、小文字、数字を含む必要があります' };
       }
@@ -268,7 +272,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!validateEmail(sanitizedEmail)) {
         return { error: '有効なメールアドレスを入力してください' };
       }
-      
+
       if (!validatePassword(password)) {
         return { error: 'パスワードは8文字以上で、大文字、小文字、数字を含む必要があります' };
       }
@@ -292,7 +296,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await supabase.auth.signOut();
       clearAllAuthCookies();
-      
+
       // localStorage のクリア（フォールバック）
       localStorage.removeItem('supabase.auth.token');
       localStorage.removeItem('supabase.auth.refreshToken');
@@ -346,8 +350,8 @@ export function useAuth() {
 
 ```typescript
 // app/lib/auth-server.ts
-import { createServerClient } from '@supabase/ssr';
-import type { Request } from '@react-router/node';
+import { createServerClient } from "@supabase/ssr";
+import type { Request } from "@react-router/node";
 
 export interface AuthResult {
   isAuthenticated: boolean;
@@ -363,24 +367,27 @@ export async function getServerAuth(request: Request): Promise<AuthResult> {
       {
         cookies: {
           get: (name: string) => {
-            const cookies = request.headers.get('Cookie');
+            const cookies = request.headers.get("Cookie");
             if (!cookies) return undefined;
-            
+
             const cookieValue = cookies
-              .split(';')
-              .find(c => c.trim().startsWith(`${name}=`))
-              ?.split('=')[1];
-            
+              .split(";")
+              .find((c) => c.trim().startsWith(`${name}=`))
+              ?.split("=")[1];
+
             return cookieValue ? decodeURIComponent(cookieValue) : undefined;
           },
         },
-      }
+      },
     );
 
-    const { data: { user }, error } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
     if (error) {
-      console.error('Server auth error:', error);
+      console.error("Server auth error:", error);
       return {
         isAuthenticated: false,
         user: null,
@@ -394,21 +401,21 @@ export async function getServerAuth(request: Request): Promise<AuthResult> {
       error: null,
     };
   } catch (error) {
-    console.error('Server auth exception:', error);
+    console.error("Server auth exception:", error);
     return {
       isAuthenticated: false,
       user: null,
-      error: 'Authentication failed',
+      error: "Authentication failed",
     };
   }
 }
 
 export async function requireAuth(
   request: Request,
-  redirectTo: string = "/auth/login"
+  redirectTo: string = "/auth/login",
 ): Promise<never> {
   const authResult = await getServerAuth(request);
-  
+
   if (!authResult.isAuthenticated) {
     throw new Response(null, {
       status: 302,
@@ -417,14 +424,16 @@ export async function requireAuth(
       },
     });
   }
-  
+
   // TypeScript の型安全性のため、never を返す
-  throw new Error('This should never be reached');
+  throw new Error("This should never be reached");
 }
 
-export async function createAuthenticatedSupabaseClient(authResult: AuthResult) {
+export async function createAuthenticatedSupabaseClient(
+  authResult: AuthResult,
+) {
   if (!authResult.isAuthenticated || !authResult.user) {
-    throw new Error('User not authenticated');
+    throw new Error("User not authenticated");
   }
 
   return createServerClient(
@@ -436,16 +445,16 @@ export async function createAuthenticatedSupabaseClient(authResult: AuthResult) 
         set: () => {},
         remove: () => {},
       },
-    }
+    },
   );
 }
 
 export async function withAuth(
   request: Request,
-  redirectTo: string = "/auth/login"
+  redirectTo: string = "/auth/login",
 ) {
   const authResult = await getServerAuth(request);
-  
+
   if (!authResult.isAuthenticated) {
     throw new Response(null, {
       status: 302,
@@ -456,7 +465,7 @@ export async function withAuth(
   }
 
   const supabase = await createAuthenticatedSupabaseClient(authResult);
-  
+
   return {
     user: authResult.user,
     supabase,
@@ -478,10 +487,10 @@ interface AuthGuardProps {
   redirectTo?: string;
 }
 
-export function AuthGuard({ 
-  children, 
-  fallback = <div>Loading...</div>, 
-  redirectTo = '/auth/login' 
+export function AuthGuard({
+  children,
+  fallback = <div>Loading...</div>,
+  redirectTo = '/auth/login'
 }: AuthGuardProps) {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -514,7 +523,7 @@ export function withAuth<T extends object>(
   options: WithAuthOptions = {}
 ) {
   const { redirectTo = '/auth/login', fallback = <div>Loading...</div> } = options;
-  
+
   return function AuthenticatedComponent(props: T) {
     const { user, loading } = useAuth();
     const navigate = useNavigate();
@@ -545,14 +554,14 @@ export function withAuth<T extends object>(
 
 // XSS対策: 文字列サニタイズ
 export function sanitizeString(input: string): string {
-  if (typeof input !== 'string') {
-    return '';
+  if (typeof input !== "string") {
+    return "";
   }
-  
+
   return input
-    .replace(/[<>]/g, '') // HTMLタグ除去
-    .replace(/javascript:/gi, '') // javascript: プロトコル除去
-    .replace(/on\w+=/gi, '') // イベントハンドラ除去
+    .replace(/[<>]/g, "") // HTMLタグ除去
+    .replace(/javascript:/gi, "") // javascript: プロトコル除去
+    .replace(/on\w+=/gi, "") // イベントハンドラ除去
     .trim();
 }
 
@@ -568,42 +577,43 @@ export function validatePassword(password: string): boolean {
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasNumbers = /\d/.test(password);
-  
+
   return (
-    password.length >= minLength &&
-    hasUpperCase &&
-    hasLowerCase &&
-    hasNumbers
+    password.length >= minLength && hasUpperCase && hasLowerCase && hasNumbers
   );
 }
 
 // レート制限（クライアントサイド）
 const attemptCounts = new Map<string, { count: number; lastAttempt: number }>();
 
-export function checkRateLimit(identifier: string, maxAttempts: number = 5, windowMs: number = 15 * 60 * 1000): boolean {
+export function checkRateLimit(
+  identifier: string,
+  maxAttempts: number = 5,
+  windowMs: number = 15 * 60 * 1000,
+): boolean {
   const now = Date.now();
   const attempts = attemptCounts.get(identifier);
-  
+
   if (!attempts) {
     attemptCounts.set(identifier, { count: 1, lastAttempt: now });
     return true;
   }
-  
+
   // ウィンドウリセット
   if (now - attempts.lastAttempt > windowMs) {
     attemptCounts.set(identifier, { count: 1, lastAttempt: now });
     return true;
   }
-  
+
   // 制限チェック
   if (attempts.count >= maxAttempts) {
     return false;
   }
-  
+
   // カウント増加
   attempts.count++;
   attempts.lastAttempt = now;
-  
+
   return true;
 }
 
@@ -611,7 +621,9 @@ export function checkRateLimit(identifier: string, maxAttempts: number = 5, wind
 export function generateCSPNonce(): string {
   const array = new Uint8Array(16);
   crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
+    "",
+  );
 }
 ```
 
@@ -622,21 +634,25 @@ export function generateCSPNonce(): string {
 このアプリケーションは以下の多層セキュリティ戦略を実装しています：
 
 #### レイヤー1: 入力値検証・サニタイゼーション
+
 - クライアントサイドでの即座な検証
 - XSS攻撃ベクターの除去
 - SQLインジェクション対策（Supabase ORM経由のみアクセス）
 
 #### レイヤー2: 認証・認可
+
 - JWT トークンベース認証
 - セッション有効期限管理
 - アクティビティベースタイムアウト
 
 #### レイヤー3: トランスポートセキュリティ
+
 - HTTPS 強制
 - セキュアCookie設定
 - CSP（Content Security Policy）
 
 #### レイヤー4: アプリケーションレベル保護
+
 - レート制限
 - CSRF保護（SameSite Cookie）
 - セッションハイジャック対策
@@ -647,15 +663,18 @@ export function generateCSPNonce(): string {
 // app/root.tsx
 export const meta: MetaFunction = () => {
   const nonce = generateCSPNonce();
-  
+
   return [
     { title: "Bucket List App" },
-    { name: "description", content: "Personal bucket list management application" },
+    {
+      name: "description",
+      content: "Personal bucket list management application",
+    },
     {
       "http-equiv": "Content-Security-Policy",
       content: `
         default-src 'self';
-        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net ${process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : ''};
+        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net ${process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""};
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
         img-src 'self' data: https:;
@@ -663,13 +682,16 @@ export const meta: MetaFunction = () => {
         frame-ancestors 'none';
         base-uri 'self';
         form-action 'self';
-      `.replace(/\s+/g, ' ').trim()
-    }
+      `
+        .replace(/\s+/g, " ")
+        .trim(),
+    },
   ];
 };
 ```
 
 **CSP 設定の詳細:**
+
 - `default-src 'self'`: デフォルトで同一オリジンのみ許可
 - `script-src`: スクリプト実行を制限、開発環境では eval() を許可
 - `connect-src`: Supabase API への接続のみ許可
@@ -680,49 +702,53 @@ export const meta: MetaFunction = () => {
 
 ```typescript
 // app/lib/cookie-utils.ts (実装例)
-export function setAuthCookie(name: string, value: string, options?: {
-  httpOnly?: boolean;
-  secure?: boolean;
-  sameSite?: 'strict' | 'lax' | 'none';
-  maxAge?: number;
-}) {
+export function setAuthCookie(
+  name: string,
+  value: string,
+  options?: {
+    httpOnly?: boolean;
+    secure?: boolean;
+    sameSite?: "strict" | "lax" | "none";
+    maxAge?: number;
+  },
+) {
   const {
-    httpOnly = true,              // XSS対策: JavaScriptからアクセス不可
-    secure = process.env.NODE_ENV === 'production',  // HTTPS必須
-    sameSite = 'strict',          // CSRF対策: 同一サイトリクエストのみ
-    maxAge = 24 * 60 * 60         // 24時間で期限切れ
+    httpOnly = true, // XSS対策: JavaScriptからアクセス不可
+    secure = process.env.NODE_ENV === "production", // HTTPS必須
+    sameSite = "strict", // CSRF対策: 同一サイトリクエストのみ
+    maxAge = 24 * 60 * 60, // 24時間で期限切れ
   } = options || {};
-  
+
   // Cookie サイズ制限チェック（4KB以下）
   if (value.length > 4096) {
-    throw new Error('Cookie value too large');
+    throw new Error("Cookie value too large");
   }
-  
-  const cookieValue = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; SameSite=${sameSite}${secure ? '; Secure' : ''}${httpOnly ? '; HttpOnly' : ''}`;
-  
+
+  const cookieValue = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; SameSite=${sameSite}${secure ? "; Secure" : ""}${httpOnly ? "; HttpOnly" : ""}`;
+
   document.cookie = cookieValue;
 }
 
 export function clearAllAuthCookies() {
   const authCookies = [
-    'supabase.auth.token',
-    'supabase.auth.refresh_token',
-    'supabase.auth.provider_token',
-    'supabase.auth.provider_refresh_token'
+    "supabase.auth.token",
+    "supabase.auth.refresh_token",
+    "supabase.auth.provider_token",
+    "supabase.auth.provider_refresh_token",
   ];
-  
-  authCookies.forEach(cookieName => {
+
+  authCookies.forEach((cookieName) => {
     document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=strict; Secure`;
   });
 }
 
 export function getAuthCookie(name: string): string | null {
-  const cookies = document.cookie.split(';');
-  const cookie = cookies.find(c => c.trim().startsWith(`${name}=`));
-  
+  const cookies = document.cookie.split(";");
+  const cookie = cookies.find((c) => c.trim().startsWith(`${name}=`));
+
   if (!cookie) return null;
-  
-  const value = cookie.split('=')[1];
+
+  const value = cookie.split("=")[1];
   return value ? decodeURIComponent(value) : null;
 }
 ```
@@ -734,30 +760,30 @@ export function getAuthCookie(name: string): string | null {
 export class SecurityValidator {
   // メール検証（詳細版）
   static validateEmail(email: string): boolean {
-    if (!email || typeof email !== 'string') return false;
-    
+    if (!email || typeof email !== "string") return false;
+
     // 基本的な形式チェック
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) return false;
-    
+
     // 長さ制限
     if (email.length > 254) return false;
-    
+
     // ローカル部の長さチェック
-    const [localPart] = email.split('@');
+    const [localPart] = email.split("@");
     if (localPart.length > 64) return false;
-    
+
     // 危険な文字列パターンチェック
     const dangerousPatterns = [
       /javascript:/i,
       /<script/i,
       /on\w+=/i,
-      /style\s*=/i
+      /style\s*=/i,
     ];
-    
-    return !dangerousPatterns.some(pattern => pattern.test(email));
+
+    return !dangerousPatterns.some((pattern) => pattern.test(email));
   }
-  
+
   // パスワード強度チェック（詳細版）
   static validatePassword(password: string): {
     isValid: boolean;
@@ -766,81 +792,86 @@ export class SecurityValidator {
   } {
     const feedback: string[] = [];
     let score = 0;
-    
-    if (!password || typeof password !== 'string') {
-      return { isValid: false, score: 0, feedback: ['パスワードが必要です'] };
+
+    if (!password || typeof password !== "string") {
+      return { isValid: false, score: 0, feedback: ["パスワードが必要です"] };
     }
-    
+
     // 長さチェック
     if (password.length < 8) {
-      feedback.push('8文字以上必要です');
+      feedback.push("8文字以上必要です");
     } else {
       score += 1;
     }
-    
+
     // 文字種別チェック
     if (/[a-z]/.test(password)) score += 1;
-    else feedback.push('小文字を含む必要があります');
-    
+    else feedback.push("小文字を含む必要があります");
+
     if (/[A-Z]/.test(password)) score += 1;
-    else feedback.push('大文字を含む必要があります');
-    
+    else feedback.push("大文字を含む必要があります");
+
     if (/\d/.test(password)) score += 1;
-    else feedback.push('数字を含む必要があります');
-    
+    else feedback.push("数字を含む必要があります");
+
     if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
-    
+
     // 一般的なパスワードチェック
-    const commonPasswords = ['password', '123456', 'qwerty', 'abc123'];
+    const commonPasswords = ["password", "123456", "qwerty", "abc123"];
     if (commonPasswords.includes(password.toLowerCase())) {
-      feedback.push('一般的すぎるパスワードです');
+      feedback.push("一般的すぎるパスワードです");
       score = Math.max(0, score - 2);
     }
-    
+
     return {
       isValid: score >= 3 && feedback.length === 0,
       score,
-      feedback
+      feedback,
     };
   }
-  
+
   // 高度なXSS対策
   static sanitizeInput(input: string): string {
-    if (typeof input !== 'string') return '';
-    
-    return input
-      // HTMLエンティティエンコード
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;')
-      // JavaScript プロトコル除去
-      .replace(/javascript:/gi, '')
-      // データURL除去
-      .replace(/data:/gi, '')
-      // イベントハンドラ除去
-      .replace(/on\w+\s*=/gi, '')
-      // style属性除去
-      .replace(/style\s*=/gi, '')
-      .trim();
+    if (typeof input !== "string") return "";
+
+    return (
+      input
+        // HTMLエンティティエンコード
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#x27;")
+        .replace(/\//g, "&#x2F;")
+        // JavaScript プロトコル除去
+        .replace(/javascript:/gi, "")
+        // データURL除去
+        .replace(/data:/gi, "")
+        // イベントハンドラ除去
+        .replace(/on\w+\s*=/gi, "")
+        // style属性除去
+        .replace(/style\s*=/gi, "")
+        .trim()
+    );
   }
 }
 
 // レート制限の詳細実装
 export class RateLimiter {
-  private static attempts = new Map<string, {
-    count: number;
-    windowStart: number;
-    isBlocked: boolean;
-  }>();
-  
+  private static attempts = new Map<
+    string,
+    {
+      count: number;
+      windowStart: number;
+      isBlocked: boolean;
+    }
+  >();
+
   static checkLimit(
     identifier: string,
     maxAttempts: number = 5,
     windowMs: number = 15 * 60 * 1000,
-    blockDurationMs: number = 60 * 60 * 1000
+    blockDurationMs: number = 60 * 60 * 1000,
   ): {
     allowed: boolean;
     remaining: number;
@@ -849,53 +880,61 @@ export class RateLimiter {
     const now = Date.now();
     const key = identifier.toLowerCase();
     const current = this.attempts.get(key);
-    
+
     // 初回アクセス
     if (!current) {
       this.attempts.set(key, {
         count: 1,
         windowStart: now,
-        isBlocked: false
+        isBlocked: false,
       });
-      return { allowed: true, remaining: maxAttempts - 1, resetTime: now + windowMs };
+      return {
+        allowed: true,
+        remaining: maxAttempts - 1,
+        resetTime: now + windowMs,
+      };
     }
-    
+
     // ブロック期間中
-    if (current.isBlocked && (now - current.windowStart) < blockDurationMs) {
+    if (current.isBlocked && now - current.windowStart < blockDurationMs) {
       return {
         allowed: false,
         remaining: 0,
-        resetTime: current.windowStart + blockDurationMs
+        resetTime: current.windowStart + blockDurationMs,
       };
     }
-    
+
     // ウィンドウリセット
-    if ((now - current.windowStart) >= windowMs) {
+    if (now - current.windowStart >= windowMs) {
       current.count = 1;
       current.windowStart = now;
       current.isBlocked = false;
-      return { allowed: true, remaining: maxAttempts - 1, resetTime: now + windowMs };
+      return {
+        allowed: true,
+        remaining: maxAttempts - 1,
+        resetTime: now + windowMs,
+      };
     }
-    
+
     // 制限内
     if (current.count < maxAttempts) {
       current.count++;
       return {
         allowed: true,
         remaining: maxAttempts - current.count,
-        resetTime: current.windowStart + windowMs
+        resetTime: current.windowStart + windowMs,
       };
     }
-    
+
     // 制限超過
     current.isBlocked = true;
     return {
       allowed: false,
       remaining: 0,
-      resetTime: current.windowStart + blockDurationMs
+      resetTime: current.windowStart + blockDurationMs,
     };
   }
-  
+
   static reset(identifier: string): void {
     this.attempts.delete(identifier.toLowerCase());
   }
@@ -911,33 +950,37 @@ export class SessionSecurity {
   static regenerateSessionId(session: Session): void {
     // 新しいセッショントークンの生成を要求
     // Note: Supabaseの場合は自動的に処理される
-    console.log('Session regenerated for security');
+    console.log("Session regenerated for security");
   }
-  
+
   // セッションハイジャック検出
-  static validateSessionIntegrity(session: Session, userAgent: string, ipAddress: string): boolean {
+  static validateSessionIntegrity(
+    session: Session,
+    userAgent: string,
+    ipAddress: string,
+  ): boolean {
     // ユーザーエージェント変更検出
-    const storedUserAgent = localStorage.getItem('session.userAgent');
+    const storedUserAgent = localStorage.getItem("session.userAgent");
     if (storedUserAgent && storedUserAgent !== userAgent) {
-      console.warn('User agent changed, possible session hijacking');
+      console.warn("User agent changed, possible session hijacking");
       return false;
     }
-    
+
     // IP アドレス変更検出（オプション）
-    const storedIP = localStorage.getItem('session.ipAddress');
+    const storedIP = localStorage.getItem("session.ipAddress");
     if (storedIP && storedIP !== ipAddress) {
-      console.warn('IP address changed, possible session hijacking');
+      console.warn("IP address changed, possible session hijacking");
       // IPアドレス変更は必ずしも攻撃ではないため、警告のみ
     }
-    
+
     return true;
   }
-  
+
   // セッション情報の安全な保存
   static storeSessionMetadata(userAgent: string, ipAddress: string): void {
-    localStorage.setItem('session.userAgent', userAgent);
-    localStorage.setItem('session.ipAddress', ipAddress);
-    localStorage.setItem('session.createdAt', Date.now().toString());
+    localStorage.setItem("session.userAgent", userAgent);
+    localStorage.setItem("session.ipAddress", ipAddress);
+    localStorage.setItem("session.createdAt", Date.now().toString());
   }
 }
 ```
@@ -948,40 +991,48 @@ export class SessionSecurity {
 
 ```typescript
 // app/features/auth/__tests__/auth-context.test.tsx
-import { renderHook, act } from '@testing-library/react';
-import { AuthProvider, useAuth } from '../lib/auth-context';
+import { renderHook, act } from "@testing-library/react";
+import { AuthProvider, useAuth } from "../lib/auth-context";
 
-describe('AuthContext', () => {
-  it('有効なログイン情報でサインインできること', async () => {
+describe("AuthContext", () => {
+  it("有効なログイン情報でサインインできること", async () => {
     const { result } = renderHook(() => useAuth(), {
       wrapper: AuthProvider,
     });
 
     await act(async () => {
-      const response = await result.current.signIn('test@example.com', 'ValidPass123');
+      const response = await result.current.signIn(
+        "test@example.com",
+        "ValidPass123",
+      );
       expect(response.error).toBeNull();
     });
   });
 
-  it('無効なメール形式でエラーが返されること', async () => {
+  it("無効なメール形式でエラーが返されること", async () => {
     const { result } = renderHook(() => useAuth(), {
       wrapper: AuthProvider,
     });
 
     await act(async () => {
-      const response = await result.current.signIn('invalid-email', 'ValidPass123');
-      expect(response.error).toBe('有効なメールアドレスを入力してください');
+      const response = await result.current.signIn(
+        "invalid-email",
+        "ValidPass123",
+      );
+      expect(response.error).toBe("有効なメールアドレスを入力してください");
     });
   });
 
-  it('弱いパスワードでエラーが返されること', async () => {
+  it("弱いパスワードでエラーが返されること", async () => {
     const { result } = renderHook(() => useAuth(), {
       wrapper: AuthProvider,
     });
 
     await act(async () => {
-      const response = await result.current.signIn('test@example.com', 'weak');
-      expect(response.error).toBe('パスワードは8文字以上で、大文字、小文字、数字を含む必要があります');
+      const response = await result.current.signIn("test@example.com", "weak");
+      expect(response.error).toBe(
+        "パスワードは8文字以上で、大文字、小文字、数字を含む必要があります",
+      );
     });
   });
 });
@@ -992,19 +1043,22 @@ describe('AuthContext', () => {
 ### 実際の問題と解決事例
 
 #### 1. Service Role Key 設定エラー
+
 **症状**: ダッシュボードで「期限が近い項目」が表示されない、サーバーサイドで認証データが取得できない
 **実際の問題**: ダッシュボードのローダーでAnon Keyを使用していたため、Service Role Keyが必要なサーバーサイド認証が失敗
 **原因**: `SUPABASE_SERVICE_ROLE_KEY` 環境変数が未設定、またはloader関数で適切なクライアントを使用していない
 **解決方法**:
+
 ```bash
 # 1. .env に Service Role Key を追加
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
+
 ```typescript
 // 2. ダッシュボードローダーで認証済みクライアントを使用
 export async function loader({ request }: Route.LoaderArgs) {
   const authResult = await getServerAuth(request);
-  
+
   if (!authResult.isAuthenticated) {
     throw new Response(null, {
       status: 302,
@@ -1014,93 +1068,103 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   // Service Role Keyを使用した認証済みクライアント
   const supabase = await createAuthenticatedSupabaseClient(authResult);
-  
+
   // 正常にデータ取得が可能
   const { data: items } = await supabase
-    .from('bucket_items')
-    .select('*')
-    .eq('user_id', authResult.user.id);
-    
+    .from("bucket_items")
+    .select("*")
+    .eq("user_id", authResult.user.id);
+
   return { dashboardData: { items } };
 }
 ```
 
 #### 2. Cookie 認証の問題
+
 **症状**: ログイン後にページ更新で認証状態が失われる
 **原因**: Cookie の設定や読み取りの問題、HttpOnly設定でJavaScriptからアクセスできない
 **解決方法**:
+
 ```typescript
 // Cookie デバッグ用コード
 export function debugAuthCookies() {
-  console.log('All cookies:', document.cookie);
-  console.log('Auth token:', getAuthCookie('supabase.auth.token'));
-  
+  console.log("All cookies:", document.cookie);
+  console.log("Auth token:", getAuthCookie("supabase.auth.token"));
+
   // Cookie 設定状況確認
-  const cookies = document.cookie.split(';');
-  const authCookies = cookies.filter(c => c.includes('supabase.auth'));
-  console.log('Auth cookies found:', authCookies);
-  
+  const cookies = document.cookie.split(";");
+  const authCookies = cookies.filter((c) => c.includes("supabase.auth"));
+  console.log("Auth cookies found:", authCookies);
+
   // LocalStorage フォールバック確認
-  console.log('LS token:', localStorage.getItem('supabase.auth.token'));
+  console.log("LS token:", localStorage.getItem("supabase.auth.token"));
 }
 
 // Cookie 設定の修正
 export function setAuthCookieFixed(name: string, value: string) {
   // HttpOnlyをfalseに設定してJavaScriptからアクセス可能にする
-  const cookieValue = `${name}=${encodeURIComponent(value)}; Max-Age=86400; Path=/; SameSite=strict; Secure=${location.protocol === 'https:'}`;
+  const cookieValue = `${name}=${encodeURIComponent(value)}; Max-Age=86400; Path=/; SameSite=strict; Secure=${location.protocol === "https:"}`;
   document.cookie = cookieValue;
 }
 ```
 
 #### 3. SSR ハイドレーション問題
+
 **症状**: サーバーとクライアントで認証状態が異なる、ハイドレーションエラーが発生
 **原因**: サーバーサイドでCookieが正しく解析されていない、クライアントサイドの初期化タイミング
 **解決方法**:
+
 ```typescript
 // サーバーサイドCookie解析の修正
 export async function getServerAuth(request: Request): Promise<AuthResult> {
-  const cookieHeader = request.headers.get('Cookie');
-  
+  const cookieHeader = request.headers.get("Cookie");
+
   if (!cookieHeader) {
-    return { isAuthenticated: false, user: null, error: 'No cookies found' };
+    return { isAuthenticated: false, user: null, error: "No cookies found" };
   }
-  
+
   // Cookie解析の改善
   const cookies = Object.fromEntries(
-    cookieHeader.split(';').map(cookie => {
-      const [name, ...rest] = cookie.trim().split('=');
-      return [name, rest.join('=')];
-    })
+    cookieHeader.split(";").map((cookie) => {
+      const [name, ...rest] = cookie.trim().split("=");
+      return [name, rest.join("=")];
+    }),
   );
-  
-  const token = cookies['supabase.auth.token'];
+
+  const token = cookies["supabase.auth.token"];
   if (!token) {
-    return { isAuthenticated: false, user: null, error: 'No auth token in cookies' };
+    return {
+      isAuthenticated: false,
+      user: null,
+      error: "No auth token in cookies",
+    };
   }
-  
+
   // JWT検証続行...
 }
 
 // クライアントサイドの段階的ハイドレーション
 useEffect(() => {
   let mounted = true;
-  
+
   const initializeAuth = async () => {
     try {
       // サーバーサイドから渡された初期状態を優先
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (mounted && session) {
         setUser(session.user);
         setSession(session);
       }
     } catch (error) {
-      console.error('Auth initialization failed:', error);
+      console.error("Auth initialization failed:", error);
     }
   };
-  
+
   initializeAuth();
-  
+
   return () => {
     mounted = false;
   };
@@ -1108,40 +1172,45 @@ useEffect(() => {
 ```
 
 #### 4. 開発環境での CORS エラー
+
 **症状**: localhost からの認証リクエストが失敗
-**解決方法**: 
+**解決方法**:
+
 1. Supabase ダッシュボードで `http://localhost:5173` を許可ドメインに追加
 2. 開発環境での追加設定:
+
 ```typescript
 // vite.config.ts でプロキシ設定
 export default defineConfig({
   server: {
     proxy: {
-      '/api': {
+      "/api": {
         target: process.env.VITE_SUPABASE_URL,
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    }
-  }
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
+  },
 });
 ```
 
 #### 5. デバッグログが残っている問題
+
 **症状**: 本番環境でもコンソールにデバッグ情報が表示される
 **原因**: 開発中に追加したconsole.logが残っている
 **解決方法**:
+
 ```typescript
 // 条件付きログ出力
 export function debugLog(message: string, data?: any) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     console.log(message, data);
   }
 }
 
 // 本番環境では無効化
 export function removeDebugLogs() {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     console.log = () => {};
     console.debug = () => {};
     console.info = () => {};
@@ -1150,22 +1219,24 @@ export function removeDebugLogs() {
 ```
 
 #### 6. モバイルでの認証エラー
+
 **症状**: モバイル端末で認証が正常に動作しない
 **原因**: SafariのITPやCookie制限
 **解決方法**:
+
 ```typescript
 // LocalStorage フォールバック戦略
 export function getAuthTokenWithFallback(): string | null {
   // 1. Cookie から取得を試行
-  const cookieToken = getAuthCookie('supabase.auth.token');
+  const cookieToken = getAuthCookie("supabase.auth.token");
   if (cookieToken) return cookieToken;
-  
+
   // 2. LocalStorage フォールバック
-  const lsToken = localStorage.getItem('supabase.auth.token');
+  const lsToken = localStorage.getItem("supabase.auth.token");
   if (lsToken) return lsToken;
-  
+
   // 3. SessionStorage フォールバック
-  const ssToken = sessionStorage.getItem('supabase.auth.token');
+  const ssToken = sessionStorage.getItem("supabase.auth.token");
   return ssToken;
 }
 
@@ -1173,23 +1244,25 @@ export function getAuthTokenWithFallback(): string | null {
 export function setTokenWithFallback(token: string) {
   try {
     // Cookie 設定
-    setAuthCookie('supabase.auth.token', token);
+    setAuthCookie("supabase.auth.token", token);
   } catch (error) {
-    console.warn('Cookie setting failed, using localStorage fallback');
+    console.warn("Cookie setting failed, using localStorage fallback");
   }
-  
+
   // フォールバック保存
-  localStorage.setItem('supabase.auth.token', token);
-  sessionStorage.setItem('supabase.auth.token', token);
+  localStorage.setItem("supabase.auth.token", token);
+  sessionStorage.setItem("supabase.auth.token", token);
 }
 ```
 
 #### 7. TypeScript エラーと認証の型問題
+
 **症状**: User型やSession型でTypeScriptエラーが発生
 **解決方法**:
+
 ```typescript
 // 型定義の明確化
-import type { User, Session } from '@supabase/supabase-js';
+import type { User, Session } from "@supabase/supabase-js";
 
 export interface AuthContextType {
   user: User | null;
@@ -1208,7 +1281,7 @@ export function isAuthenticated(user: User | null): user is User {
 // 型ガードの使用
 export function requireUser(user: User | null): User {
   if (!isAuthenticated(user)) {
-    throw new Error('User is not authenticated');
+    throw new Error("User is not authenticated");
   }
   return user;
 }
@@ -1217,12 +1290,13 @@ export function requireUser(user: User | null): User {
 ### デバッグツール
 
 #### 認証状態デバッガー
+
 ```typescript
 export function AuthDebugger() {
   const { user, session, loading } = useAuth();
-  
+
   if (process.env.NODE_ENV !== 'development') return null;
-  
+
   return (
     <div className="fixed bottom-4 right-4 bg-black text-white p-4 rounded text-xs max-w-sm">
       <h3 className="font-bold mb-2">Auth Debug Info</h3>
@@ -1232,7 +1306,7 @@ export function AuthDebugger() {
       <div>Session: {session ? 'active' : 'none'}</div>
       <div>JWT Expires: {session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'none'}</div>
       <div>Cookies: {document.cookie.split(';').length} items</div>
-      <button 
+      <button
         onClick={() => debugAuthCookies()}
         className="mt-2 bg-blue-600 px-2 py-1 rounded text-xs"
       >
@@ -1244,12 +1318,15 @@ export function AuthDebugger() {
 ```
 
 ## 📚 関連ドキュメント
+
 - [Supabase Auth Documentation](https://supabase.com/docs/guides/auth)
 - [React Router v7 Authentication](https://reactrouter.com/en/main/start/tutorial#authentication)
 - [OWASP Authentication Guidelines](https://owasp.org/www-project-authentication-cheat-sheet/)
 - [認証フローシーケンス図](./auth-sequence-diagrams.md)
 
 ---
+
 **更新履歴**
+
 - 2025-01-11: 初版作成
 - 2025-06-14: 最新ソースコード分析に基づく包括的更新 - ハイブリッド認証システム、セキュリティ強化、実装詳細の追加

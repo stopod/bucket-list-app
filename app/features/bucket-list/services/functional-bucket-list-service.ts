@@ -16,18 +16,12 @@ import type {
 
 import type { Result } from "~/shared/types/result";
 import type { BucketListError } from "~/shared/types/errors";
-import { 
-  success, 
-  failure
-} from "~/shared/types/result";
-import { 
-  wrapAsync, 
-  combineResults
-} from "~/shared/utils/result-helpers";
-import { 
-  createDatabaseError, 
-  createNotFoundError, 
-  createApplicationError 
+import { success, failure } from "~/shared/types/result";
+import { wrapAsync, combineResults } from "~/shared/utils/result-helpers";
+import {
+  createDatabaseError,
+  createNotFoundError,
+  createApplicationError,
 } from "~/shared/types/errors";
 
 // ビジネスロジック関数のインポート
@@ -44,43 +38,62 @@ import {
 /**
  * Repository操作のエラーを適切なBucketListErrorに変換するヘルパー
  */
-const handleRepositoryError = (error: unknown, operation: string): BucketListError => {
+const handleRepositoryError = (
+  error: unknown,
+  operation: string,
+): BucketListError => {
   if (error instanceof Error) {
-    if (error.message.includes('not found') || error.message.includes('Not found')) {
-      return createNotFoundError('bucket-item', undefined, error.message);
+    if (
+      error.message.includes("not found") ||
+      error.message.includes("Not found")
+    ) {
+      return createNotFoundError("bucket-item", undefined, error.message);
     }
-    if (error.message.includes('database') || error.message.includes('supabase')) {
+    if (
+      error.message.includes("database") ||
+      error.message.includes("supabase")
+    ) {
       return createDatabaseError(error.message, operation as any);
     }
-    return createApplicationError(`${operation} failed: ${error.message}`, error);
+    return createApplicationError(
+      `${operation} failed: ${error.message}`,
+      error,
+    );
   }
-  return createApplicationError(`Unknown error in ${operation}`, new Error(String(error)));
+  return createApplicationError(
+    `Unknown error in ${operation}`,
+    new Error(String(error)),
+  );
 };
 
 /**
  * バケットリスト項目取得（ユーザー別）
  */
-export const getUserBucketItems = (repository: BucketListRepository) => 
+export const getUserBucketItems =
+  (repository: BucketListRepository) =>
   async (
     profileId: string,
     filters?: BucketListFilters,
-    sort?: BucketListSort
+    sort?: BucketListSort,
   ): Promise<Result<BucketItem[], BucketListError>> => {
     return wrapAsync(
       () => repository.findByProfileId(profileId, filters, sort),
-      (error: unknown) => handleRepositoryError(error, 'getUserBucketItems')
+      (error: unknown) => handleRepositoryError(error, "getUserBucketItems"),
     );
   };
 
 /**
  * バケットリスト項目取得（カテゴリ情報付き）
  */
-export const getUserBucketItemsWithCategory = (repository: BucketListRepository) =>
+export const getUserBucketItemsWithCategory =
+  (repository: BucketListRepository) =>
   async (
     profileId: string,
     filters?: BucketListFilters,
-    sort?: BucketListSort
-  ): Promise<Result<(BucketItem & { category: Category })[], BucketListError>> => {
+    sort?: BucketListSort,
+  ): Promise<
+    Result<(BucketItem & { category: Category })[], BucketListError>
+  > => {
     const userFilters = {
       ...filters,
       profile_id: profileId,
@@ -88,28 +101,31 @@ export const getUserBucketItemsWithCategory = (repository: BucketListRepository)
 
     return wrapAsync(
       () => repository.findAllWithCategory(userFilters, sort),
-      (error: unknown) => handleRepositoryError(error, 'getUserBucketItemsWithCategory')
+      (error: unknown) =>
+        handleRepositoryError(error, "getUserBucketItemsWithCategory"),
     );
   };
 
 /**
  * 公開バケットリスト項目取得
  */
-export const getPublicBucketItems = (repository: BucketListRepository) =>
+export const getPublicBucketItems =
+  (repository: BucketListRepository) =>
   async (
     filters?: BucketListFilters,
-    sort?: BucketListSort
+    sort?: BucketListSort,
   ): Promise<Result<BucketItem[], BucketListError>> => {
     return wrapAsync(
       () => repository.findPublic(filters, sort),
-      (error: unknown) => handleRepositoryError(error, 'getPublicBucketItems')
+      (error: unknown) => handleRepositoryError(error, "getPublicBucketItems"),
     );
   };
 
 /**
  * バケットリスト項目取得（ID指定）
  */
-export const getBucketItem = (repository: BucketListRepository) =>
+export const getBucketItem =
+  (repository: BucketListRepository) =>
   async (id: string): Promise<Result<BucketItem, BucketListError>> => {
     return wrapAsync(
       async () => {
@@ -119,7 +135,7 @@ export const getBucketItem = (repository: BucketListRepository) =>
         }
         return item;
       },
-      (error: unknown) => handleRepositoryError(error, 'getBucketItem')
+      (error: unknown) => handleRepositoryError(error, "getBucketItem"),
     );
   };
 
@@ -132,8 +148,11 @@ export const getBucketItemById = (repository: BucketListRepository) =>
 /**
  * バケットリスト項目作成（バリデーション付き）
  */
-export const createBucketItem = (repository: BucketListRepository) =>
-  async (data: BucketItemInsert): Promise<Result<BucketItem, BucketListError>> => {
+export const createBucketItem =
+  (repository: BucketListRepository) =>
+  async (
+    data: BucketItemInsert,
+  ): Promise<Result<BucketItem, BucketListError>> => {
     // ビジネスロジック：バリデーション実行
     const validationResult = validateBucketItemInsert(data);
     if (!validationResult.success) {
@@ -143,15 +162,19 @@ export const createBucketItem = (repository: BucketListRepository) =>
     // Repository操作実行
     return wrapAsync(
       () => repository.create(validationResult.data),
-      (error: unknown) => handleRepositoryError(error, 'createBucketItem')
+      (error: unknown) => handleRepositoryError(error, "createBucketItem"),
     );
   };
 
 /**
  * バケットリスト項目更新（バリデーション・ビジネスルールチェック付き）
  */
-export const updateBucketItem = (repository: BucketListRepository) =>
-  async (id: string, data: BucketItemUpdate): Promise<Result<BucketItem, BucketListError>> => {
+export const updateBucketItem =
+  (repository: BucketListRepository) =>
+  async (
+    id: string,
+    data: BucketItemUpdate,
+  ): Promise<Result<BucketItem, BucketListError>> => {
     // ビジネスロジック：バリデーション実行
     const validationResult = validateBucketItemUpdate(data);
     if (!validationResult.success) {
@@ -172,15 +195,19 @@ export const updateBucketItem = (repository: BucketListRepository) =>
     // Repository操作実行
     return wrapAsync(
       () => repository.update(id, validationResult.data),
-      (error: unknown) => handleRepositoryError(error, 'updateBucketItem')
+      (error: unknown) => handleRepositoryError(error, "updateBucketItem"),
     );
   };
 
 /**
  * バケットリスト項目完了
  */
-export const completeBucketItem = (repository: BucketListRepository) =>
-  async (id: string, comment?: string): Promise<Result<BucketItem, BucketListError>> => {
+export const completeBucketItem =
+  (repository: BucketListRepository) =>
+  async (
+    id: string,
+    comment?: string,
+  ): Promise<Result<BucketItem, BucketListError>> => {
     const updateData: BucketItemUpdate = {
       status: "completed",
       completed_at: new Date().toISOString(),
@@ -193,29 +220,32 @@ export const completeBucketItem = (repository: BucketListRepository) =>
 /**
  * バケットリスト項目削除
  */
-export const deleteBucketItem = (repository: BucketListRepository) =>
+export const deleteBucketItem =
+  (repository: BucketListRepository) =>
   async (id: string): Promise<Result<void, BucketListError>> => {
     return wrapAsync(
       () => repository.delete(id),
-      (error: unknown) => handleRepositoryError(error, 'deleteBucketItem')
+      (error: unknown) => handleRepositoryError(error, "deleteBucketItem"),
     );
   };
 
 /**
  * カテゴリ一覧取得
  */
-export const getCategories = (repository: BucketListRepository) =>
+export const getCategories =
+  (repository: BucketListRepository) =>
   async (): Promise<Result<Category[], BucketListError>> => {
     return wrapAsync(
       () => repository.findAllCategories(),
-      (error: unknown) => handleRepositoryError(error, 'getCategories')
+      (error: unknown) => handleRepositoryError(error, "getCategories"),
     );
   };
 
 /**
  * カテゴリ取得（ID指定）
  */
-export const getCategory = (repository: BucketListRepository) =>
+export const getCategory =
+  (repository: BucketListRepository) =>
   async (id: number): Promise<Result<Category, BucketListError>> => {
     return wrapAsync(
       async () => {
@@ -225,15 +255,18 @@ export const getCategory = (repository: BucketListRepository) =>
         }
         return category;
       },
-      (error: unknown) => handleRepositoryError(error, 'getCategory')
+      (error: unknown) => handleRepositoryError(error, "getCategory"),
     );
   };
 
 /**
  * ユーザー統計取得
  */
-export const getUserStats = (repository: BucketListRepository) =>
-  async (profileId: string): Promise<Result<UserBucketStats, BucketListError>> => {
+export const getUserStats =
+  (repository: BucketListRepository) =>
+  async (
+    profileId: string,
+  ): Promise<Result<UserBucketStats, BucketListError>> => {
     return wrapAsync(
       async () => {
         const stats = await repository.getUserStats(profileId);
@@ -242,22 +275,34 @@ export const getUserStats = (repository: BucketListRepository) =>
         }
         return stats;
       },
-      (error: unknown) => handleRepositoryError(error, 'getUserStats')
+      (error: unknown) => handleRepositoryError(error, "getUserStats"),
     );
   };
 
 /**
  * カテゴリ別バケットリスト項目取得（ビジネスロジック使用）
  */
-export const getBucketItemsByCategory = (repository: BucketListRepository) =>
-  async (profileId: string): Promise<Result<Array<{ category: Category; items: (BucketItem & { category: Category })[] }>, BucketListError>> => {
+export const getBucketItemsByCategory =
+  (repository: BucketListRepository) =>
+  async (
+    profileId: string,
+  ): Promise<
+    Result<
+      Array<{
+        category: Category;
+        items: (BucketItem & { category: Category })[];
+      }>,
+      BucketListError
+    >
+  > => {
     // 並行してデータを取得
-    const itemsResult = await getUserBucketItemsWithCategory(repository)(profileId);
+    const itemsResult =
+      await getUserBucketItemsWithCategory(repository)(profileId);
     const categoriesResult = await getCategories(repository)();
 
     // 両方の結果を組み合わせ
     const combinedResult = combineResults(itemsResult, categoriesResult);
-    
+
     if (!combinedResult.success) {
       return combinedResult;
     }
@@ -265,7 +310,10 @@ export const getBucketItemsByCategory = (repository: BucketListRepository) =>
     const [items, categories] = combinedResult.data;
 
     // ビジネスロジック関数を使用してカテゴリ別にグループ化
-    const itemsByCategory = groupItems(items, categories) as Array<{ category: Category; items: (BucketItem & { category: Category })[] }>;
+    const itemsByCategory = groupItems(items, categories) as Array<{
+      category: Category;
+      items: (BucketItem & { category: Category })[];
+    }>;
 
     return success(itemsByCategory);
   };
@@ -273,15 +321,26 @@ export const getBucketItemsByCategory = (repository: BucketListRepository) =>
 /**
  * ダッシュボードデータ取得（複合ビジネスロジック使用）
  */
-export const getDashboardData = (repository: BucketListRepository) =>
-  async (profileId: string): Promise<Result<{
-    items: (BucketItem & { category: Category })[];
-    categories: Category[];
-    stats: UserBucketStats;
-    itemsByCategory: Array<{ category: Category; items: (BucketItem & { category: Category })[] }>;
-    recentCompletedItems: BucketItem[];
-    upcomingItems: BucketItem[];
-  }, BucketListError>> => {
+export const getDashboardData =
+  (repository: BucketListRepository) =>
+  async (
+    profileId: string,
+  ): Promise<
+    Result<
+      {
+        items: (BucketItem & { category: Category })[];
+        categories: Category[];
+        stats: UserBucketStats;
+        itemsByCategory: Array<{
+          category: Category;
+          items: (BucketItem & { category: Category })[];
+        }>;
+        recentCompletedItems: BucketItem[];
+        upcomingItems: BucketItem[];
+      },
+      BucketListError
+    >
+  > => {
     // 複数の並行処理
     const [itemsResult, categoriesResult] = await Promise.all([
       getUserBucketItemsWithCategory(repository)(profileId),
@@ -290,7 +349,7 @@ export const getDashboardData = (repository: BucketListRepository) =>
 
     // 結果を組み合わせ
     const combinedResult = combineResults(itemsResult, categoriesResult);
-    
+
     if (!combinedResult.success) {
       return combinedResult;
     }
@@ -299,7 +358,10 @@ export const getDashboardData = (repository: BucketListRepository) =>
 
     // ビジネスロジック関数を使用して各種データを計算
     const stats = computeUserStats(items); // Repository呼び出しの代わりに計算
-    const itemsByCategory = groupItems(items, categories) as Array<{ category: Category; items: (BucketItem & { category: Category })[] }>;
+    const itemsByCategory = groupItems(items, categories) as Array<{
+      category: Category;
+      items: (BucketItem & { category: Category })[];
+    }>;
     const recentCompletedItems = getRecentlyCompletedItems(items, 5);
     const upcomingItems = getUpcomingItems(items, 30, 5);
 
@@ -317,7 +379,9 @@ export const getDashboardData = (repository: BucketListRepository) =>
  * 関数型サービス操作を束ねるオブジェクト
  * 関数の一元管理と使いやすさのため
  */
-export const createFunctionalBucketListService = (repository: BucketListRepository) => ({
+export const createFunctionalBucketListService = (
+  repository: BucketListRepository,
+) => ({
   getUserBucketItems: getUserBucketItems(repository),
   getUserBucketItemsWithCategory: getUserBucketItemsWithCategory(repository),
   getPublicBucketItems: getPublicBucketItems(repository),

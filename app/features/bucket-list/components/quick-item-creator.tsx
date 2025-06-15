@@ -3,20 +3,23 @@
  * Result型対応のhookを使用したインライン項目作成
  */
 
-import { useState, useMemo } from 'react';
-import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { LoadingOverlay } from '~/components/ui/loading-overlay';
-import type { 
-  BucketItem, 
-  Category, 
-  Priority, 
-  BucketItemFormData 
-} from '~/features/bucket-list/types';
-import type { BucketListRepository } from '~/features/bucket-list/repositories';
-import { useCreateBucketItem, useCategories } from '~/features/bucket-list/hooks/use-bucket-list-operations';
-import { isSuccess } from '~/shared/types/result';
-import { createFunctionalBucketListService } from '~/features/bucket-list/services/functional-bucket-list-service';
+import { useState, useMemo } from "react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { LoadingOverlay } from "~/components/ui/loading-overlay";
+import type {
+  BucketItem,
+  Category,
+  Priority,
+  BucketItemFormData,
+} from "~/features/bucket-list/types";
+import type { BucketListRepository } from "~/features/bucket-list/repositories";
+import {
+  useCreateBucketItem,
+  useCategories,
+} from "~/features/bucket-list/hooks/use-bucket-list-operations";
+import { isSuccess } from "~/shared/types/result";
+import { createFunctionalBucketListService } from "~/features/bucket-list/services/functional-bucket-list-service";
 
 interface QuickItemCreatorProps {
   repository: BucketListRepository;
@@ -36,13 +39,13 @@ export function QuickItemCreator({
   onError,
   onCancel,
   defaultCategoryId,
-  defaultPriority = 'medium',
+  defaultPriority = "medium",
   compact = false,
 }: QuickItemCreatorProps) {
   const [isExpanded, setIsExpanded] = useState(!compact);
   const [formData, setFormData] = useState<Partial<BucketItemFormData>>({
-    title: '',
-    description: '',
+    title: "",
+    description: "",
     category_id: defaultCategoryId,
     priority: defaultPriority,
     is_public: true,
@@ -60,8 +63,8 @@ export function QuickItemCreator({
   const createItem = useCreateBucketItem(repository, {
     onSuccess: (item) => {
       setFormData({
-        title: '',
-        description: '',
+        title: "",
+        description: "",
         category_id: defaultCategoryId,
         priority: defaultPriority,
         is_public: true,
@@ -70,19 +73,19 @@ export function QuickItemCreator({
       onItemCreated?.(item);
     },
     onError: (error) => {
-      onError?.(error.message || '項目の作成に失敗しました');
+      onError?.(error.message || "項目の作成に失敗しました");
     },
   });
 
   // 初回カテゴリ読み込み
   const loadCategories = async () => {
     if (categoriesHook.data && categoriesHook.data.length > 0) return;
-    
+
     const result = await categoriesHook.execute(
-      functionalService.getCategories
+      functionalService.getCategories,
     );
     if (isSuccess(result) && result.data.length > 0 && !formData.category_id) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         category_id: result.data[0].id,
       }));
@@ -97,9 +100,9 @@ export function QuickItemCreator({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title?.trim() || !formData.category_id) {
-      onError?.('タイトルとカテゴリは必須です');
+      onError?.("タイトルとカテゴリは必須です");
       return;
     }
 
@@ -110,21 +113,21 @@ export function QuickItemCreator({
         title: formData.title.trim(),
         description: formData.description?.trim() || null,
         category_id: formData.category_id,
-        priority: formData.priority || 'medium',
-        status: 'not_started',
+        priority: formData.priority || "medium",
+        status: "not_started",
         is_public: formData.is_public ?? true,
-      }
+      },
     );
 
     if (!isSuccess(result)) {
-      console.error('Item creation failed:', result.error);
+      console.error("Item creation failed:", result.error);
     }
   };
 
   const handleCancel = () => {
     setFormData({
-      title: '',
-      description: '',
+      title: "",
+      description: "",
       category_id: defaultCategoryId,
       priority: defaultPriority,
       is_public: true,
@@ -151,11 +154,11 @@ export function QuickItemCreator({
 
   return (
     <div className="relative">
-      <LoadingOverlay 
-        isVisible={createItem.isLoading} 
-        message="項目を作成中..." 
+      <LoadingOverlay
+        isVisible={createItem.isLoading}
+        message="項目を作成中..."
       />
-      
+
       <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
         <h4 className="text-lg font-semibold text-gray-900 mb-4">
           ➕ 新しい項目を追加
@@ -164,14 +167,19 @@ export function QuickItemCreator({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* タイトル */}
           <div>
-            <label htmlFor="quick-title" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="quick-title"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               タイトル <span className="text-red-500">*</span>
             </label>
             <Input
               id="quick-title"
               type="text"
-              value={formData.title || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              value={formData.title || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, title: e.target.value }))
+              }
               placeholder="やりたいことを入力..."
               required
               className="w-full"
@@ -180,13 +188,21 @@ export function QuickItemCreator({
 
           {/* 説明（オプション） */}
           <div>
-            <label htmlFor="quick-description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="quick-description"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               説明（オプション）
             </label>
             <textarea
               id="quick-description"
-              value={formData.description || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              value={formData.description || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               placeholder="詳細な説明..."
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -196,7 +212,10 @@ export function QuickItemCreator({
           {/* カテゴリと優先度 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="quick-category" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="quick-category"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 カテゴリ <span className="text-red-500">*</span>
               </label>
               {categoriesHook.isLoading ? (
@@ -211,8 +230,13 @@ export function QuickItemCreator({
               ) : (
                 <select
                   id="quick-category"
-                  value={formData.category_id || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category_id: Number(e.target.value) }))}
+                  value={formData.category_id || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      category_id: Number(e.target.value),
+                    }))
+                  }
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
@@ -227,13 +251,21 @@ export function QuickItemCreator({
             </div>
 
             <div>
-              <label htmlFor="quick-priority" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="quick-priority"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 優先度
               </label>
               <select
                 id="quick-priority"
-                value={formData.priority || 'medium'}
-                onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as Priority }))}
+                value={formData.priority || "medium"}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    priority: e.target.value as Priority,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="high">高</option>
@@ -249,7 +281,12 @@ export function QuickItemCreator({
               <input
                 type="checkbox"
                 checked={formData.is_public ?? true}
-                onChange={(e) => setFormData(prev => ({ ...prev, is_public: e.target.checked }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    is_public: e.target.checked,
+                  }))
+                }
                 className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <span className="text-sm font-medium text-gray-700">
@@ -261,7 +298,7 @@ export function QuickItemCreator({
           {/* エラー表示 */}
           {createItem.error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-              {createItem.error.message || 'エラーが発生しました'}
+              {createItem.error.message || "エラーが発生しました"}
             </div>
           )}
 
@@ -277,9 +314,13 @@ export function QuickItemCreator({
             </Button>
             <Button
               type="submit"
-              disabled={createItem.isLoading || !formData.title?.trim() || !formData.category_id}
+              disabled={
+                createItem.isLoading ||
+                !formData.title?.trim() ||
+                !formData.category_id
+              }
             >
-              {createItem.isLoading ? '作成中...' : '追加'}
+              {createItem.isLoading ? "作成中..." : "追加"}
             </Button>
           </div>
         </form>
@@ -309,7 +350,7 @@ export function MinimalQuickCreator({
   onError,
   placeholder = "新しいやりたいことを入力...",
 }: MinimalQuickCreatorProps) {
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState("");
 
   // 関数型サービスから取得
   const functionalService = useMemo(() => {
@@ -318,17 +359,17 @@ export function MinimalQuickCreator({
 
   const createItem = useCreateBucketItem(repository, {
     onSuccess: (item) => {
-      setTitle('');
+      setTitle("");
       onItemCreated?.(item);
     },
     onError: (error) => {
-      onError?.(error.message || '項目の作成に失敗しました');
+      onError?.(error.message || "項目の作成に失敗しました");
     },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim()) return;
 
     const result = await createItem.execute(
@@ -337,14 +378,14 @@ export function MinimalQuickCreator({
         profile_id: profileId,
         title: title.trim(),
         category_id: defaultCategoryId,
-        priority: 'medium',
-        status: 'not_started',
+        priority: "medium",
+        status: "not_started",
         is_public: true,
-      }
+      },
     );
 
     if (!isSuccess(result)) {
-      console.error('Item creation failed:', result.error);
+      console.error("Item creation failed:", result.error);
     }
   };
 
@@ -363,7 +404,7 @@ export function MinimalQuickCreator({
         disabled={createItem.isLoading || !title.trim()}
         size="sm"
       >
-        {createItem.isLoading ? '追加中...' : '追加'}
+        {createItem.isLoading ? "追加中..." : "追加"}
       </Button>
     </form>
   );

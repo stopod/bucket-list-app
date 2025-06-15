@@ -7,10 +7,10 @@ interface LoadingOverlayProps {
   className?: string;
 }
 
-export function LoadingOverlay({ 
-  isVisible, 
-  message = "処理中...", 
-  className 
+export function LoadingOverlay({
+  isVisible,
+  message = "処理中...",
+  className,
 }: LoadingOverlayProps) {
   if (!isVisible) return null;
 
@@ -18,7 +18,7 @@ export function LoadingOverlay({
     <div
       className={cn(
         "fixed inset-0 z-70 flex items-center justify-center bg-black bg-opacity-50",
-        className
+        className,
       )}
       role="dialog"
       aria-modal="true"

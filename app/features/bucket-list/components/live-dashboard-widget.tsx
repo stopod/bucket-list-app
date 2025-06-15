@@ -3,13 +3,13 @@
  * Result型対応のhookを使用したリアルタイムデータ表示
  */
 
-import { useEffect, useState, useMemo } from 'react';
-import { Button } from '~/components/ui/button';
-import { Spinner } from '~/components/ui/spinner';
-import type { BucketListRepository } from '~/features/bucket-list/repositories';
-import { useDashboardData } from '~/features/bucket-list/hooks/use-bucket-list-operations';
-import { isSuccess, isFailure } from '~/shared/types/result';
-import { createFunctionalBucketListService } from '~/features/bucket-list/services/functional-bucket-list-service';
+import { useEffect, useState, useMemo } from "react";
+import { Button } from "~/components/ui/button";
+import { Spinner } from "~/components/ui/spinner";
+import type { BucketListRepository } from "~/features/bucket-list/repositories";
+import { useDashboardData } from "~/features/bucket-list/hooks/use-bucket-list-operations";
+import { isSuccess, isFailure } from "~/shared/types/result";
+import { createFunctionalBucketListService } from "~/features/bucket-list/services/functional-bucket-list-service";
 
 interface LiveDashboardWidgetProps {
   repository: BucketListRepository;
@@ -38,7 +38,7 @@ export function LiveDashboardWidget({
   const loadDashboardData = async () => {
     const result = await dashboardData.execute(
       functionalService.getDashboardData,
-      profileId
+      profileId,
     );
 
     if (isSuccess(result)) {
@@ -75,7 +75,9 @@ export function LiveDashboardWidget({
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex justify-center items-center py-8">
           <Spinner size="lg" />
-          <span className="ml-3 text-gray-600">ダッシュボードデータを読み込み中...</span>
+          <span className="ml-3 text-gray-600">
+            ダッシュボードデータを読み込み中...
+          </span>
         </div>
       </div>
     );
@@ -89,7 +91,7 @@ export function LiveDashboardWidget({
             ⚠️ ダッシュボードデータの読み込みに失敗しました
           </div>
           <p className="text-sm text-gray-600 mb-4">
-            {dashboardData.error.message || 'エラーが発生しました'}
+            {dashboardData.error.message || "エラーが発生しました"}
           </p>
           <Button onClick={handleManualRefresh} variant="outline">
             再読み込み
@@ -103,9 +105,7 @@ export function LiveDashboardWidget({
   if (!data) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
-        <div className="text-center py-8 text-gray-500">
-          データがありません
-        </div>
+        <div className="text-center py-8 text-gray-500">データがありません</div>
       </div>
     );
   }
@@ -124,19 +124,19 @@ export function LiveDashboardWidget({
               最終更新: {lastUpdated.toLocaleTimeString()}
             </span>
           )}
-          
+
           {/* 自動更新トグル */}
           <Button
             size="sm"
             variant="outline"
             onClick={toggleAutoRefresh}
             className={`text-xs ${
-              autoRefresh 
-                ? 'bg-green-50 text-green-700 border-green-200' 
-                : 'bg-gray-50 text-gray-600'
+              autoRefresh
+                ? "bg-green-50 text-green-700 border-green-200"
+                : "bg-gray-50 text-gray-600"
             }`}
           >
-            {autoRefresh ? '⏰ 自動更新ON' : '⏸️ 自動更新OFF'}
+            {autoRefresh ? "⏰ 自動更新ON" : "⏸️ 自動更新OFF"}
           </Button>
 
           {/* 手動更新ボタン */}
@@ -154,7 +154,7 @@ export function LiveDashboardWidget({
                   更新中
                 </span>
               ) : (
-                '🔄 更新'
+                "🔄 更新"
               )}
             </Button>
           )}
@@ -207,7 +207,8 @@ export function LiveDashboardWidget({
                     {item.title}
                   </span>
                   <span className="text-xs text-green-600">
-                    {item.completed_at && new Date(item.completed_at).toLocaleDateString()}
+                    {item.completed_at &&
+                      new Date(item.completed_at).toLocaleDateString()}
                   </span>
                 </div>
               ))}
@@ -225,8 +226,9 @@ export function LiveDashboardWidget({
               {data.upcomingItems.map((item) => {
                 const daysUntilDue = item.due_date
                   ? Math.ceil(
-                      (new Date(item.due_date).getTime() - new Date().getTime()) /
-                        (1000 * 60 * 60 * 24)
+                      (new Date(item.due_date).getTime() -
+                        new Date().getTime()) /
+                        (1000 * 60 * 60 * 24),
                     )
                   : null;
                 const isUrgent = daysUntilDue !== null && daysUntilDue <= 7;
@@ -236,8 +238,8 @@ export function LiveDashboardWidget({
                     key={item.id}
                     className={`flex items-center justify-between p-2 border rounded ${
                       isUrgent
-                        ? 'bg-red-50 border-red-200'
-                        : 'bg-yellow-50 border-yellow-200'
+                        ? "bg-red-50 border-red-200"
+                        : "bg-yellow-50 border-yellow-200"
                     }`}
                   >
                     <span className="text-sm font-medium text-gray-900">
@@ -245,10 +247,12 @@ export function LiveDashboardWidget({
                     </span>
                     <span
                       className={`text-xs ${
-                        isUrgent ? 'text-red-600' : 'text-yellow-600'
+                        isUrgent ? "text-red-600" : "text-yellow-600"
                       }`}
                     >
-                      {daysUntilDue !== null ? `あと${daysUntilDue}日` : '期限未設定'}
+                      {daysUntilDue !== null
+                        ? `あと${daysUntilDue}日`
+                        : "期限未設定"}
                     </span>
                   </div>
                 );
@@ -264,9 +268,12 @@ export function LiveDashboardWidget({
           </h4>
           <div className="space-y-2">
             {data.itemsByCategory.map(({ category, items }) => {
-              const completed = items.filter((item) => item.status === 'completed').length;
+              const completed = items.filter(
+                (item) => item.status === "completed",
+              ).length;
               const total = items.length;
-              const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+              const rate =
+                total > 0 ? Math.round((completed / total) * 100) : 0;
 
               return (
                 <div

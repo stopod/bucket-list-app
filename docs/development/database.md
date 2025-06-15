@@ -1,6 +1,7 @@
 # データベース設計 実装ガイド
 
 ## 📋 概要
+
 - **目的**: Supabase PostgreSQL を使用したデータベース設計・運用
 - **対象読者**: 開発者、DBA、アーキテクト
 - **前提知識**: PostgreSQL, Supabase, RLS (Row Level Security)
@@ -9,20 +10,23 @@
 ## 🏗 アーキテクチャ
 
 ### 設計思想
+
 - **セキュリティファースト**: RLS による行レベルセキュリティ
 - **正規化**: データ整合性を重視した設計
 - **パフォーマンス**: 適切なインデックス設計
 - **拡張性**: 将来の機能拡張を考慮
 
 ### 主要テーブル
+
 - **profiles**: ユーザープロフィール情報
 - **categories**: やりたいことのカテゴリ
 - **bucket_items**: やりたいこと項目
 - **user_bucket_stats**: ユーザー統計情報（ビュー）
 
 ### データフロー
+
 ```
-[User Registration] → [profiles] 
+[User Registration] → [profiles]
                           ↓
 [Create Bucket Item] → [bucket_items] → [categories]
                           ↓
@@ -34,6 +38,7 @@
 ### 基本実装
 
 #### 1. profiles テーブル
+
 ```sql
 -- ユーザープロフィール情報
 -- auth.users の代替として使用（RLS回避）
@@ -45,7 +50,7 @@ CREATE TABLE profiles (
   avatar_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   -- インデックス
   CONSTRAINT profiles_email_key UNIQUE (email),
   CONSTRAINT profiles_user_id_key UNIQUE (user_id)
@@ -66,6 +71,7 @@ CREATE POLICY "Users can insert own profile" ON profiles
 ```
 
 #### 2. categories テーブル
+
 ```sql
 -- やりたいことのカテゴリ
 CREATE TABLE categories (
@@ -74,7 +80,7 @@ CREATE TABLE categories (
   color VARCHAR(7) DEFAULT '#6B7280', -- hex color
   description TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   -- 制約
   CONSTRAINT categories_name_check CHECK (LENGTH(name) >= 1),
   CONSTRAINT categories_color_check CHECK (color ~ '^#[0-9A-Fa-f]{6}$')
@@ -98,6 +104,7 @@ CREATE POLICY "Categories are viewable by everyone" ON categories FOR SELECT USI
 ```
 
 #### 3. bucket_items テーブル
+
 ```sql
 -- やりたいこと項目
 CREATE TABLE bucket_items (
@@ -115,11 +122,11 @@ CREATE TABLE bucket_items (
   completion_comment TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   -- 制約
   CONSTRAINT bucket_items_title_check CHECK (LENGTH(title) >= 1),
   CONSTRAINT bucket_items_completion_check CHECK (
-    (status = 'completed' AND completed_at IS NOT NULL) OR 
+    (status = 'completed' AND completed_at IS NOT NULL) OR
     (status != 'completed' AND completed_at IS NULL)
   )
 );
@@ -137,20 +144,21 @@ CREATE INDEX idx_bucket_items_created_at ON bucket_items(created_at);
 ```
 
 #### 4. user_bucket_stats ビュー
+
 ```sql
 -- ユーザー統計情報ビュー
 CREATE VIEW user_bucket_stats AS
-SELECT 
+SELECT
   p.id as profile_id,
   p.display_name,
   COUNT(b.id) as total_items,
   COUNT(CASE WHEN b.status = 'completed' THEN 1 END) as completed_items,
   COUNT(CASE WHEN b.status = 'in_progress' THEN 1 END) as in_progress_items,
   COUNT(CASE WHEN b.status = 'not_started' THEN 1 END) as not_started_items,
-  CASE 
+  CASE
     WHEN COUNT(b.id) = 0 THEN 0
     ELSE ROUND(
-      (COUNT(CASE WHEN b.status = 'completed' THEN 1 END)::numeric / COUNT(b.id)::numeric) * 100, 
+      (COUNT(CASE WHEN b.status = 'completed' THEN 1 END)::numeric / COUNT(b.id)::numeric) * 100,
       1
     )
   END as completion_rate
@@ -165,17 +173,20 @@ GRANT SELECT ON user_bucket_stats TO authenticated;
 ### 設定手順
 
 #### 1. Supabase プロジェクト作成
+
 1. [Supabase](https://supabase.com) でプロジェクト作成
 2. データベースURL・APIキーを取得
 3. 環境変数に設定
 
 #### 2. テーブル作成
+
 ```bash
 # SQL Editor で上記のSQL文を順次実行
 # または migration ファイルとして管理
 ```
 
 #### 3. RLS ポリシー設定
+
 ```sql
 -- 必要に応じてRLSポリシーを調整
 -- 現在は bucket_items のRLSは無効化（実用性重視）
@@ -184,6 +195,7 @@ GRANT SELECT ON user_bucket_stats TO authenticated;
 ### 高度な実装
 
 #### パフォーマンス最適化
+
 ```sql
 -- 複合インデックス
 CREATE INDEX idx_bucket_items_profile_status ON bucket_items(profile_id, status);
@@ -196,6 +208,7 @@ ANALYZE categories;
 ```
 
 #### データアーカイブ戦略
+
 ```sql
 -- 完了から1年経過した項目のアーカイブ
 CREATE TABLE bucket_items_archive (LIKE bucket_items INCLUDING ALL);
@@ -207,13 +220,13 @@ DECLARE
   archived_count INTEGER;
 BEGIN
   WITH archived AS (
-    DELETE FROM bucket_items 
-    WHERE status = 'completed' 
+    DELETE FROM bucket_items
+    WHERE status = 'completed'
       AND completed_at < NOW() - INTERVAL '1 year'
     RETURNING *
   )
   INSERT INTO bucket_items_archive SELECT * FROM archived;
-  
+
   GET DIAGNOSTICS archived_count = ROW_COUNT;
   RETURN archived_count;
 END;
@@ -223,28 +236,30 @@ $$ LANGUAGE plpgsql;
 ## 🧪 テスト
 
 ### テスト戦略
+
 - **スキーマテスト**: テーブル構造・制約の確認
 - **パフォーマンステスト**: クエリ実行時間測定
 - **データ整合性テスト**: 制約・トリガーの動作確認
 
 ### サンプルテスト
+
 ```sql
 -- データ整合性テスト
 DO $$
 BEGIN
   -- 無効な status でエラーになることを確認
   BEGIN
-    INSERT INTO bucket_items (profile_id, category_id, title, status) 
+    INSERT INTO bucket_items (profile_id, category_id, title, status)
     VALUES ('00000000-0000-0000-0000-000000000000', 1, 'Test', 'invalid_status');
     RAISE EXCEPTION 'Should have failed with invalid status';
   EXCEPTION
     WHEN check_violation THEN
       RAISE NOTICE 'Status constraint working correctly';
   END;
-  
+
   -- completed_at と status の整合性確認
   BEGIN
-    INSERT INTO bucket_items (profile_id, category_id, title, status, completed_at) 
+    INSERT INTO bucket_items (profile_id, category_id, title, status, completed_at)
     VALUES ('00000000-0000-0000-0000-000000000000', 1, 'Test', 'not_started', NOW());
     RAISE EXCEPTION 'Should have failed with completion constraint';
   EXCEPTION
@@ -259,8 +274,10 @@ END $$;
 ### よくある問題
 
 #### 問題1: RLS ポリシーでアクセス拒否
+
 **原因**: 不適切なRLSポリシー設定
-**解決方法**: 
+**解決方法**:
+
 ```sql
 -- ポリシー確認
 SELECT * FROM pg_policies WHERE tablename = 'bucket_items';
@@ -271,15 +288,17 @@ CREATE POLICY "new_policy" ON bucket_items FOR SELECT USING (auth.uid() = profil
 ```
 
 #### 問題2: パフォーマンスの劣化
+
 **原因**: インデックス不足・統計情報の古さ
 **解決方法**:
+
 ```sql
 -- 実行計画確認
 EXPLAIN ANALYZE SELECT * FROM bucket_items WHERE profile_id = 'uuid';
 
 -- インデックス使用状況確認
-SELECT schemaname, tablename, indexname, idx_scan, idx_tup_read 
-FROM pg_stat_user_indexes 
+SELECT schemaname, tablename, indexname, idx_scan, idx_tup_read
+FROM pg_stat_user_indexes
 WHERE schemaname = 'public';
 
 -- 統計情報更新
@@ -287,12 +306,14 @@ ANALYZE;
 ```
 
 #### 問題3: 外部キー制約エラー
+
 **原因**: 参照整合性違反
 **解決方法**:
+
 ```sql
 -- 孤立レコード確認
-SELECT b.* FROM bucket_items b 
-LEFT JOIN profiles p ON b.profile_id = p.id 
+SELECT b.* FROM bucket_items b
+LEFT JOIN profiles p ON b.profile_id = p.id
 WHERE p.id IS NULL;
 
 -- データクリーンアップ
@@ -300,6 +321,7 @@ DELETE FROM bucket_items WHERE profile_id NOT IN (SELECT id FROM profiles);
 ```
 
 ### デバッグ方法
+
 ```sql
 -- ログレベル設定
 SET log_statement = 'all';
@@ -311,11 +333,14 @@ SELECT * FROM pg_locks WHERE NOT granted;
 ```
 
 ## 📚 参考資料
+
 - [Supabase Database Documentation](https://supabase.com/docs/guides/database)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [RLS Guide](https://supabase.com/docs/guides/auth/row-level-security)
 
 ---
+
 **更新履歴**
+
 - 2025-01-11: 初版作成 (Development Team)
 - table_definition_doc.md を基に包括的ガイド化

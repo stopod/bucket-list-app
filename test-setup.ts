@@ -1,8 +1,8 @@
-import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import "@testing-library/jest-dom";
+import { vi } from "vitest";
 
 // Mock Supabase client for tests
-vi.mock('~/lib/supabase', () => ({
+vi.mock("~/lib/supabase", () => ({
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
@@ -17,9 +17,9 @@ vi.mock('~/lib/supabase', () => ({
       setSession: vi.fn().mockResolvedValue({ data: null, error: null }),
     },
   },
-}))
+}));
 
 // Mock environment variables
-process.env.VITE_SUPABASE_URL = 'https://test.supabase.co'
-process.env.VITE_SUPABASE_ANON_KEY = 'test-anon-key'
-process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
+process.env.VITE_SUPABASE_URL = "https://test.supabase.co";
+process.env.VITE_SUPABASE_ANON_KEY = "test-anon-key";
+process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-role-key";

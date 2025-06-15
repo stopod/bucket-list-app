@@ -3,14 +3,14 @@
  * Result型対応のhookを使用したリアルタイム更新
  */
 
-import { useState, useMemo } from 'react';
-import { Button } from '~/components/ui/button';
-import { LoadingOverlay } from '~/components/ui/loading-overlay';
-import type { BucketItem, Status } from '~/features/bucket-list/types';
-import type { BucketListRepository } from '~/features/bucket-list/repositories';
-import { useUpdateBucketItem } from '~/features/bucket-list/hooks/use-bucket-list-operations';
-import { isSuccess } from '~/shared/types/result';
-import { createFunctionalBucketListService } from '~/features/bucket-list/services/functional-bucket-list-service';
+import { useState, useMemo } from "react";
+import { Button } from "~/components/ui/button";
+import { LoadingOverlay } from "~/components/ui/loading-overlay";
+import type { BucketItem, Status } from "~/features/bucket-list/types";
+import type { BucketListRepository } from "~/features/bucket-list/repositories";
+import { useUpdateBucketItem } from "~/features/bucket-list/hooks/use-bucket-list-operations";
+import { isSuccess } from "~/shared/types/result";
+import { createFunctionalBucketListService } from "~/features/bucket-list/services/functional-bucket-list-service";
 
 interface QuickStatusChangerProps {
   item: BucketItem;
@@ -39,7 +39,7 @@ export function QuickStatusChanger({
     },
     onError: (error) => {
       setIsChanging(false);
-      onError?.(error.message || 'ステータスの変更に失敗しました');
+      onError?.(error.message || "ステータスの変更に失敗しました");
     },
   });
 
@@ -55,26 +55,26 @@ export function QuickStatusChanger({
       {
         status: newStatus,
         // 完了時は現在時刻を設定
-        ...(newStatus === 'completed' && {
+        ...(newStatus === "completed" && {
           completed_at: new Date().toISOString(),
         }),
-      }
+      },
     );
 
     if (!isSuccess(result)) {
       // エラーは既にonErrorで処理される
-      console.error('Status change failed:', result.error);
+      console.error("Status change failed:", result.error);
     }
   };
 
   const getStatusLabel = (status: Status) => {
     switch (status) {
-      case 'not_started':
-        return '未着手';
-      case 'in_progress':
-        return '進行中';
-      case 'completed':
-        return '完了';
+      case "not_started":
+        return "未着手";
+      case "in_progress":
+        return "進行中";
+      case "completed":
+        return "完了";
       default:
         return status;
     }
@@ -82,23 +82,23 @@ export function QuickStatusChanger({
 
   const getStatusColor = (status: Status) => {
     switch (status) {
-      case 'not_started':
-        return 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200';
-      case 'in_progress':
-        return 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200';
-      case 'completed':
-        return 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200';
+      case "not_started":
+        return "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200";
+      case "in_progress":
+        return "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200";
+      case "completed":
+        return "bg-green-100 text-green-800 border-green-200 hover:bg-green-200";
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200';
+        return "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200";
     }
   };
 
-  const statuses: Status[] = ['not_started', 'in_progress', 'completed'];
+  const statuses: Status[] = ["not_started", "in_progress", "completed"];
 
   return (
     <div className="relative">
       <LoadingOverlay isVisible={isChanging} message="ステータスを変更中..." />
-      
+
       <div className="flex flex-wrap gap-2">
         <span className="text-sm font-medium text-gray-700">ステータス:</span>
         {statuses.map((status) => {
@@ -113,15 +113,11 @@ export function QuickStatusChanger({
               disabled={isDisabled}
               onClick={() => handleStatusChange(status)}
               className={`text-xs px-3 py-1 border ${
-                isCurrentStatus 
-                  ? 'ring-2 ring-blue-500 ring-offset-1' 
-                  : ''
+                isCurrentStatus ? "ring-2 ring-blue-500 ring-offset-1" : ""
               } ${getStatusColor(status)}`}
             >
               {getStatusLabel(status)}
-              {isCurrentStatus && (
-                <span className="ml-1">✓</span>
-              )}
+              {isCurrentStatus && <span className="ml-1">✓</span>}
             </Button>
           );
         })}
@@ -130,7 +126,7 @@ export function QuickStatusChanger({
       {/* エラー表示 */}
       {updateBucketItem.error && (
         <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-          {updateBucketItem.error.message || 'エラーが発生しました'}
+          {updateBucketItem.error.message || "エラーが発生しました"}
         </div>
       )}
 
@@ -168,16 +164,17 @@ export function QuickStatusButton({
 
   const updateBucketItem = useUpdateBucketItem(repository, {
     onSuccess: onStatusChanged,
-    onError: (error) => onError?.(error.message || 'ステータスの変更に失敗しました'),
+    onError: (error) =>
+      onError?.(error.message || "ステータスの変更に失敗しました"),
   });
 
   const getNextStatus = (currentStatus: string): Status | null => {
     switch (currentStatus) {
-      case 'not_started':
-        return 'in_progress';
-      case 'in_progress':
-        return 'completed';
-      case 'completed':
+      case "not_started":
+        return "in_progress";
+      case "in_progress":
+        return "completed";
+      case "completed":
         return null; // 完了済みは変更不可
       default:
         return null;
@@ -187,24 +184,24 @@ export function QuickStatusButton({
   const getNextStatusLabel = (currentStatus: string): string => {
     const nextStatus = getNextStatus(currentStatus);
     switch (nextStatus) {
-      case 'in_progress':
-        return '開始する';
-      case 'completed':
-        return '完了する';
+      case "in_progress":
+        return "開始する";
+      case "completed":
+        return "完了する";
       default:
-        return '';
+        return "";
     }
   };
 
   const getButtonColor = (currentStatus: string): string => {
     const nextStatus = getNextStatus(currentStatus);
     switch (nextStatus) {
-      case 'in_progress':
-        return 'bg-blue-600 hover:bg-blue-700 text-white';
-      case 'completed':
-        return 'bg-green-600 hover:bg-green-700 text-white';
+      case "in_progress":
+        return "bg-blue-600 hover:bg-blue-700 text-white";
+      case "completed":
+        return "bg-green-600 hover:bg-green-700 text-white";
       default:
-        return 'bg-gray-300 text-gray-500 cursor-not-allowed';
+        return "bg-gray-300 text-gray-500 cursor-not-allowed";
     }
   };
 
@@ -217,14 +214,14 @@ export function QuickStatusButton({
       item.id,
       {
         status: nextStatus,
-        ...(nextStatus === 'completed' && {
+        ...(nextStatus === "completed" && {
           completed_at: new Date().toISOString(),
         }),
-      }
+      },
     );
 
     if (!isSuccess(result)) {
-      console.error('Status change failed:', result.error);
+      console.error("Status change failed:", result.error);
     }
   };
 

@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "~/lib/supabase";
 import type { AuthContextType } from "../types";
@@ -14,20 +20,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // セキュリティ強化：セッション検証
   const validateSession = useCallback((session: Session | null): boolean => {
     if (!session) return false;
-    
+
     // JWTの有効期限チェック
     const now = Math.floor(Date.now() / 1000);
     if (session.expires_at && session.expires_at < now) {
-      console.warn('Session expired');
+      console.warn("Session expired");
       return false;
     }
-    
+
     // ユーザー情報の整合性チェック
     if (!session.user || !session.user.id || !session.user.email) {
-      console.warn('Invalid user data in session');
+      console.warn("Invalid user data in session");
       return false;
     }
-    
+
     return true;
   }, []);
 
@@ -41,15 +47,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const getInitialSession = async () => {
       try {
         // SSR環境では何もしない
-        if (typeof window === 'undefined') {
+        if (typeof window === "undefined") {
           setLoading(false);
           return;
         }
 
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
         if (error) {
-          console.error('Error getting session:', error);
+          console.error("Error getting session:", error);
           setLoading(false);
           return;
         }
@@ -65,10 +74,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(null);
           setUser(null);
         }
-        
+
         setLoading(false);
       } catch (error) {
-        console.error('Unexpected error getting session:', error);
+        console.error("Unexpected error getting session:", error);
         setLoading(false);
       }
     };
@@ -81,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       // セッション検証
       if (session && !validateSession(session)) {
-        console.warn('Invalid session detected, signing out');
+        console.warn("Invalid session detected, signing out");
         await supabase.auth.signOut();
         return;
       }
@@ -89,16 +98,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-      
+
       if (session) {
         updateActivity();
       }
 
       // セキュリティ強化：特定イベントでの追加チェック
-      if (event === 'TOKEN_REFRESHED' && session) {
+      if (event === "TOKEN_REFRESHED" && session) {
         // トークン更新時の検証
         if (!validateSession(session)) {
-          console.warn('Token refresh resulted in invalid session');
+          console.warn("Token refresh resulted in invalid session");
           await supabase.auth.signOut();
         }
       }
@@ -109,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // セキュリティ強化：非アクティブ時のセッション管理
   useEffect(() => {
-    if (!session || typeof window === 'undefined') return;
+    if (!session || typeof window === "undefined") return;
 
     const checkInactivity = () => {
       const now = new Date();
@@ -122,13 +131,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     // アクティビティ監視
-    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-    
+    const activityEvents = [
+      "mousedown",
+      "mousemove",
+      "keypress",
+      "scroll",
+      "touchstart",
+    ];
+
     const handleActivity = () => {
       updateActivity();
     };
 
-    activityEvents.forEach(event => {
+    activityEvents.forEach((event) => {
       document.addEventListener(event, handleActivity, { passive: true });
     });
 
@@ -136,7 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const inactivityCheck = setInterval(checkInactivity, 5 * 60 * 1000);
 
     return () => {
-      activityEvents.forEach(event => {
+      activityEvents.forEach((event) => {
         document.removeEventListener(event, handleActivity);
       });
       clearInterval(inactivityCheck);
@@ -148,13 +163,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // 入力検証
       if (!email || !password) {
-        return { error: { message: 'メールアドレスとパスワードは必須です' } };
+        return { error: { message: "メールアドレスとパスワードは必須です" } };
       }
 
       // メールアドレス形式の基本チェック
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        return { error: { message: 'メールアドレスの形式が正しくありません' } };
+        return { error: { message: "メールアドレスの形式が正しくありません" } };
       }
 
       const { error } = await supabase.auth.signInWithPassword({
@@ -164,15 +179,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         // エラーのみログ出力
-        console.error('Sign in failed:', error.message);
+        console.error("Sign in failed:", error.message);
       } else {
         updateActivity();
       }
 
       return { error };
     } catch (error) {
-      console.error('Unexpected sign in error:', error);
-      return { error: { message: '予期しないエラーが発生しました' } };
+      console.error("Unexpected sign in error:", error);
+      return { error: { message: "予期しないエラーが発生しました" } };
     }
   };
 
@@ -181,12 +196,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // 入力検証
       if (!email || !password) {
-        return { error: { message: 'メールアドレスとパスワードは必須です' } };
+        return { error: { message: "メールアドレスとパスワードは必須です" } };
       }
 
       // パスワード強度チェック
       if (password.length < 8) {
-        return { error: { message: 'パスワードは8文字以上である必要があります' } };
+        return {
+          error: { message: "パスワードは8文字以上である必要があります" },
+        };
       }
 
       // 簡易的なパスワード強度チェック（警告なしで続行）
@@ -201,13 +218,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         // エラーのみログ出力
-        console.error('Sign up failed:', error.message);
+        console.error("Sign up failed:", error.message);
       }
 
       return { error };
     } catch (error) {
-      console.error('Unexpected sign up error:', error);
-      return { error: { message: '予期しないエラーが発生しました' } };
+      console.error("Unexpected sign up error:", error);
+      return { error: { message: "予期しないエラーが発生しました" } };
     }
   };
 
@@ -215,9 +232,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
-        console.error('Sign out error:', error);
+        console.error("Sign out error:", error);
         throw error;
       }
 
@@ -227,29 +244,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLastActivity(new Date());
 
       // セキュリティ強化：セッション情報の完全クリア
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         try {
           // 🔐 Cookie削除（Supabase認証情報）
-          document.cookie.split(";").forEach(cookie => {
+          document.cookie.split(";").forEach((cookie) => {
             const [name] = cookie.split("=");
-            if (name.trim().includes('supabase')) {
+            if (name.trim().includes("supabase")) {
               document.cookie = `${name.trim()}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=strict`;
             }
           });
-          
+
           // 🛡️ localStorage のフォールバック削除（既存データ対応）
-          Object.keys(localStorage).forEach(key => {
-            if (key.includes('supabase')) {
+          Object.keys(localStorage).forEach((key) => {
+            if (key.includes("supabase")) {
               localStorage.removeItem(key);
             }
           });
         } catch (error) {
-          console.warn('Failed to clear session data:', error);
+          console.warn("Failed to clear session data:", error);
         }
       }
-
     } catch (error) {
-      console.error('Unexpected sign out error:', error);
+      console.error("Unexpected sign out error:", error);
       // エラーが発生してもローカル状態をクリア（セキュリティ優先）
       setUser(null);
       setSession(null);

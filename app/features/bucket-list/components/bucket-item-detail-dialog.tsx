@@ -1,15 +1,32 @@
 import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
-import { Spinner, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui";
-import type { BucketItemWithCategory, Category, Status, Priority } from "../types";
-import { 
-  PRIORITY_LABELS, 
-  STATUS_LABELS, 
+import {
+  Spinner,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui";
+import type {
+  BucketItemWithCategory,
+  Category,
+  Status,
+  Priority,
+} from "../types";
+import {
+  PRIORITY_LABELS,
+  STATUS_LABELS,
   DUE_TYPE_LABELS,
-  PRIORITY_COLORS, 
+  PRIORITY_COLORS,
   STATUS_COLORS,
   assertPriority,
-  assertStatus
+  assertStatus,
 } from "../types";
 
 interface BucketItemDetailDialogProps {
@@ -46,7 +63,7 @@ export function BucketItemDetailDialog({
   onStatusChange,
   isSubmitting = false,
   readOnly = false,
-  statusChangingIds = new Set()
+  statusChangingIds = new Set(),
 }: BucketItemDetailDialogProps) {
   if (!isOpen || !item) return null;
 
@@ -74,7 +91,7 @@ export function BucketItemDetailDialog({
       assertPriority(item.priority);
       return PRIORITY_COLORS[item.priority as Priority];
     } catch {
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return "bg-gray-100 text-gray-800 border-gray-200";
     }
   })();
 
@@ -83,7 +100,7 @@ export function BucketItemDetailDialog({
       assertStatus(item.status);
       return STATUS_COLORS[item.status as Status];
     } catch {
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return "bg-gray-100 text-gray-800 border-gray-200";
     }
   })();
 
@@ -92,12 +109,12 @@ export function BucketItemDetailDialog({
     if (item.due_date) {
       return `期限: ${item.due_date}`;
     } else if (item.due_type) {
-      const label = DUE_TYPE_LABELS[item.due_type as keyof typeof DUE_TYPE_LABELS];
+      const label =
+        DUE_TYPE_LABELS[item.due_type as keyof typeof DUE_TYPE_LABELS];
       return `期限: ${label || item.due_type}`;
     }
-    return '期限: 未定';
+    return "期限: 未定";
   })();
-
 
   return (
     <Dialog open={isOpen} onOpenChange={!isSubmitting ? onClose : undefined}>
@@ -111,18 +128,26 @@ export function BucketItemDetailDialog({
               </DialogTitle>
               <div className="flex flex-wrap gap-2">
                 {/* 優先度バッジ */}
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${priorityColor}`}>
+                <span
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${priorityColor}`}
+                >
                   {priorityDisplay}
                 </span>
                 {/* ステータスバッジ */}
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${statusColor}`}>
+                <span
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${statusColor}`}
+                >
                   {statusDisplay}
                 </span>
                 {/* 公開状態 */}
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
-                  item.is_public ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200'
-                }`}>
-                  {item.is_public ? '公開' : '非公開'}
+                <span
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
+                    item.is_public
+                      ? "bg-blue-100 text-blue-800 border-blue-200"
+                      : "bg-gray-100 text-gray-800 border-gray-200"
+                  }`}
+                >
+                  {item.is_public ? "公開" : "非公開"}
                 </span>
               </div>
             </div>
@@ -134,10 +159,12 @@ export function BucketItemDetailDialog({
           {/* 基本情報 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-1">カテゴリ</h3>
+              <h3 className="text-sm font-medium text-gray-700 mb-1">
+                カテゴリ
+              </h3>
               <div className="flex items-center">
-                <div 
-                  className="w-3 h-3 rounded-full mr-2" 
+                <div
+                  className="w-3 h-3 rounded-full mr-2"
                   style={{ backgroundColor: item.category.color }}
                 ></div>
                 <span className="text-gray-900">{item.category.name}</span>
@@ -154,7 +181,9 @@ export function BucketItemDetailDialog({
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2">説明</h3>
               <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-gray-900 whitespace-pre-wrap">{item.description}</p>
+                <p className="text-gray-900 whitespace-pre-wrap">
+                  {item.description}
+                </p>
               </div>
             </div>
           )}
@@ -162,13 +191,18 @@ export function BucketItemDetailDialog({
           {/* 達成情報（完了時のみ） */}
           {item.completed_at && (
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">達成情報</h3>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">
+                達成情報
+              </h3>
               <div className="bg-green-50 rounded-lg p-4">
                 <p className="text-green-800 font-medium">
-                  達成日: {new Date(item.completed_at).toLocaleDateString('ja-JP')}
+                  達成日:{" "}
+                  {new Date(item.completed_at).toLocaleDateString("ja-JP")}
                 </p>
                 {item.completion_comment && (
-                  <p className="text-green-700 mt-2">{item.completion_comment}</p>
+                  <p className="text-green-700 mt-2">
+                    {item.completion_comment}
+                  </p>
                 )}
               </div>
             </div>
@@ -178,11 +212,15 @@ export function BucketItemDetailDialog({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-500">
             <div>
               <span className="font-medium">作成日: </span>
-              {item.created_at ? new Date(item.created_at).toLocaleDateString('ja-JP') : '不明'}
+              {item.created_at
+                ? new Date(item.created_at).toLocaleDateString("ja-JP")
+                : "不明"}
             </div>
             <div>
               <span className="font-medium">更新日: </span>
-              {item.updated_at ? new Date(item.updated_at).toLocaleDateString('ja-JP') : '不明'}
+              {item.updated_at
+                ? new Date(item.updated_at).toLocaleDateString("ja-JP")
+                : "不明"}
             </div>
           </div>
 
@@ -239,7 +277,12 @@ export function BucketItemDetailDialog({
               </Button>
             </div>
           )}
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting} className={readOnly ? 'mx-auto' : ''}>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className={readOnly ? "mx-auto" : ""}
+          >
             閉じる
           </Button>
         </DialogFooter>

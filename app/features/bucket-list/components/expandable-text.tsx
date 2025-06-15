@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Button } from '~/components/ui/button';
+import { useState } from "react";
+import { Button } from "~/components/ui/button";
 
 interface ExpandableTextProps {
   /** 表示するテキスト */
@@ -22,17 +22,13 @@ export function ExpandableText({
   maxLength = 100,
   className = "text-sm text-gray-600",
   shortTextClassName,
-  buttonClassName = "text-xs text-blue-600 hover:text-blue-800 underline mt-1 p-0 h-auto font-normal"
+  buttonClassName = "text-xs text-blue-600 hover:text-blue-800 underline mt-1 p-0 h-auto font-normal",
 }: ExpandableTextProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // テキストが短い場合は省略機能不要
   if (text.length <= maxLength) {
-    return (
-      <p className={shortTextClassName || className}>
-        {text}
-      </p>
-    );
+    return <p className={shortTextClassName || className}>{text}</p>;
   }
 
   const truncatedText = text.slice(0, maxLength);
@@ -50,14 +46,14 @@ export function ExpandableText({
         )}
         {isExpanded && remainingText}
       </p>
-      
+
       <Button
         variant="ghost"
         size="sm"
         onClick={() => setIsExpanded(!isExpanded)}
         className={buttonClassName}
       >
-        {isExpanded ? '折りたたむ' : '続きを読む'}
+        {isExpanded ? "折りたたむ" : "続きを読む"}
       </Button>
     </div>
   );
@@ -94,15 +90,11 @@ export function ControlledExpandableText({
   maxLength = 100,
   className = "text-sm text-gray-600",
   shortTextClassName,
-  buttonClassName = "text-xs text-blue-600 hover:text-blue-800 underline mt-1 p-0 h-auto font-normal"
+  buttonClassName = "text-xs text-blue-600 hover:text-blue-800 underline mt-1 p-0 h-auto font-normal",
 }: ControlledExpandableTextProps) {
   // テキストが短い場合は省略機能不要
   if (text.length <= maxLength) {
-    return (
-      <p className={shortTextClassName || className}>
-        {text}
-      </p>
-    );
+    return <p className={shortTextClassName || className}>{text}</p>;
   }
 
   const truncatedText = text.slice(0, maxLength);
@@ -120,14 +112,14 @@ export function ControlledExpandableText({
         )}
         {isExpanded && remainingText}
       </p>
-      
+
       <Button
         variant="ghost"
         size="sm"
         onClick={onToggle}
         className={buttonClassName}
       >
-        {isExpanded ? '折りたたむ' : '続きを読む'}
+        {isExpanded ? "折りたたむ" : "続きを読む"}
       </Button>
     </div>
   );

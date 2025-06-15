@@ -36,11 +36,14 @@ export default function RegisterPage() {
     if (error) {
       setError(error.message);
     } else {
-      navigate("/login", { 
-        state: { message: "確認メールを送信しました。メールを確認してアカウントを有効化してください。" }
+      navigate("/login", {
+        state: {
+          message:
+            "確認メールを送信しました。メールを確認してアカウントを有効化してください。",
+        },
       });
     }
-    
+
     setLoading(false);
   };
 

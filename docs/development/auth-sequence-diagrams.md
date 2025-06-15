@@ -1,6 +1,7 @@
 # 認証システム シーケンス図
 
 ## 📋 概要
+
 このドキュメントは、バケットリストアプリケーションの認証システムにおける各種フローのシーケンス図を提供します。
 
 ## 🔐 認証フロー図
@@ -20,7 +21,7 @@ sequenceDiagram
     Note over U,R: ユーザーログインプロセス
     U->>LF: email, password を入力
     LF->>AC: signIn(email, password)
-    
+
     Note over AC,SU: 入力値検証フェーズ
     AC->>SU: sanitizeString(email)
     SU-->>AC: sanitized email
@@ -28,7 +29,7 @@ sequenceDiagram
     SU-->>AC: validation result
     AC->>SU: validatePassword(password)
     SU-->>AC: validation result
-    
+
     alt 入力値が無効
         AC-->>LF: error: "無効な入力値"
         LF-->>U: エラー表示
@@ -36,7 +37,7 @@ sequenceDiagram
         Note over AC,SB: Supabase 認証
         AC->>SB: signInWithPassword(email, password)
         SB-->>AC: { user, session, error }
-        
+
         alt 認証失敗
             AC-->>LF: error: "認証エラー"
             LF-->>U: エラー表示
@@ -67,18 +68,18 @@ sequenceDiagram
     Note over B,DB: SSR での認証チェック
     B->>RL: GET /dashboard (with cookies)
     RL->>AS: getServerAuth(request)
-    
+
     Note over AS,CK: Cookie 解析
     AS->>CK: parseCookies(request.headers)
     CK-->>AS: { 'supabase.auth.token': 'jwt_token' }
-    
+
     Note over AS,SB: JWT 検証
     AS->>SB: createServerClient(SERVICE_ROLE_KEY)
     AS->>SB: supabase.auth.getUser()
     SB->>DB: ユーザー情報取得
     DB-->>SB: user data
     SB-->>AS: { user, error }
-    
+
     alt 認証失敗
         AS-->>RL: { isAuthenticated: false }
         RL->>B: Response(302, Location: '/auth/login')
@@ -108,20 +109,20 @@ sequenceDiagram
     U->>AC: ページ読み込み/アクティビティ
     AC->>AM: updateActivity()
     AM->>AM: setLastActivity(Date.now())
-    
+
     Note over AC,SV: 定期的なセッション検証 (1分毎)
     loop 毎分実行
         AC->>SV: validateSession(currentSession)
-        
+
         Note over SV,SV: JWT 有効期限チェック
         SV->>SV: JWT payload 解析
         SV->>SV: exp < currentTime ?
-        
+
         Note over SV,AM: アクティビティチェック
         SV->>AM: getLastActivity()
         AM-->>SV: lastActivity timestamp
         SV->>SV: (now - lastActivity) > 30min ?
-        
+
         alt セッション有効
             SV-->>AC: valid = true
         else セッション無効
@@ -133,7 +134,7 @@ sequenceDiagram
             AC->>U: リダイレクト to ログイン画面
         end
     end
-    
+
     Note over U,AM: ユーザーアクティビティ監視
     U->>AM: mouse/keyboard/touch events
     AM->>AM: updateActivity()
@@ -155,7 +156,7 @@ sequenceDiagram
     R->>AG: <AuthGuard>
     AG->>AC: useAuth()
     AC-->>AG: { user, loading }
-    
+
     alt loading = true
         AG-->>U: Loading画面表示
     else user = null
@@ -165,7 +166,7 @@ sequenceDiagram
         AG->>HOC: withAuth(Component)
         HOC->>AC: useAuth()
         AC-->>HOC: { user, loading }
-        
+
         alt loading = true
             HOC-->>U: Loading画面表示
         else user = null
@@ -193,24 +194,24 @@ sequenceDiagram
     Note over U,R: ログアウトプロセス
     U->>UI: ログアウトボタンクリック
     UI->>AC: signOut()
-    
+
     Note over AC,SB: Supabase セッション削除
     AC->>SB: supabase.auth.signOut()
     SB-->>AC: success
-    
+
     Note over AC,CK: Cookie クリア
     AC->>CK: clearAllAuthCookies()
     CK->>CK: document.cookie = "supabase.auth.token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
     CK->>CK: document.cookie = "supabase.auth.refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
-    
+
     Note over AC,LS: LocalStorage クリア (フォールバック)
     AC->>LS: localStorage.removeItem('supabase.auth.token')
     AC->>LS: localStorage.removeItem('supabase.auth.refreshToken')
-    
+
     Note over AC,AC: 状態リセット
     AC->>AC: setUser(null)
     AC->>AC: setSession(null)
-    
+
     Note over AC,R: リダイレクト
     AC->>R: navigate('/auth/login')
     R-->>U: ログイン画面表示
@@ -230,7 +231,7 @@ sequenceDiagram
     Note over U,R: 認証エラー処理フロー
     U->>AC: 認証が必要な操作
     AC->>SB: Supabase API call
-    
+
     alt JWT 期限切れ
         SB-->>AC: error: "JWT expired"
         AC->>EH: handleAuthError(error)
@@ -269,18 +270,18 @@ sequenceDiagram
     participant CK as Cookies
 
     Note over C,CK: 認証状態同期プロセス
-    
+
     Note over C,SB: クライアントサイド認証
     C->>SB: supabase.auth.getSession()
     SB-->>C: { session, user }
     C->>CK: setAuthCookie(session.access_token)
-    
+
     Note over S,CK: サーバーサイド認証
     S->>CK: parseCookies(request)
     CK-->>S: { 'supabase.auth.token': 'jwt_token' }
     S->>SB: createServerClient + getUser()
     SB-->>S: { user, error }
-    
+
     Note over C,S: 状態同期チェック
     alt クライアント認証済み && サーバー認証済み
         Note over C,S: 正常な状態
@@ -310,11 +311,11 @@ sequenceDiagram
     participant A as Analytics
 
     Note over U,A: 認証メトリクス収集
-    
+
     U->>AC: signIn()
     AC->>M: recordAuthAttempt('login')
     M->>L: log('auth_attempt', { type: 'login', timestamp })
-    
+
     alt 認証成功
         AC->>M: recordAuthSuccess('login')
         M->>A: track('login_success', { user_id, timestamp })
@@ -324,11 +325,11 @@ sequenceDiagram
         M->>A: track('login_failure', { error, timestamp })
         M->>L: log('auth_failure', { error, timestamp })
     end
-    
+
     Note over AC,M: セッション管理メトリクス
     AC->>M: recordSessionActivity()
     M->>A: track('session_activity', { user_id, timestamp })
-    
+
     Note over AC,M: タイムアウト監視
     AC->>M: recordSessionTimeout()
     M->>A: track('session_timeout', { user_id, duration })
@@ -347,9 +348,9 @@ sequenceDiagram
     participant SB as Supabase
 
     Note over C,SB: 認証チェック最適化
-    
+
     C->>Cache: getCachedAuthState()
-    
+
     alt キャッシュ有効
         Cache-->>C: { user, session, lastChecked }
         C->>C: 認証状態利用
@@ -360,7 +361,7 @@ sequenceDiagram
         AC->>Cache: setCachedAuthState(user, session)
         AC-->>C: 認証状態返却
     end
-    
+
     Note over C,Cache: 定期的なキャッシュ更新
     loop 5分毎
         C->>Cache: invalidateCache()
@@ -369,10 +370,13 @@ sequenceDiagram
 ```
 
 ## 📚 関連ドキュメント
+
 - [認証システム実装ガイド](./authentication.md)
 - [セキュリティガイドライン](../security/security-guidelines.md)
 - [Supabase Auth API Reference](https://supabase.com/docs/reference/javascript/auth-api)
 
 ---
+
 **更新履歴**
+
 - 2025-06-14: 初版作成 - 認証システムの全フローシーケンス図を追加

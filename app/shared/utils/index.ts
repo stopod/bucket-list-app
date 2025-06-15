@@ -13,5 +13,5 @@ export {
   mapOrElse,
   transformIf,
   filterSuccesses,
-  filterFailures
+  filterFailures,
 } from "./result-helpers";

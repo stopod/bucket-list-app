@@ -78,22 +78,22 @@ export function AuthenticatedLayout({
       </nav>
 
       <main className="flex-1">{children}</main>
-      
+
       {/* フッター */}
       <footer className="bg-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="text-center text-sm text-gray-500">
             <p>
               © 2025 stopod. Licensed under{" "}
-              <a 
-                href="https://opensource.org/licenses/MIT" 
-                target="_blank" 
+              <a
+                href="https://opensource.org/licenses/MIT"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800 underline"
               >
                 MIT License
-              </a>
-              {" "}| 本ソフトウェアは「AS IS」で提供され、一切の保証はありません
+              </a>{" "}
+              | 本ソフトウェアは「AS IS」で提供され、一切の保証はありません
             </p>
           </div>
         </div>

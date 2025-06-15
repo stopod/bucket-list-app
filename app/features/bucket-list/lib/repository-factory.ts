@@ -10,14 +10,18 @@ export class RepositoryFactory {
   private static bucketListRepository: BucketListRepository | null = null;
   private static bucketListService: BucketListService | null = null;
 
-  static createBucketListRepository(supabase: SupabaseClient<Database>): BucketListRepository {
+  static createBucketListRepository(
+    supabase: SupabaseClient<Database>,
+  ): BucketListRepository {
     if (!this.bucketListRepository) {
       this.bucketListRepository = new SupabaseBucketListRepository(supabase);
     }
     return this.bucketListRepository;
   }
 
-  static createBucketListService(supabase: SupabaseClient<Database>): BucketListService {
+  static createBucketListService(
+    supabase: SupabaseClient<Database>,
+  ): BucketListService {
     if (!this.bucketListService) {
       const repository = this.createBucketListRepository(supabase);
       this.bucketListService = new BucketListService(repository);
@@ -45,14 +49,20 @@ export async function createBucketListService(): Promise<BucketListService> {
 }
 
 // 認証済みクライアント用のサービス作成関数（クラスベース）
-export function createAuthenticatedBucketListService(supabase: SupabaseClient<Database>, userId?: string): BucketListService {
+export function createAuthenticatedBucketListService(
+  supabase: SupabaseClient<Database>,
+  userId?: string,
+): BucketListService {
   // Create a new repository instance with user context for security
   const repository = new SupabaseBucketListRepository(supabase, userId);
   return new BucketListService(repository);
 }
 
 // 認証済みクライアント用の関数型サービス作成関数
-export function createAuthenticatedFunctionalBucketListService(supabase: SupabaseClient<Database>, userId?: string) {
+export function createAuthenticatedFunctionalBucketListService(
+  supabase: SupabaseClient<Database>,
+  userId?: string,
+) {
   // Create a new repository instance with user context for security
   const repository = new SupabaseBucketListRepository(supabase, userId);
   return createFunctionalBucketListService(repository);

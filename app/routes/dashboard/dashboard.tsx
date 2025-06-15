@@ -27,8 +27,12 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
 
     // 認証済みSupabaseクライアントでRepository経由でデータ取得
-    const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase, authResult.user!.id);
+    const authenticatedSupabase =
+      await createAuthenticatedSupabaseClient(authResult);
+    const bucketListService = createAuthenticatedBucketListService(
+      authenticatedSupabase,
+      authResult.user!.id,
+    );
 
     // ダッシュボードデータを取得
     const dashboardData = await bucketListService.getDashboardData(
@@ -98,7 +102,9 @@ function DashboardSkeleton() {
                 <Button className="w-full sm:w-auto">+ 新しく追加</Button>
               </Link>
               <Link to="/bucket-list">
-                <Button variant="outline" className="w-full sm:w-auto">やりたいこと一覧</Button>
+                <Button variant="outline" className="w-full sm:w-auto">
+                  やりたいこと一覧
+                </Button>
               </Link>
             </div>
           </div>
@@ -116,7 +122,10 @@ function DashboardSkeleton() {
               </h2>
               <div className="space-y-3">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="border border-gray-200 rounded-lg p-3 animate-pulse">
+                  <div
+                    key={i}
+                    className="border border-gray-200 rounded-lg p-3 animate-pulse"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="w-3 h-3 rounded-full mr-2 bg-gray-300"></div>
@@ -135,7 +144,10 @@ function DashboardSkeleton() {
               </h2>
               <div className="space-y-3">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="border border-gray-200 rounded-lg p-3 animate-pulse">
+                  <div
+                    key={i}
+                    className="border border-gray-200 rounded-lg p-3 animate-pulse"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="w-3 h-3 rounded-full mr-2 bg-gray-300"></div>
@@ -158,7 +170,10 @@ function DashboardSkeleton() {
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg min-h-[80px] sm:min-h-[100px] flex flex-col justify-center items-center animate-pulse">
+                <div
+                  key={i}
+                  className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg min-h-[80px] sm:min-h-[100px] flex flex-col justify-center items-center animate-pulse"
+                >
                   <div className="w-8 h-8 bg-gray-300 rounded mb-2"></div>
                   <div className="h-4 bg-gray-300 rounded w-16"></div>
                 </div>
@@ -204,7 +219,9 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
                 <Button className="w-full sm:w-auto">+ 新しく追加</Button>
               </Link>
               <Link to="/bucket-list">
-                <Button variant="outline" className="w-full sm:w-auto">やりたいこと一覧</Button>
+                <Button variant="outline" className="w-full sm:w-auto">
+                  やりたいこと一覧
+                </Button>
               </Link>
             </div>
           </div>
@@ -354,19 +371,25 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
               <Link to="/bucket-list?status=in_progress">
                 <div className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors min-h-[80px] sm:min-h-[100px] flex flex-col justify-center items-center">
                   <div className="text-2xl mb-2">🔄</div>
-                  <div className="text-xs sm:text-sm font-medium">進行中を確認</div>
+                  <div className="text-xs sm:text-sm font-medium">
+                    進行中を確認
+                  </div>
                 </div>
               </Link>
               <Link to="/public">
                 <div className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors min-h-[80px] sm:min-h-[100px] flex flex-col justify-center items-center">
                   <div className="text-2xl mb-2">👥</div>
-                  <div className="text-xs sm:text-sm font-medium">みんなのリスト</div>
+                  <div className="text-xs sm:text-sm font-medium">
+                    みんなのリスト
+                  </div>
                 </div>
               </Link>
               <Link to="/bucket-list?status=completed">
                 <div className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors min-h-[80px] sm:min-h-[100px] flex flex-col justify-center items-center">
                   <div className="text-2xl mb-2">🏆</div>
-                  <div className="text-xs sm:text-sm font-medium">達成済みを見る</div>
+                  <div className="text-xs sm:text-sm font-medium">
+                    達成済みを見る
+                  </div>
                 </div>
               </Link>
             </div>

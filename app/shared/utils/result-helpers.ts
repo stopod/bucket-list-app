@@ -12,20 +12,20 @@ import { success, failure, isSuccess, isFailure } from "~/shared/types/result";
  */
 export function combineResults<T1, T2, E>(
   result1: Result<T1, E>,
-  result2: Result<T2, E>
+  result2: Result<T2, E>,
 ): Result<[T1, T2], E>;
 
 export function combineResults<T1, T2, T3, E>(
   result1: Result<T1, E>,
   result2: Result<T2, E>,
-  result3: Result<T3, E>
+  result3: Result<T3, E>,
 ): Result<[T1, T2, T3], E>;
 
 export function combineResults<T1, T2, T3, T4, E>(
   result1: Result<T1, E>,
   result2: Result<T2, E>,
   result3: Result<T3, E>,
-  result4: Result<T4, E>
+  result4: Result<T4, E>,
 ): Result<[T1, T2, T3, T4], E>;
 
 export function combineResults<T, E>(
@@ -36,14 +36,14 @@ export function combineResults<T, E>(
   ...results: Result<T, E>[]
 ): Result<T[], E> {
   const data: T[] = [];
-  
+
   for (const result of results) {
     if (isFailure(result)) {
       return result;
     }
     data.push(result.data);
   }
-  
+
   return success(data);
 }
 
@@ -53,14 +53,14 @@ export function combineResults<T, E>(
  */
 export function collectResults<T, E>(results: Result<T, E>[]): Result<T[], E> {
   const data: T[] = [];
-  
+
   for (const result of results) {
     if (isFailure(result)) {
       return result;
     }
     data.push(result.data);
   }
-  
+
   return success(data);
 }
 
@@ -70,15 +70,13 @@ export function collectResults<T, E>(results: Result<T, E>[]): Result<T[], E> {
  */
 export async function wrapAsync<T, E = Error>(
   asyncOperation: () => Promise<T>,
-  errorMapper?: (error: unknown) => E
+  errorMapper?: (error: unknown) => E,
 ): Promise<Result<T, E>> {
   try {
     const data = await asyncOperation();
     return success(data);
   } catch (error) {
-    const mappedError = errorMapper 
-      ? errorMapper(error)
-      : (error as E);
+    const mappedError = errorMapper ? errorMapper(error) : (error as E);
     return failure(mappedError);
   }
 }
@@ -89,11 +87,9 @@ export async function wrapAsync<T, E = Error>(
 export function matchResult<T, E, U>(
   result: Result<T, E>,
   onSuccess: (data: T) => U,
-  onFailure: (error: E) => U
+  onFailure: (error: E) => U,
 ): U {
-  return isSuccess(result) 
-    ? onSuccess(result.data)
-    : onFailure(result.error);
+  return isSuccess(result) ? onSuccess(result.data) : onFailure(result.error);
 }
 
 /**
@@ -103,14 +99,14 @@ export function matchResult<T, E, U>(
 export function tapResult<T, E>(
   result: Result<T, E>,
   onSuccess?: (data: T) => void,
-  onFailure?: (error: E) => void
+  onFailure?: (error: E) => void,
 ): Result<T, E> {
   if (isSuccess(result) && onSuccess) {
     onSuccess(result.data);
   } else if (isFailure(result) && onFailure) {
     onFailure(result.error);
   }
-  
+
   return result;
 }
 
@@ -120,14 +116,14 @@ export function tapResult<T, E>(
 export function pipeResults<T, U, V, E>(
   initial: Result<T, E>,
   transform1: (data: T) => Result<U, E>,
-  transform2: (data: U) => Result<V, E>
+  transform2: (data: U) => Result<V, E>,
 ): Result<V, E>;
 
 export function pipeResults<T, U, V, W, E>(
   initial: Result<T, E>,
   transform1: (data: T) => Result<U, E>,
   transform2: (data: U) => Result<V, E>,
-  transform3: (data: V) => Result<W, E>
+  transform3: (data: V) => Result<W, E>,
 ): Result<W, E>;
 
 export function pipeResults<T, E>(
@@ -152,8 +148,8 @@ export function resultToOption<T, E>(result: Result<T, E>): T | null {
  * nullまたはundefinedの場合は指定されたエラーでfailureを返す
  */
 export function optionToResult<T, E>(
-  value: T | null | undefined, 
-  error: E
+  value: T | null | undefined,
+  error: E,
 ): Result<T, E> {
   return value != null ? success(value) : failure(error);
 }
@@ -164,7 +160,7 @@ export function optionToResult<T, E>(
 export function mapOrElse<T, U, E>(
   result: Result<T, E>,
   defaultValue: U,
-  transform: (data: T) => U
+  transform: (data: T) => U,
 ): U {
   return isSuccess(result) ? transform(result.data) : defaultValue;
 }
@@ -175,7 +171,7 @@ export function mapOrElse<T, U, E>(
 export function transformIf<T, U, E>(
   result: Result<T, E>,
   condition: (data: T) => boolean,
-  transform: (data: T) => U
+  transform: (data: T) => U,
 ): Result<T | U, E> {
   if (isSuccess(result) && condition(result.data)) {
     return success(transform(result.data));
@@ -187,16 +183,12 @@ export function transformIf<T, U, E>(
  * Result型配列から成功したもののみを抽出
  */
 export function filterSuccesses<T, E>(results: Result<T, E>[]): T[] {
-  return results
-    .filter(isSuccess)
-    .map(result => result.data);
+  return results.filter(isSuccess).map((result) => result.data);
 }
 
 /**
  * Result型配列から失敗したもののみを抽出
  */
 export function filterFailures<T, E>(results: Result<T, E>[]): E[] {
-  return results
-    .filter(isFailure)
-    .map(result => result.error);
+  return results.filter(isFailure).map((result) => result.error);
 }

@@ -35,8 +35,10 @@ docker compose up -d
 基本的なCI設定により、以下を自動実行：
 
 #### CI - `.github/workflows/ci.yml`
+
 **トリガー**: main・developブランチへのpush、PRの作成・更新
 **実行内容**:
+
 - Node.js 18.x, 20.x でのマトリックステスト
 - TypeScript型チェック
 - 全テスト実行
@@ -64,11 +66,13 @@ docker compose up -d
 ### プログラミングアプローチ
 
 #### 1. 従来型アプローチ（既存実装）
+
 - クラスベースのService層
 - try-catch による例外処理
 - Promise ベースの非同期処理
 
 #### 2. 関数型アプローチ（Result型統合）
+
 - 関数型Service層（`functional-bucket-list-service.ts`）
 - Result<T, E> による型安全なエラーハンドリング
 - 純粋なビジネスロジック関数（`business-logic.ts`）
@@ -81,11 +85,13 @@ docker compose up -d
 ### コードスタイル
 
 1. **Repository Pattern 必須**
+
    - データアクセス層の抽象化
    - Supabaseクライアントとの密結合を回避
    - テスタビリティの向上
 
 2. **型安全性**
+
    - 全てのAPIレスポンスに型定義
    - フォームデータの型定義
    - Database型定義の活用
@@ -125,11 +131,13 @@ app/
 ### データベース設計原則
 
 1. **テーブル設計**
+
    - `profiles` テーブル: auth.users の代替（非推奨回避）
    - `categories` テーブル: 事前定義カテゴリ
    - `bucket_items` テーブル: やりたいこと項目
 
 2. **RLS (Row Level Security)**
+
    - 全テーブルでRLS有効化必須
    - ユーザー毎のデータ分離
    - 公開データのセキュリティ制御
@@ -143,11 +151,13 @@ app/
 ### 実装済み機能
 
 #### 基本CRUD操作
+
 - ✅ やりたいこと項目の作成・編集・削除・一覧表示
 - ✅ カテゴリ、優先度、ステータス、期限設定
 - ✅ 公開/非公開設定
 
 #### 高度な機能
+
 - ✅ 検索・フィルタ・ソート機能
 - ✅ リアルタイムステータス変更
 - ✅ 達成率計算・可視化
@@ -156,6 +166,7 @@ app/
 - ✅ ダッシュボード（統計表示）
 
 #### UI/UX
+
 - ✅ レスポンシブデザイン
 - ✅ カード形式表示
 - ✅ カテゴリ別グループ化
@@ -167,21 +178,25 @@ app/
 ### データ構造
 
 #### カテゴリ (categories)
+
 - 旅行・観光、スキル習得・学習、体験・チャレンジ
 - 人間関係、健康・フィットネス、創作・芸術
 - キャリア・仕事、狂気、その他
 
 #### 優先度 (priority)
+
 - `high`: 高
-- `medium`: 中  
+- `medium`: 中
 - `low`: 低
 
 #### ステータス (status)
+
 - `not_started`: 未着手
 - `in_progress`: 進行中
 - `completed`: 完了
 
 #### 期限タイプ (due_type)
+
 - `specific_date`: 具体的日付
 - `this_year`: 今年中
 - `next_year`: 来年中
@@ -190,16 +205,19 @@ app/
 ## セキュリティ考慮事項
 
 ### 認証・認可
+
 - Supabase Auth による認証
 - SSRでの認証状態管理
 - 適切なリダイレクト処理
 
 ### データ保護
+
 - RLS による行レベルセキュリティ
 - XSS対策（入力値サニタイズ）
 - CSRF対策（SameSite Cookie）
 
 ### プライバシー
+
 - 個人データの適切な取り扱い
 - 公開設定の尊重
 - ユーザー同意に基づく機能提供
@@ -207,11 +225,13 @@ app/
 ## パフォーマンス最適化
 
 ### データベース
+
 - 適切なインデックス設計
 - クエリの最適化
 - N+1問題の回避
 
 ### フロントエンド
+
 - コンポーネントの再利用
 - 適切な状態管理
 - 画像最適化
@@ -219,20 +239,24 @@ app/
 ## 技術的負債・注意事項
 
 ### RLS (Row Level Security)
+
 - **現在の状況**: bucket_itemsテーブルでRLS無効化（実用性重視）
 - **セキュリティ**: アプリケーション層での認証チェックで代替
 - **将来対応**: 必要に応じてRLS有効化への移行を検討
 
 ### コード品質（2025年6月10日分析）
+
 - **現在の評価**: 70/100点
 - **主要課題**: TypeScriptエラー11個、不要ファイル蓄積
 - **改善計画**: 3段階改善プロセス実行中（詳細は`docs/code-cleanup-plan.md`参照）
 
 ### エラーハンドリング
+
 - 現在はコンソールログ中心
 - 本番環境では適切なログシステムが必要
 
 ### テスト
+
 - ✅ **テストインフラ**: Vitest + @testing-library/react導入済み
 - ✅ **包括的テスト実装**: 93テスト実装済み（2025年1月15日時点）
   - 関数型Service層テスト（functional-bucket-list-service）
@@ -245,31 +269,33 @@ app/
 ### テストコード作成ルール
 
 #### 1. テストケース記述規則
+
 - **日本語必須**: 全てのテストケース名は日本語で記述する
 - **条件＋期待値形式**: 「〜の場合、〜であること」の形式で記述する
 - **具体的な観点**: 確認観点と期待される結果を明確に示す
 
 ```typescript
 // ✅ Good
-it('ユーザーIDを指定した場合、そのユーザーのバケットリスト項目が取得できること', async () => {
+it("ユーザーIDを指定した場合、そのユーザーのバケットリスト項目が取得できること", async () => {
   // テストコード
-})
+});
 
-it('空の統計データを渡した場合、0%表示で適切に処理されること', () => {
+it("空の統計データを渡した場合、0%表示で適切に処理されること", () => {
   // テストコード
-})
+});
 
 // ❌ Bad
-it('should return user bucket items', async () => {
+it("should return user bucket items", async () => {
   // テストコード
-})
+});
 
-it('handles empty data', () => {
+it("handles empty data", () => {
   // テストコード
-})
+});
 ```
 
 #### 2. テスト対象の優先順位
+
 1. **ビジネスロジック**: Service層（関数型・従来型両方）、Repository層
 2. **純粋関数**: business-logic.ts内の計算・変換関数
 3. **Result型処理**: エラーハンドリングとResult型変換
@@ -278,33 +304,36 @@ it('handles empty data', () => {
 6. **外部ライブラリのコンポーネント**: テスト不要（shadcn-ui等）
 
 #### 3. テストファイル構成
+
 - `__tests__` ディレクトリ内に配置
 - ファイル名: `[対象ファイル名].test.ts(x)`
 - Service層、Component層毎にディレクトリ分割
 
 #### 4. Result型テストの書き方
+
 ```typescript
 // ✅ Good: Result型の成功・失敗両方をテスト
-it('有効なデータの場合、Result<Success>で新しい項目が返されること', async () => {
-  const result = await createBucketItem(repository)(validData)
-  
-  expect(isSuccess(result)).toBe(true)
-  if (isSuccess(result)) {
-    expect(result.data).toEqual(expectedItem)
-  }
-})
+it("有効なデータの場合、Result<Success>で新しい項目が返されること", async () => {
+  const result = await createBucketItem(repository)(validData);
 
-it('無効なデータの場合、Result<Failure>で返されること', async () => {
-  const result = await createBucketItem(repository)(invalidData)
-  
-  expect(isFailure(result)).toBe(true)
-  if (isFailure(result)) {
-    expect(result.error.type).toBe('ValidationError')
+  expect(isSuccess(result)).toBe(true);
+  if (isSuccess(result)) {
+    expect(result.data).toEqual(expectedItem);
   }
-})
+});
+
+it("無効なデータの場合、Result<Failure>で返されること", async () => {
+  const result = await createBucketItem(repository)(invalidData);
+
+  expect(isFailure(result)).toBe(true);
+  if (isFailure(result)) {
+    expect(result.error.type).toBe("ValidationError");
+  }
+});
 ```
 
 ### テスト実行コマンド
+
 ```bash
 npm test          # 通常実行
 npm run test:ui   # UI付き実行
@@ -328,16 +357,19 @@ NODE_ENV=development|production
 ## 今後のメンテナンス指針
 
 ### 即座実行（緊急）
+
 1. **コード品質向上**: TypeScriptエラー修正、不要ファイル削除（Phase 1）
 2. **構造最適化**: 重複コンポーネント統合、型定義整理（Phase 2）
 
 ### 継続的改善
+
 1. **セキュリティ強化**: 必要に応じてRLS有効化、監査ログ追加
 2. **テスト追加**: 品質保証のためのテストコード実装（Phase 3）
 3. **モニタリング**: エラー追跡、パフォーマンス監視システム導入
 4. **機能拡張**: ソーシャル機能、エクスポート機能、通知機能
 
 ### 関連ドキュメント
+
 - 詳細改善計画: `docs/code-cleanup-plan.md`
 - アーキテクチャ分析: `docs/architecture-analysis.md`
 - 今後のロードマップ: `docs/todo-list.md`

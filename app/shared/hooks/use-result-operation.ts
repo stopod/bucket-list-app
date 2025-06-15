@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
-import type { Result } from '~/shared/types/result';
-import type { BucketListError } from '~/shared/types/errors';
-import { isSuccess, isFailure } from '~/shared/types/result';
+import { useState, useCallback } from "react";
+import type { Result } from "~/shared/types/result";
+import type { BucketListError } from "~/shared/types/errors";
+import { isSuccess, isFailure } from "~/shared/types/result";
 
 interface UseResultOperationOptions<T, E = BucketListError> {
   onSuccess?: (data: T) => void;
@@ -20,10 +20,10 @@ interface ResultOperationState<T, E = BucketListError> {
  * Promise<Result<T, E>>を返す関数を安全に実行し、状態を管理する
  */
 export function useResultOperation<T, E = BucketListError>(
-  options: UseResultOperationOptions<T, E> = {}
+  options: UseResultOperationOptions<T, E> = {},
 ) {
   const { onSuccess, onError, initialData = null } = options;
-  
+
   const [state, setState] = useState<ResultOperationState<T, E>>({
     isLoading: false,
     error: null,
@@ -35,7 +35,7 @@ export function useResultOperation<T, E = BucketListError>(
       resultFunction: (...args: Args) => Promise<Result<T, E>>,
       ...args: Args
     ): Promise<Result<T, E>> => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: true,
         error: null,
@@ -43,7 +43,7 @@ export function useResultOperation<T, E = BucketListError>(
 
       try {
         const result = await resultFunction(...args);
-        
+
         if (isSuccess(result)) {
           setState({
             isLoading: false,
@@ -70,7 +70,7 @@ export function useResultOperation<T, E = BucketListError>(
       } catch (error) {
         // 予期しないエラー（ネットワークエラーなど）
         const unexpectedError = error as E;
-        
+
         setState({
           isLoading: false,
           error: unexpectedError,
@@ -84,7 +84,7 @@ export function useResultOperation<T, E = BucketListError>(
         return { success: false, error: unexpectedError } as Result<T, E>;
       }
     },
-    [onSuccess, onError]
+    [onSuccess, onError],
   );
 
   const reset = useCallback(() => {
@@ -96,7 +96,7 @@ export function useResultOperation<T, E = BucketListError>(
   }, [initialData]);
 
   const clearError = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       error: null,
     }));
@@ -117,10 +117,10 @@ export function useResultOperation<T, E = BucketListError>(
  * 複数のResult操作を並列実行するためのHook
  */
 export function useParallelResultOperations<T, E = BucketListError>(
-  options: UseResultOperationOptions<T[], E> = {}
+  options: UseResultOperationOptions<T[], E> = {},
 ) {
   const { onSuccess, onError } = options;
-  
+
   const [state, setState] = useState<ResultOperationState<T[], E>>({
     isLoading: false,
     error: null,
@@ -132,7 +132,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
       resultFunctions: Array<(...args: Args) => Promise<Result<T, E>>>,
       ...args: Args
     ): Promise<Result<T[], E>> => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: true,
         error: null,
@@ -140,9 +140,9 @@ export function useParallelResultOperations<T, E = BucketListError>(
 
       try {
         const results = await Promise.all(
-          resultFunctions.map(fn => fn(...args))
+          resultFunctions.map((fn) => fn(...args)),
         );
-        
+
         // すべての結果をチェック
         const successData: T[] = [];
         for (const result of results) {
@@ -175,7 +175,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
         return { success: true, data: successData } as Result<T[], E>;
       } catch (error) {
         const unexpectedError = error as E;
-        
+
         setState({
           isLoading: false,
           error: unexpectedError,
@@ -189,7 +189,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
         return { success: false, error: unexpectedError } as Result<T[], E>;
       }
     },
-    [onSuccess, onError]
+    [onSuccess, onError],
   );
 
   const reset = useCallback(() => {
@@ -215,10 +215,10 @@ export function useParallelResultOperations<T, E = BucketListError>(
 export function useResultFormSubmission<T, FormData, E = BucketListError>(
   options: UseResultOperationOptions<T, E> & {
     resetOnSuccess?: boolean;
-  } = {}
+  } = {},
 ) {
   const { resetOnSuccess = false, ...resultOptions } = options;
-  
+
   const resultOperation = useResultOperation<T, E>({
     ...resultOptions,
     onSuccess: (data) => {
@@ -231,17 +231,17 @@ export function useResultFormSubmission<T, FormData, E = BucketListError>(
   const submitForm = useCallback(
     async (
       submitFunction: (formData: FormData) => Promise<Result<T, E>>,
-      formData: FormData
+      formData: FormData,
     ): Promise<Result<T, E>> => {
       const result = await resultOperation.execute(submitFunction, formData);
-      
+
       if (resetOnSuccess && isSuccess(result)) {
         // フォームリセットのロジックは呼び出し側で実装
       }
-      
+
       return result;
     },
-    [resultOperation, resetOnSuccess]
+    [resultOperation, resetOnSuccess],
   );
 
   return {

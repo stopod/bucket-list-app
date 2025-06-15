@@ -1,13 +1,16 @@
 import type { ActionFunctionArgs } from "react-router";
 import { redirect } from "react-router";
-import { getServerAuth, createAuthenticatedSupabaseClient } from "~/lib/auth-server";
+import {
+  getServerAuth,
+  createAuthenticatedSupabaseClient,
+} from "~/lib/auth-server";
 import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   try {
     // 認証チェック
     const authResult = await getServerAuth(request);
-    
+
     if (!authResult.isAuthenticated) {
       throw new Response(null, {
         status: 302,
@@ -21,9 +24,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     // 認証済みクライアントでデータを削除
-    const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase);
-    
+    const authenticatedSupabase =
+      await createAuthenticatedSupabaseClient(authResult);
+    const bucketListService = createAuthenticatedBucketListService(
+      authenticatedSupabase,
+    );
+
     // まず項目が存在し、自分のものかチェック
     const item = await bucketListService.getBucketItemById(itemId);
     if (!item) {

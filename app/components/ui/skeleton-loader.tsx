@@ -8,21 +8,21 @@ interface SkeletonProps {
   height?: string | number;
 }
 
-export function Skeleton({ 
+export function Skeleton({
   className,
   variant = "rectangular",
   width,
-  height
+  height,
 }: SkeletonProps) {
   const variantClasses = {
     text: "h-4 rounded",
     circular: "rounded-full",
-    rectangular: "rounded"
+    rectangular: "rounded",
   };
 
   const style = {
     width: typeof width === "number" ? `${width}px` : width,
-    height: typeof height === "number" ? `${height}px` : height
+    height: typeof height === "number" ? `${height}px` : height,
   };
 
   return (
@@ -30,7 +30,7 @@ export function Skeleton({
       className={cn(
         "animate-pulse bg-gray-300",
         variantClasses[variant],
-        className
+        className,
       )}
       style={style}
       role="presentation"

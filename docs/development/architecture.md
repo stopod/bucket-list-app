@@ -5,6 +5,7 @@
 ## 🎯 設計方針
 
 ### **コア原則**
+
 1. **📖 可読性重視**: シンプルで理解しやすいコード構成
 2. **🚀 SSR-first**: サーバーサイドレンダリングを基本とし、必要に応じてクライアント機能を追加
 3. **🔧 Feature-based**: 機能単位でのコンポーネント組織化
@@ -82,12 +83,13 @@ app/
 ## 🎭 コンポーネント分類基準
 
 ### **1. UI Components (`components/ui/`)**
+
 ```typescript
 // ✅ 良い例：汎用的で再利用可能
 export function Button({ variant, size, children, ...props }: ButtonProps) {
   return (
-    <button 
-      className={cn(buttonVariants({ variant, size }))} 
+    <button
+      className={cn(buttonVariants({ variant, size }))}
       {...props}
     >
       {children}
@@ -103,11 +105,12 @@ export function BucketListButton() {
 ```
 
 ### **2. Feature Components (`features/*/components/`)**
+
 ```typescript
 // ✅ 良い例：特定機能のビジネスロジックを含む
 export function ItemCard({ item }: { item: BucketListItem }) {
   const { markAsComplete } = useBucketList();
-  
+
   return (
     <Card>
       <CardTitle>{item.title}</CardTitle>
@@ -120,6 +123,7 @@ export function ItemCard({ item }: { item: BucketListItem }) {
 ```
 
 ### **3. Page Components (`routes/*/components/`)**
+
 ```typescript
 // ✅ 良い例：そのページでのみ使用される特殊なレイアウト
 export function BucketListHeader() {
@@ -145,7 +149,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   try {
     // サーバーサイド認証チェック
     const authResult = await getServerAuth(request);
-    
+
     if (!authResult.isAuthenticated) {
       throw new Response(null, {
         status: 302,
@@ -166,9 +170,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       });
     }
 
-    return { 
-      instruments: instruments || [], 
-      user: authResult.user 
+    return {
+      instruments: instruments || [],
+      user: authResult.user
     };
   } catch (error) {
     if (error instanceof Response) {
@@ -201,7 +205,7 @@ export async function getServerAuth(request: Request): Promise<ServerAuthResult>
 // shared/layouts/authenticated-layout.tsx - クライアントサイドレイアウト
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const { user, loading } = useAuth();
-  
+
   // SSRで認証済みなので、クライアントサイドでは主にUI制御
   return (
     <div className="min-h-screen bg-gray-50">
@@ -222,6 +226,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 ```
 
 **メリット**:
+
 - 🛡️ **完全なセキュリティ**: サーバーサイドで認証チェック、クライアントサイドでは表示のみ
 - ⚡ **高性能**: SSRで認証済みページを直接配信
 - 🔒 **Ultra-Secure**: Cookie-based JWT + 多層セキュリティ
@@ -237,7 +242,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   try {
     // サーバーサイド認証チェック
     const authResult = await getServerAuth(request);
-    
+
     if (!authResult.isAuthenticated) {
       throw new Response(null, {
         status: 302,
@@ -273,7 +278,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function InstrumentsPage({ loaderData }: Route.ComponentProps) {
   const { instruments } = loaderData;
-  
+
   return (
     <AuthenticatedLayout title="楽器一覧">
       <div className="container mx-auto px-4 py-8">
@@ -309,22 +314,23 @@ export default function InstrumentsPage({ loaderData }: Route.ComponentProps) {
 // routes/bucket-list/new/action.ts
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const title = formData.get('title') as string;
-  
+  const title = formData.get("title") as string;
+
   const { error } = await supabase
-    .from('bucket_list')
+    .from("bucket_list")
     .insert({ title, user_id: getCurrentUserId() });
-    
+
   if (error) {
     return json({ error: error.message }, { status: 400 });
   }
-  
+
   // シンプルなページリロードでデータを更新
-  return redirect('/app/bucket-list');
+  return redirect("/app/bucket-list");
 }
 ```
 
 **方針**:
+
 - ✅ **作成後**: `redirect()` でリスト画面に戻る
 - ✅ **更新後**: `redirect()` でページリロード
 - ✅ **削除後**: `redirect()` で一覧に戻る
@@ -341,7 +347,7 @@ import type { Tables } from "~/shared/types/database";
 
 export type Instrument = Tables<"instruments">;
 
-// routes/sample/types.ts  
+// routes/sample/types.ts
 import type { Tables } from "~/shared/types/database";
 
 export type Profile = Tables<"profiles">;
@@ -388,13 +394,13 @@ export interface ApiError {
 // ❌ 悪い例：ロジックと見た目が混在
 export function BucketListItem({ item }: { item: BucketListItem }) {
   const [loading, setLoading] = useState(false);
-  
+
   const handleComplete = async () => {
     setLoading(true);
     await supabase.from('bucket_list').update({ completed: true });
     setLoading(false);
   };
-  
+
   return (
     <div className={loading ? 'opacity-50' : ''}>
       <h3>{item.title}</h3>
@@ -405,10 +411,10 @@ export function BucketListItem({ item }: { item: BucketListItem }) {
 
 // ✅ 良い例：ロジックと見た目を分離
 // Presentation Component
-export function BucketListItemView({ 
-  item, 
-  loading, 
-  onComplete 
+export function BucketListItemView({
+  item,
+  loading,
+  onComplete
 }: BucketListItemViewProps) {
   return (
     <div className={loading ? 'opacity-50' : ''}>
@@ -423,7 +429,7 @@ export function BucketListItemView({
 // Container Component (hooks使用)
 export function BucketListItem({ item }: { item: BucketListItem }) {
   const { completeItem, loading } = useBucketList();
-  
+
   return (
     <BucketListItemView
       item={item}
@@ -447,14 +453,14 @@ export async function loader() {
 // ✅ データ取得：loader（Result型）
 export async function loader() {
   const result = await getUserBucketItems(repository)('user-id');
-  
+
   if (isFailure(result)) {
-    throw new Response('Failed to load items', { 
-      status: 500, 
-      statusText: result.error.message 
+    throw new Response('Failed to load items', {
+      status: 500,
+      statusText: result.error.message
     });
   }
-  
+
   return json({ items: result.data });
 }
 
@@ -462,11 +468,11 @@ export async function loader() {
 export async function action({ request }) {
   const formData = await request.formData();
   const result = await createBucketItem(repository)(formData);
-  
+
   if (isFailure(result)) {
     return json({ error: result.error.message }, { status: 400 });
   }
-  
+
   return redirect('/app/bucket-list'); // revalidate
 }
 
@@ -474,11 +480,11 @@ export async function action({ request }) {
 export function ItemForm() {
   const [title, setTitle] = useState('');
   const navigate = useNavigate();
-  
+
   return (
     <Form method="post">
-      <input 
-        name="title" 
+      <input
+        name="title"
         value={title}
         onChange={e => setTitle(e.target.value)}
       />
@@ -488,8 +494,9 @@ export function ItemForm() {
 ```
 
 **避けるもの**:
+
 - ❌ Zustand, Redux などの状態管理ライブラリ
-- ❌ React Query, SWR などのキャッシュライブラリ  
+- ❌ React Query, SWR などのキャッシュライブラリ
 - ❌ 複雑なクライアントサイド状態管理
 
 ## 🚀 パフォーマンス戦略
@@ -501,10 +508,10 @@ export function ItemForm() {
 export async function loader() {
   // ページ表示に必要な最小限のデータのみ
   const { data: items } = await supabase
-    .from('bucket_list')
-    .select('id, title, completed') // 一覧では詳細不要
+    .from("bucket_list")
+    .select("id, title, completed") // 一覧では詳細不要
     .limit(50); // ページネーション
-    
+
   return json({ items });
 }
 ```
@@ -530,6 +537,7 @@ export function BucketListPage() {
 ## 📚 ベストプラクティス
 
 ### **1. ファイル命名規則**
+
 ```
 ✅ kebab-case: bucket-list-item.tsx
 ✅ PascalCase: BucketListItem.tsx (どちらでも可)
@@ -545,75 +553,81 @@ export function BucketListPage() {
 ```
 
 ### **2. Import/Export規則**
+
 ```typescript
 // ✅ 良い例：re-export用index.ts
 // features/bucket-list/index.ts
-export { BucketListItem } from './components/item-card';
-export { useBucketList } from './hooks/use-bucket-list';
-export type { BucketListItem } from './types';
+export { BucketListItem } from "./components/item-card";
+export { useBucketList } from "./hooks/use-bucket-list";
+export type { BucketListItem } from "./types";
 
 // 使用側
-import { BucketListItem, useBucketList } from '@/features/bucket-list';
+import { BucketListItem, useBucketList } from "@/features/bucket-list";
 ```
 
 ### **3. エラーハンドリング**
 
 #### **従来型アプローチ（try-catch）**
+
 ```typescript
 // ✅ SSRでのエラーハンドリング
 export async function loader() {
   try {
-    const { data, error } = await supabase.from('bucket_list').select('*');
-    
+    const { data, error } = await supabase.from("bucket_list").select("*");
+
     if (error) {
-      throw new Response('Database error', { 
+      throw new Response("Database error", {
         status: 500,
-        statusText: error.message 
+        statusText: error.message,
       });
     }
-    
+
     return json({ items: data });
   } catch (error) {
-    console.error('Loader error:', error);
-    throw new Response('Server error', { status: 500 });
+    console.error("Loader error:", error);
+    throw new Response("Server error", { status: 500 });
   }
 }
 ```
 
 #### **関数型アプローチ（Result型）**
+
 ```typescript
 // ✅ Result型によるエラーハンドリング
 export async function loader() {
-  const result = await getUserBucketItems(repository)('user-id');
-  
+  const result = await getUserBucketItems(repository)("user-id");
+
   if (isFailure(result)) {
     // 型安全なエラー処理
     switch (result.error.type) {
-      case 'DatabaseError':
-        throw new Response('Database error', { status: 500 });
-      case 'AuthenticationError':
-        throw new Response('Unauthorized', { status: 401 });
+      case "DatabaseError":
+        throw new Response("Database error", { status: 500 });
+      case "AuthenticationError":
+        throw new Response("Unauthorized", { status: 401 });
       default:
-        throw new Response('Server error', { status: 500 });
+        throw new Response("Server error", { status: 500 });
     }
   }
-  
+
   return json({ items: result.data });
 }
 
 // ✅ 関数型Service関数
-const createBucketItem = (repository: BucketListRepository) =>
-  async (data: BucketItemInsert): Promise<Result<BucketItem, BucketListError>> => {
+const createBucketItem =
+  (repository: BucketListRepository) =>
+  async (
+    data: BucketItemInsert,
+  ): Promise<Result<BucketItem, BucketListError>> => {
     // バリデーション
     const validationResult = validateBucketItemInsert(data);
     if (isFailure(validationResult)) {
       return validationResult;
     }
-    
+
     // データベース操作をResult型でラップ
     return wrapAsync(
       () => repository.create(validationResult.data),
-      (error: unknown) => handleRepositoryError(error, 'createBucketItem')
+      (error: unknown) => handleRepositoryError(error, "createBucketItem"),
     );
   };
 ```
@@ -666,6 +680,7 @@ class SendGridEmailService implements EmailService {
 ## 📋 実装チェックリスト
 
 ### **新規ページ作成時**
+
 - [ ] `routes/` 下に適切な`.tsx`ファイルとして配置
 - [ ] 認証が必要な場合はloaderで`getServerAuth()`チェック実装
 - [ ] 認証必須ページは`AuthenticatedLayout`、公開ページは`AppLayout`を使用
@@ -673,6 +688,7 @@ class SendGridEmailService implements EmailService {
 - [ ] SSR-firstでデータ取得ロジックを実装
 
 ### **新規機能追加時**
+
 - [ ] `features/` 下に機能フォルダを作成
 - [ ] `components/`, `hooks/`, `lib/`, `types.ts`, `index.ts` を適切に配置
 - [ ] ビジネスロジックはhooksまたはcontextに分離
@@ -681,12 +697,14 @@ class SendGridEmailService implements EmailService {
 - [ ] 適切なre-exportで外部からのアクセスを制御
 
 ### **認証関連実装時**
+
 - [ ] サーバーサイド認証チェックを`lib/auth-server.ts`で実装
 - [ ] クライアントサイド認証状態を`features/auth/`で管理
 - [ ] Cookie-based JWT認証を適切に実装
 - [ ] セキュリティベストプラクティスに従った実装
 
 ### **リファクタリング時**
+
 - [ ] SSR-first原則に従っているか
 - [ ] 認証チェックがサーバーサイドで適切に実装されているか
 - [ ] 型定義が使用場所近接の原則に従っているか

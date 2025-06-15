@@ -67,7 +67,9 @@ export default function HomePage() {
           <div className="text-center">
             <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
               <span className="block">人生は一度きり</span>
-              <span className="block text-indigo-600 mt-2">やりたいことを叶えよう</span>
+              <span className="block text-indigo-600 mt-2">
+                やりたいことを叶えよう
+              </span>
             </h1>
             <p className="mt-6 max-w-2xl mx-auto text-xl text-gray-600">
               夢や目標を整理し、達成までの道のりを可視化。あなたの「やりたいこと」を実現するためのデジタルバケットリストです。
@@ -77,12 +79,19 @@ export default function HomePage() {
                 // 認証済みユーザー向けのボタン
                 <>
                   <Link to="/dashboard">
-                    <Button size="lg" className="text-lg px-8 py-4 w-full sm:w-auto">
+                    <Button
+                      size="lg"
+                      className="text-lg px-8 py-4 w-full sm:w-auto"
+                    >
                       ダッシュボードへ
                     </Button>
                   </Link>
                   <Link to="/bucket-list">
-                    <Button size="lg" variant="outline" className="text-lg px-8 py-4 w-full sm:w-auto">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="text-lg px-8 py-4 w-full sm:w-auto"
+                    >
                       やりたいこと一覧
                     </Button>
                   </Link>
@@ -91,12 +100,19 @@ export default function HomePage() {
                 // 未認証ユーザー向けのボタン
                 <>
                   <Link to="/register">
-                    <Button size="lg" className="text-lg px-8 py-4 w-full sm:w-auto">
+                    <Button
+                      size="lg"
+                      className="text-lg px-8 py-4 w-full sm:w-auto"
+                    >
                       無料で始める
                     </Button>
                   </Link>
                   <Link to="/public">
-                    <Button size="lg" variant="outline" className="text-lg px-8 py-4 w-full sm:w-auto">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="text-lg px-8 py-4 w-full sm:w-auto"
+                    >
                       みんなのリストを見る
                     </Button>
                   </Link>
@@ -125,7 +141,9 @@ export default function HomePage() {
               <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
                 <span className="text-2xl">📝</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">カテゴリ分類</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                カテゴリ分類
+              </h3>
               <p className="text-gray-600">
                 旅行、スキル習得、体験など9つのカテゴリで整理。やりたいことを体系的に管理できます。
               </p>
@@ -136,7 +154,9 @@ export default function HomePage() {
               <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <span className="text-2xl">📊</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">進捗可視化</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                進捗可視化
+              </h3>
               <p className="text-gray-600">
                 達成率やカテゴリ別進捗をグラフで確認。モチベーション維持に役立ちます。
               </p>
@@ -147,7 +167,9 @@ export default function HomePage() {
               <div className="w-16 h-16 mx-auto bg-yellow-100 rounded-full flex items-center justify-center mb-4">
                 <span className="text-2xl">⏰</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">期限設定</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                期限設定
+              </h3>
               <p className="text-gray-600">
                 具体的な日付や「今年中」「来年中」など、柔軟な期限設定で計画的に進められます。
               </p>
@@ -158,7 +180,9 @@ export default function HomePage() {
               <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
                 <span className="text-2xl">🎯</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">優先度設定</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                優先度設定
+              </h3>
               <p className="text-gray-600">
                 高・中・低の3段階で優先度を設定。重要なことから順番に取り組めます。
               </p>
@@ -169,7 +193,9 @@ export default function HomePage() {
               <div className="w-16 h-16 mx-auto bg-purple-100 rounded-full flex items-center justify-center mb-4">
                 <span className="text-2xl">👥</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">公開・非公開</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                公開・非公開
+              </h3>
               <p className="text-gray-600">
                 項目ごとに公開・非公開を選択。プライベートな目標も安心して管理できます。
               </p>
@@ -180,7 +206,9 @@ export default function HomePage() {
               <div className="w-16 h-16 mx-auto bg-indigo-100 rounded-full flex items-center justify-center mb-4">
                 <span className="text-2xl">🏆</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">達成記録</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                達成記録
+              </h3>
               <p className="text-gray-600">
                 達成時にコメントを残せます。振り返りや達成感の記録として活用できます。
               </p>
@@ -231,40 +259,64 @@ export default function HomePage() {
                 <div className="flex items-center mb-2">
                   <div className="w-3 h-3 rounded-full mr-2 bg-blue-500"></div>
                   <span className="text-sm text-gray-500">旅行・観光</span>
-                  <span className="ml-auto text-xs bg-green-100 text-green-800 px-2 py-1 rounded">完了</span>
+                  <span className="ml-auto text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                    完了
+                  </span>
                 </div>
-                <h4 className="font-medium text-gray-900">北海道で雪まつりを見る</h4>
-                <p className="text-sm text-gray-600 mt-1">2024年2月に札幌雪まつりを見てきました！感動的でした。</p>
+                <h4 className="font-medium text-gray-900">
+                  北海道で雪まつりを見る
+                </h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  2024年2月に札幌雪まつりを見てきました！感動的でした。
+                </p>
               </div>
-              
+
               <div className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center mb-2">
                   <div className="w-3 h-3 rounded-full mr-2 bg-green-500"></div>
-                  <span className="text-sm text-gray-500">スキル習得・学習</span>
-                  <span className="ml-auto text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">進行中</span>
+                  <span className="text-sm text-gray-500">
+                    スキル習得・学習
+                  </span>
+                  <span className="ml-auto text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                    進行中
+                  </span>
                 </div>
                 <h4 className="font-medium text-gray-900">TOEIC 800点を取る</h4>
-                <p className="text-sm text-gray-600 mt-1">現在730点。あと70点がんばります！</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  現在730点。あと70点がんばります！
+                </p>
               </div>
-              
+
               <div className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center mb-2">
                   <div className="w-3 h-3 rounded-full mr-2 bg-purple-500"></div>
-                  <span className="text-sm text-gray-500">体験・チャレンジ</span>
-                  <span className="ml-auto text-xs bg-red-100 text-red-800 px-2 py-1 rounded">高</span>
+                  <span className="text-sm text-gray-500">
+                    体験・チャレンジ
+                  </span>
+                  <span className="ml-auto text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                    高
+                  </span>
                 </div>
-                <h4 className="font-medium text-gray-900">バンジージャンプに挑戦</h4>
-                <p className="text-sm text-gray-600 mt-1">今年の夏までに挑戦したい！</p>
+                <h4 className="font-medium text-gray-900">
+                  バンジージャンプに挑戦
+                </h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  今年の夏までに挑戦したい！
+                </p>
               </div>
-              
+
               <div className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center mb-2">
                   <div className="w-3 h-3 rounded-full mr-2 bg-orange-500"></div>
                   <span className="text-sm text-gray-500">創作・芸術</span>
-                  <span className="ml-auto text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">未着手</span>
+                  <span className="ml-auto text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                    未着手
+                  </span>
                 </div>
                 <h4 className="font-medium text-gray-900">油絵を習う</h4>
-                <p className="text-sm text-gray-600 mt-1">退職後の趣味として始めたい</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  退職後の趣味として始めたい
+                </p>
               </div>
             </div>
           </div>
@@ -287,7 +339,11 @@ export default function HomePage() {
               </Button>
             </Link>
             <Link to="/login">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-4 w-full sm:w-auto">
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-lg px-8 py-4 w-full sm:w-auto"
+              >
                 既にアカウントをお持ちの方
               </Button>
             </Link>

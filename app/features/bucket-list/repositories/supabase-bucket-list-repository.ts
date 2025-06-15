@@ -9,12 +9,8 @@ import type {
   BucketListFilters,
   BucketListSort,
 } from "~/features/bucket-list/types";
-import type {
-  BucketListRepository,
-} from "./bucket-list-repository";
-import {
-  BucketListRepositoryError,
-} from "./bucket-list-repository";
+import type { BucketListRepository } from "./bucket-list-repository";
+import { BucketListRepositoryError } from "./bucket-list-repository";
 
 export class SupabaseBucketListRepository implements BucketListRepository {
   constructor(

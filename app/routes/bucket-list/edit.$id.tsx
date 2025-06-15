@@ -2,11 +2,21 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { redirect } from "react-router";
 import { useState } from "react";
 import { AuthenticatedLayout } from "~/shared/layouts";
-import { getServerAuth, createAuthenticatedSupabaseClient } from "~/lib/auth-server";
+import {
+  getServerAuth,
+  createAuthenticatedSupabaseClient,
+} from "~/lib/auth-server";
 import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { BucketItemForm } from "~/features/bucket-list/components/bucket-item-form";
-import type { BucketItemFormData, BucketItem } from "~/features/bucket-list/types";
-import { assertPriority, assertStatus, assertDueType } from "~/features/bucket-list/types";
+import type {
+  BucketItemFormData,
+  BucketItem,
+} from "~/features/bucket-list/types";
+import {
+  assertPriority,
+  assertStatus,
+  assertDueType,
+} from "~/features/bucket-list/types";
 
 export function meta() {
   return [{ title: "やりたいことを編集" }];
@@ -16,7 +26,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   try {
     // SSR-compatible authentication check
     const authResult = await getServerAuth(request);
-    
+
     // 認証されていない場合はリダイレクト
     if (!authResult.isAuthenticated) {
       throw new Response(null, {
@@ -31,13 +41,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     }
 
     // 認証済みクライアントでデータを取得
-    const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase);
-    
+    const authenticatedSupabase =
+      await createAuthenticatedSupabaseClient(authResult);
+    const bucketListService = createAuthenticatedBucketListService(
+      authenticatedSupabase,
+    );
+
     // バケットリスト項目とカテゴリを取得
     const [item, categories] = await Promise.all([
       bucketListService.getBucketItemById(itemId),
-      bucketListService.getCategories()
+      bucketListService.getCategories(),
     ]);
 
     if (!item) {
@@ -52,7 +65,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     return {
       item,
       categories,
-      user: authResult.user
+      user: authResult.user,
     };
   } catch (error) {
     if (error instanceof Response) {
@@ -67,7 +80,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   try {
     // 認証チェック
     const authResult = await getServerAuth(request);
-    
+
     if (!authResult.isAuthenticated) {
       throw new Response(null, {
         status: 302,
@@ -84,12 +97,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const formData = await request.formData();
     const data: BucketItemFormData = {
       title: formData.get("title") as string,
-      description: formData.get("description") as string || undefined,
+      description: (formData.get("description") as string) || undefined,
       category_id: Number(formData.get("category_id")),
       priority: formData.get("priority") as "high" | "medium" | "low",
-      status: formData.get("status") as "not_started" | "in_progress" | "completed",
-      due_date: formData.get("due_date") as string || undefined,
-      due_type: formData.get("due_type") as "specific_date" | "this_year" | "next_year" | "unspecified",
+      status: formData.get("status") as
+        | "not_started"
+        | "in_progress"
+        | "completed",
+      due_date: (formData.get("due_date") as string) || undefined,
+      due_type: formData.get("due_type") as
+        | "specific_date"
+        | "this_year"
+        | "next_year"
+        | "unspecified",
       is_public: formData.get("is_public") === "true",
     };
 
@@ -99,9 +119,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     // 認証済みクライアントでデータを更新
-    const authenticatedSupabase = await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(authenticatedSupabase);
-    
+    const authenticatedSupabase =
+      await createAuthenticatedSupabaseClient(authResult);
+    const bucketListService = createAuthenticatedBucketListService(
+      authenticatedSupabase,
+    );
+
     // 既存の項目データを取得してステータス変更を判定
     const existingItem = await bucketListService.getBucketItemById(itemId);
     if (!existingItem) {
@@ -114,14 +137,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     // ステータスが「completed」に変更され、かつ以前は「completed」でなかった場合
-    const isBecomingCompleted = data.status === "completed" && existingItem.status !== "completed";
+    const isBecomingCompleted =
+      data.status === "completed" && existingItem.status !== "completed";
 
     if (isBecomingCompleted) {
       // completeBucketItemを使用して適切にcompleted_atを設定
       await bucketListService.completeBucketItem(itemId);
-      
+
       // 完了以外のフィールドも更新が必要な場合は追加で更新
-      const hasOtherChanges = 
+      const hasOtherChanges =
         data.title.trim() !== existingItem.title ||
         (data.description?.trim() || null) !== existingItem.description ||
         data.category_id !== existingItem.category_id ||
@@ -166,21 +190,21 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 }
 
-export default function EditBucketItemPage({ 
-  loaderData 
-}: { 
-  loaderData: { 
-    item: BucketItem; 
-    categories: any[]; 
-    user: any 
-  } 
+export default function EditBucketItemPage({
+  loaderData,
+}: {
+  loaderData: {
+    item: BucketItem;
+    categories: any[];
+    user: any;
+  };
 }) {
   const { item, categories } = loaderData;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (data: BucketItemFormData) => {
     setIsSubmitting(true);
-    
+
     try {
       // フォームデータを送信
       const form = document.createElement("form");

@@ -1,24 +1,28 @@
 /**
  * Result型 - 関数型プログラミングアプローチによる安全なエラーハンドリング
- * 
+ *
  * 成功時は success: true と data を持ち、
  * 失敗時は success: false と error を持つ
  */
-export type Result<T, E = Error> = 
+export type Result<T, E = Error> =
   | { success: true; data: T }
   | { success: false; error: E };
 
 /**
  * Result型の型ガード - 成功かどうかを判定
  */
-export function isSuccess<T, E>(result: Result<T, E>): result is { success: true; data: T } {
+export function isSuccess<T, E>(
+  result: Result<T, E>,
+): result is { success: true; data: T } {
   return result.success;
 }
 
 /**
  * Result型の型ガード - 失敗かどうかを判定
  */
-export function isFailure<T, E>(result: Result<T, E>): result is { success: false; error: E } {
+export function isFailure<T, E>(
+  result: Result<T, E>,
+): result is { success: false; error: E } {
   return !result.success;
 }
 
@@ -50,11 +54,9 @@ export function getOrElse<T, E>(result: Result<T, E>, defaultValue: T): T {
  */
 export function mapResult<T, U, E>(
   result: Result<T, E>,
-  transform: (data: T) => U
+  transform: (data: T) => U,
 ): Result<U, E> {
-  return isSuccess(result) 
-    ? success(transform(result.data))
-    : result;
+  return isSuccess(result) ? success(transform(result.data)) : result;
 }
 
 /**
@@ -63,11 +65,9 @@ export function mapResult<T, U, E>(
  */
 export function mapError<T, E, F>(
   result: Result<T, E>,
-  transform: (error: E) => F
+  transform: (error: E) => F,
 ): Result<T, F> {
-  return isFailure(result)
-    ? failure(transform(result.error))
-    : result;
+  return isFailure(result) ? failure(transform(result.error)) : result;
 }
 
 /**
@@ -76,7 +76,7 @@ export function mapError<T, E, F>(
  */
 export function flatMapResult<T, U, E>(
   result: Result<T, E>,
-  transform: (data: T) => Result<U, E>
+  transform: (data: T) => Result<U, E>,
 ): Result<U, E> {
   return isSuccess(result) ? transform(result.data) : result;
 }

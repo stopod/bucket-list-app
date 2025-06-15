@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 
 interface UseAsyncOperationOptions {
   onSuccess?: (result: any) => void;
@@ -14,10 +14,10 @@ interface AsyncOperationState {
 
 export function useAsyncOperation<T = any>(
   asyncFunction: (...args: any[]) => Promise<T>,
-  options: UseAsyncOperationOptions = {}
+  options: UseAsyncOperationOptions = {},
 ) {
   const { onSuccess, onError, throwOnError = false } = options;
-  
+
   const [state, setState] = useState<AsyncOperationState>({
     isLoading: false,
     error: null,
@@ -26,7 +26,7 @@ export function useAsyncOperation<T = any>(
 
   const execute = useCallback(
     async (...args: any[]) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: true,
         error: null,
@@ -34,7 +34,7 @@ export function useAsyncOperation<T = any>(
 
       try {
         const result = await asyncFunction(...args);
-        
+
         setState({
           isLoading: false,
           error: null,
@@ -47,8 +47,9 @@ export function useAsyncOperation<T = any>(
 
         return result;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+
         setState({
           isLoading: false,
           error: errorMessage,
@@ -66,7 +67,7 @@ export function useAsyncOperation<T = any>(
         return null;
       }
     },
-    [asyncFunction, onSuccess, onError, throwOnError]
+    [asyncFunction, onSuccess, onError, throwOnError],
   );
 
   const reset = useCallback(() => {
@@ -89,60 +90,58 @@ export function useAsyncOperation<T = any>(
 // 複数の非同期操作を並列実行するためのフック
 export function useParallelAsyncOperations<T = any>(
   operations: Array<() => Promise<T>>,
-  options: UseAsyncOperationOptions = {}
+  options: UseAsyncOperationOptions = {},
 ) {
   const { onSuccess, onError, throwOnError = false } = options;
-  
+
   const [state, setState] = useState<AsyncOperationState>({
     isLoading: false,
     error: null,
     data: null,
   });
 
-  const executeAll = useCallback(
-    async () => {
-      setState(prev => ({
-        ...prev,
-        isLoading: true,
+  const executeAll = useCallback(async () => {
+    setState((prev) => ({
+      ...prev,
+      isLoading: true,
+      error: null,
+    }));
+
+    try {
+      const results = await Promise.all(operations.map((op) => op()));
+
+      setState({
+        isLoading: false,
         error: null,
-      }));
+        data: results,
+      });
 
-      try {
-        const results = await Promise.all(operations.map(op => op()));
-        
-        setState({
-          isLoading: false,
-          error: null,
-          data: results,
-        });
-
-        if (onSuccess) {
-          onSuccess(results);
-        }
-
-        return results;
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        
-        setState({
-          isLoading: false,
-          error: errorMessage,
-          data: null,
-        });
-
-        if (onError) {
-          onError(error instanceof Error ? error : new Error(errorMessage));
-        }
-
-        if (throwOnError) {
-          throw error;
-        }
-
-        return null;
+      if (onSuccess) {
+        onSuccess(results);
       }
-    },
-    [operations, onSuccess, onError, throwOnError]
-  );
+
+      return results;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+
+      setState({
+        isLoading: false,
+        error: errorMessage,
+        data: null,
+      });
+
+      if (onError) {
+        onError(error instanceof Error ? error : new Error(errorMessage));
+      }
+
+      if (throwOnError) {
+        throw error;
+      }
+
+      return null;
+    }
+  }, [operations, onSuccess, onError, throwOnError]);
 
   const reset = useCallback(() => {
     setState({
@@ -167,21 +166,25 @@ export function useFormSubmission<T = any>(
   options: UseAsyncOperationOptions & {
     resetFormOnSuccess?: boolean;
     redirectOnSuccess?: string;
-  } = {}
+  } = {},
 ) {
-  const { resetFormOnSuccess = false, redirectOnSuccess, ...asyncOptions } = options;
-  
+  const {
+    resetFormOnSuccess = false,
+    redirectOnSuccess,
+    ...asyncOptions
+  } = options;
+
   const asyncOperation = useAsyncOperation(submitFunction, {
     ...asyncOptions,
     onSuccess: (result) => {
       if (asyncOptions.onSuccess) {
         asyncOptions.onSuccess(result);
       }
-      
+
       if (resetFormOnSuccess) {
         // フォームリセットのロジックは呼び出し側で実装
       }
-      
+
       if (redirectOnSuccess) {
         // リダイレクトのロジックは呼び出し側で実装
       }
