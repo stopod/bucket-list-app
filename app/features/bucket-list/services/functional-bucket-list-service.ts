@@ -30,6 +30,17 @@ import {
   createApplicationError 
 } from "~/shared/types/errors";
 
+// ビジネスロジック関数のインポート
+import {
+  groupItemsByCategory as groupItems,
+  validateBucketItemInsert,
+  validateBucketItemUpdate,
+  canEditCompletedItem,
+  getRecentlyCompletedItems,
+  getUpcomingItems,
+  calculateUserStats as computeUserStats,
+} from "~/features/bucket-list/lib/business-logic";
+
 /**
  * Repository操作のエラーを適切なBucketListErrorに変換するヘルパー
  */
@@ -119,23 +130,48 @@ export const getBucketItemById = (repository: BucketListRepository) =>
   getBucketItem(repository);
 
 /**
- * バケットリスト項目作成
+ * バケットリスト項目作成（バリデーション付き）
  */
 export const createBucketItem = (repository: BucketListRepository) =>
   async (data: BucketItemInsert): Promise<Result<BucketItem, BucketListError>> => {
+    // ビジネスロジック：バリデーション実行
+    const validationResult = validateBucketItemInsert(data);
+    if (!validationResult.success) {
+      return validationResult;
+    }
+
+    // Repository操作実行
     return wrapAsync(
-      () => repository.create(data),
+      () => repository.create(validationResult.data),
       (error: unknown) => handleRepositoryError(error, 'createBucketItem')
     );
   };
 
 /**
- * バケットリスト項目更新
+ * バケットリスト項目更新（バリデーション・ビジネスルールチェック付き）
  */
 export const updateBucketItem = (repository: BucketListRepository) =>
   async (id: string, data: BucketItemUpdate): Promise<Result<BucketItem, BucketListError>> => {
+    // ビジネスロジック：バリデーション実行
+    const validationResult = validateBucketItemUpdate(data);
+    if (!validationResult.success) {
+      return validationResult;
+    }
+
+    // 既存アイテム取得してビジネスルールチェック
+    const existingItemResult = await getBucketItem(repository)(id);
+    if (!existingItemResult.success) {
+      return existingItemResult;
+    }
+
+    const editCheckResult = canEditCompletedItem(existingItemResult.data);
+    if (!editCheckResult.success) {
+      return editCheckResult;
+    }
+
+    // Repository操作実行
     return wrapAsync(
-      () => repository.update(id, data),
+      () => repository.update(id, validationResult.data),
       (error: unknown) => handleRepositoryError(error, 'updateBucketItem')
     );
   };
@@ -211,7 +247,7 @@ export const getUserStats = (repository: BucketListRepository) =>
   };
 
 /**
- * カテゴリ別バケットリスト項目取得（ビジネスロジック）
+ * カテゴリ別バケットリスト項目取得（ビジネスロジック使用）
  */
 export const getBucketItemsByCategory = (repository: BucketListRepository) =>
   async (profileId: string): Promise<Result<Array<{ category: Category; items: (BucketItem & { category: Category })[] }>, BucketListError>> => {
@@ -228,19 +264,14 @@ export const getBucketItemsByCategory = (repository: BucketListRepository) =>
 
     const [items, categories] = combinedResult.data;
 
-    // カテゴリ別にグループ化（純粋関数として実装）
-    const itemsByCategory = categories
-      .map((category: Category) => ({
-        category,
-        items: items.filter((item: BucketItem & { category: Category }) => item.category_id === category.id),
-      }))
-      .filter((group: { category: Category; items: (BucketItem & { category: Category })[] }) => group.items.length > 0);
+    // ビジネスロジック関数を使用してカテゴリ別にグループ化
+    const itemsByCategory = groupItems(items, categories) as Array<{ category: Category; items: (BucketItem & { category: Category })[] }>;
 
     return success(itemsByCategory);
   };
 
 /**
- * ダッシュボードデータ取得（複合ビジネスロジック）
+ * ダッシュボードデータ取得（複合ビジネスロジック使用）
  */
 export const getDashboardData = (repository: BucketListRepository) =>
   async (profileId: string): Promise<Result<{
@@ -248,35 +279,37 @@ export const getDashboardData = (repository: BucketListRepository) =>
     categories: Category[];
     stats: UserBucketStats;
     itemsByCategory: Array<{ category: Category; items: (BucketItem & { category: Category })[] }>;
+    recentCompletedItems: BucketItem[];
+    upcomingItems: BucketItem[];
   }, BucketListError>> => {
     // 複数の並行処理
-    const [itemsResult, categoriesResult, statsResult] = await Promise.all([
+    const [itemsResult, categoriesResult] = await Promise.all([
       getUserBucketItemsWithCategory(repository)(profileId),
       getCategories(repository)(),
-      getUserStats(repository)(profileId),
     ]);
 
-    // すべての結果を組み合わせ
-    const combinedResult = combineResults(itemsResult, categoriesResult, statsResult);
+    // 結果を組み合わせ
+    const combinedResult = combineResults(itemsResult, categoriesResult);
     
     if (!combinedResult.success) {
       return combinedResult;
     }
 
-    const [items, categories, stats] = combinedResult.data;
+    const [items, categories] = combinedResult.data;
 
-    // アイテムカテゴリ分類を取得
-    const itemsByCategoryResult = await getBucketItemsByCategory(repository)(profileId);
-    
-    if (!itemsByCategoryResult.success) {
-      return itemsByCategoryResult;
-    }
+    // ビジネスロジック関数を使用して各種データを計算
+    const stats = computeUserStats(items); // Repository呼び出しの代わりに計算
+    const itemsByCategory = groupItems(items, categories) as Array<{ category: Category; items: (BucketItem & { category: Category })[] }>;
+    const recentCompletedItems = getRecentlyCompletedItems(items, 5);
+    const upcomingItems = getUpcomingItems(items, 30, 5);
 
     return success({
       items,
       categories,
       stats,
-      itemsByCategory: itemsByCategoryResult.data,
+      itemsByCategory,
+      recentCompletedItems,
+      upcomingItems,
     });
   };
 
