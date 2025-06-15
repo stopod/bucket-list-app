@@ -16,6 +16,7 @@ import type {
 import type { BucketListRepository } from '~/features/bucket-list/repositories';
 import { useCreateBucketItem, useCategories } from '~/features/bucket-list/hooks/use-bucket-list-operations';
 import { isSuccess } from '~/shared/types/result';
+import { createFunctionalBucketListService } from '~/features/bucket-list/services/functional-bucket-list-service';
 
 interface QuickItemCreatorProps {
   repository: BucketListRepository;
@@ -49,7 +50,6 @@ export function QuickItemCreator({
 
   // 関数型サービスから取得
   const functionalService = useMemo(() => {
-    const { createFunctionalBucketListService } = require('~/features/bucket-list/services/functional-bucket-list-service');
     return createFunctionalBucketListService(repository);
   }, [repository]);
 
@@ -313,7 +313,6 @@ export function MinimalQuickCreator({
 
   // 関数型サービスから取得
   const functionalService = useMemo(() => {
-    const { createFunctionalBucketListService } = require('~/features/bucket-list/services/functional-bucket-list-service');
     return createFunctionalBucketListService(repository);
   }, [repository]);
 

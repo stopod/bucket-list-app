@@ -10,6 +10,7 @@ import type { BucketItem, Status } from '~/features/bucket-list/types';
 import type { BucketListRepository } from '~/features/bucket-list/repositories';
 import { useUpdateBucketItem } from '~/features/bucket-list/hooks/use-bucket-list-operations';
 import { isSuccess } from '~/shared/types/result';
+import { createFunctionalBucketListService } from '~/features/bucket-list/services/functional-bucket-list-service';
 
 interface QuickStatusChangerProps {
   item: BucketItem;
@@ -28,7 +29,6 @@ export function QuickStatusChanger({
 
   // 関数型サービスから取得
   const functionalService = useMemo(() => {
-    const { createFunctionalBucketListService } = require('~/features/bucket-list/services/functional-bucket-list-service');
     return createFunctionalBucketListService(repository);
   }, [repository]);
 
@@ -163,7 +163,6 @@ export function QuickStatusButton({
 }: QuickStatusButtonProps) {
   // 関数型サービスから取得
   const functionalService = useMemo(() => {
-    const { createFunctionalBucketListService } = require('~/features/bucket-list/services/functional-bucket-list-service');
     return createFunctionalBucketListService(repository);
   }, [repository]);
 

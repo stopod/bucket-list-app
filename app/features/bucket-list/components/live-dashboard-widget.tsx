@@ -9,6 +9,7 @@ import { Spinner } from '~/components/ui/spinner';
 import type { BucketListRepository } from '~/features/bucket-list/repositories';
 import { useDashboardData } from '~/features/bucket-list/hooks/use-bucket-list-operations';
 import { isSuccess, isFailure } from '~/shared/types/result';
+import { createFunctionalBucketListService } from '~/features/bucket-list/services/functional-bucket-list-service';
 
 interface LiveDashboardWidgetProps {
   repository: BucketListRepository;
@@ -30,7 +31,6 @@ export function LiveDashboardWidget({
 
   // 関数型サービスから取得
   const functionalService = useMemo(() => {
-    const { createFunctionalBucketListService } = require('~/features/bucket-list/services/functional-bucket-list-service');
     return createFunctionalBucketListService(repository);
   }, [repository]);
 

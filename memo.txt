@@ -1,0 +1,4 @@
+/home/runner/work/bucket-list-app/bucket-list-app/app/features/bucket-list/components/quick-item-creator.tsx
+Warning:    12:3  warning  'Category' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+Error:    57:9  error    A `require()` style import is forbidden                                     @typescript-eslint/no-require-imports
+Error:   361:9  error    A `require()` style import is forbidden                                     @typescript-eslint/no-require-imports
