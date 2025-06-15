@@ -1,5 +1,5 @@
 import type { UserBucketStats } from "../types";
-import { StatCardSkeleton } from "~/components/ui";
+import { StatCardSkeleton, Card, CardContent, CardHeader, CardTitle } from "~/components/ui";
 
 interface AchievementStatsProps {
   stats?: UserBucketStats;
@@ -35,8 +35,11 @@ export function AchievementStats({ stats, className = "", loading = false }: Ach
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow p-4 sm:p-6 ${className}`}>
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">達成状況</h2>
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold text-gray-900">達成状況</CardTitle>
+      </CardHeader>
+      <CardContent>
       
       {/* メイン達成率表示 */}
       <div className="text-center mb-6">
@@ -120,6 +123,7 @@ export function AchievementStats({ stats, className = "", loading = false }: Ach
           </p>
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

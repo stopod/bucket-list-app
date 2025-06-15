@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea, LoadingOverlay } from "~/components/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea, LoadingOverlay, Card, CardContent, CardHeader, CardTitle } from "~/components/ui";
 import type { BucketItemFormData, Category, Priority, DueType, Status } from "../types";
 
 interface BucketItemFormProps {
@@ -38,15 +38,15 @@ export function BucketItemForm({
   // カテゴリが読み込まれていない場合の表示
   if (categories.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="text-center py-8">
+      <Card>
+        <CardContent className="text-center py-8">
           <p className="text-gray-500 mb-4">カテゴリが見つかりません</p>
           <p className="text-sm text-gray-400">
             データベースにカテゴリが登録されていない可能性があります。<br/>
             管理者にお問い合わせください。
           </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -93,15 +93,16 @@ export function BucketItemForm({
         isVisible={isSubmitting} 
         message={mode === "create" ? "追加中..." : "更新中..."}
       />
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-gray-900">
             {mode === "create" ? "新しいやりたいことを追加" : "やりたいことを編集"}
-          </h2>
+          </CardTitle>
           <p className="text-gray-600 mt-2">
             {mode === "create" ? "あなたが人生でやりたいことを追加しましょう" : "項目の内容を編集できます"}
           </p>
-        </div>
+        </CardHeader>
+        <CardContent>
 
         <form onSubmit={handleSubmit} className="space-y-6">
         {/* タイトル */}
@@ -294,8 +295,9 @@ export function BucketItemForm({
             {isSubmitting ? "保存中..." : mode === "create" ? "追加" : "更新"}
           </Button>
         </div>
-      </form>
-      </div>
+        </form>
+        </CardContent>
+      </Card>
     </>
   );
 }
