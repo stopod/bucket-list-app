@@ -173,13 +173,11 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
   // 展開状態管理
   const {
     getCategoryShowCount,
-    isTextExpanded,
     needsShowMoreButton,
     getRemainingCount,
     isCategoryFullyExpanded,
     expandCategory,
     collapseCategory,
-    toggleTextExpansion,
   } = useExpandableList();
 
   // 詳細ダイアログの状態管理

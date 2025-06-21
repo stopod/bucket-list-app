@@ -9,8 +9,6 @@ import type {
   BucketItemUpdate,
   Category,
   UserBucketStats,
-  BucketListFilters,
-  BucketListSort,
 } from "~/features/bucket-list/types";
 
 import type { Result } from "~/shared/types/result";
@@ -106,150 +104,6 @@ export const groupItemsByCategory = (
     .filter((group) => group.items.length > 0);
 };
 
-/**
- * データ変換 - 優先度別グループ化
- */
-export const groupItemsByPriority = (items: BucketItem[]) => {
-  const groups = {
-    high: items.filter((item) => item.priority === "high"),
-    medium: items.filter((item) => item.priority === "medium"),
-    low: items.filter((item) => item.priority === "low"),
-  };
-
-  return [
-    { priority: "high" as const, items: groups.high },
-    { priority: "medium" as const, items: groups.medium },
-    { priority: "low" as const, items: groups.low },
-  ].filter((group) => group.items.length > 0);
-};
-
-/**
- * データ変換 - ステータス別グループ化
- */
-export const groupItemsByStatus = (items: BucketItem[]) => {
-  const groups = {
-    not_started: items.filter((item) => item.status === "not_started"),
-    in_progress: items.filter((item) => item.status === "in_progress"),
-    completed: items.filter((item) => item.status === "completed"),
-  };
-
-  return [
-    { status: "not_started" as const, items: groups.not_started },
-    { status: "in_progress" as const, items: groups.in_progress },
-    { status: "completed" as const, items: groups.completed },
-  ].filter((group) => group.items.length > 0);
-};
-
-/**
- * フィルタリング - 検索条件によるフィルタリング
- */
-export const filterItemsBySearch = (
-  items: BucketItem[],
-  searchTerm: string,
-): BucketItem[] => {
-  if (!searchTerm.trim()) return items;
-
-  const term = searchTerm.toLowerCase();
-  return items.filter(
-    (item) =>
-      item.title.toLowerCase().includes(term) ||
-      (item.description && item.description.toLowerCase().includes(term)),
-  );
-};
-
-/**
- * フィルタリング - 期限によるフィルタリング
- */
-export const filterItemsByDueDate = (
-  items: BucketItem[],
-  filter: "overdue" | "due_soon" | "no_due_date" | "has_due_date",
-): BucketItem[] => {
-  const now = new Date();
-  const soon = new Date();
-  soon.setDate(now.getDate() + 7); // 1週間以内
-
-  switch (filter) {
-    case "overdue":
-      return items.filter((item) => {
-        if (!item.due_date || item.status === "completed") return false;
-        const dueDate = new Date(item.due_date);
-        return !isNaN(dueDate.getTime()) && dueDate < now;
-      });
-    case "due_soon":
-      return items.filter((item) => {
-        if (!item.due_date || item.status === "completed") return false;
-        const dueDate = new Date(item.due_date);
-        return !isNaN(dueDate.getTime()) && dueDate >= now && dueDate <= soon;
-      });
-    case "no_due_date":
-      return items.filter((item) => !item.due_date);
-    case "has_due_date":
-      return items.filter((item) => !!item.due_date);
-    default:
-      return items;
-  }
-};
-
-/**
- * ソート - バケットリストアイテムのソート
- */
-export const sortItems = (
-  items: BucketItem[],
-  sort: BucketListSort,
-): BucketItem[] => {
-  const sortedItems = [...items]; // 元の配列を変更しない
-
-  sortedItems.sort((a, b) => {
-    switch (sort.field) {
-      case "created_at":
-        const aCreated = a.created_at ? new Date(a.created_at) : new Date(0);
-        const bCreated = b.created_at ? new Date(b.created_at) : new Date(0);
-        return sort.direction === "asc"
-          ? aCreated.getTime() - bCreated.getTime()
-          : bCreated.getTime() - aCreated.getTime();
-
-      case "updated_at":
-        const aUpdated = a.updated_at ? new Date(a.updated_at) : new Date(0);
-        const bUpdated = b.updated_at ? new Date(b.updated_at) : new Date(0);
-        return sort.direction === "asc"
-          ? aUpdated.getTime() - bUpdated.getTime()
-          : bUpdated.getTime() - aUpdated.getTime();
-
-      case "due_date":
-        // 期限がないものは最後に
-        if (!a.due_date && !b.due_date) return 0;
-        if (!a.due_date) return 1;
-        if (!b.due_date) return -1;
-        const aDueDate = new Date(a.due_date);
-        const bDueDate = new Date(b.due_date);
-        // 無効な日付の場合は最後に
-        if (isNaN(aDueDate.getTime()) && isNaN(bDueDate.getTime())) return 0;
-        if (isNaN(aDueDate.getTime())) return 1;
-        if (isNaN(bDueDate.getTime())) return -1;
-        return sort.direction === "asc"
-          ? aDueDate.getTime() - bDueDate.getTime()
-          : bDueDate.getTime() - aDueDate.getTime();
-
-      case "priority":
-        const priorityOrder: Record<string, number> = {
-          high: 3,
-          medium: 2,
-          low: 1,
-        };
-        const aValue = priorityOrder[a.priority] ?? 0;
-        const bValue = priorityOrder[b.priority] ?? 0;
-        return sort.direction === "asc" ? aValue - bValue : bValue - aValue;
-
-      case "title":
-      default:
-        return sort.direction === "asc"
-          ? a.title.localeCompare(b.title, "ja")
-          : b.title.localeCompare(a.title, "ja");
-    }
-  });
-
-  return sortedItems;
-};
 
 /**
  * バリデーション - バケットリスト項目作成データの検証
@@ -386,28 +240,6 @@ export const canEditCompletedItem = (
     );
   }
   return success(true);
-};
-
-/**
- * ビジネスルール - アイテム削除可否チェック
- */
-export const canDeleteItem = (
-  item: BucketItem,
-): Result<boolean, BucketListError> => {
-  // 現在は制限なし、将来的にビジネスルールを追加可能
-  return success(true);
-};
-
-/**
- * データ変換 - フィルタ条件の正規化
- */
-export const normalizeFilters = (
-  filters: BucketListFilters,
-): BucketListFilters => {
-  return {
-    ...filters,
-    search: filters.search?.trim() || undefined,
-  };
 };
 
 /**

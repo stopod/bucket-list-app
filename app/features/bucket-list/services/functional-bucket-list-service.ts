@@ -140,12 +140,6 @@ export const getBucketItem =
   };
 
 /**
- * getBucketItemのエイリアス（既存コードとの互換性のため）
- */
-export const getBucketItemById = (repository: BucketListRepository) =>
-  getBucketItem(repository);
-
-/**
  * バケットリスト項目作成（バリデーション付き）
  */
 export const createBucketItem =
@@ -238,24 +232,6 @@ export const getCategories =
     return wrapAsync(
       () => repository.findAllCategories(),
       (error: unknown) => handleRepositoryError(error, "getCategories"),
-    );
-  };
-
-/**
- * カテゴリ取得（ID指定）
- */
-export const getCategory =
-  (repository: BucketListRepository) =>
-  async (id: number): Promise<Result<Category, BucketListError>> => {
-    return wrapAsync(
-      async () => {
-        const category = await repository.findCategoryById(id);
-        if (!category) {
-          throw new Error(`Category with id ${id} not found`);
-        }
-        return category;
-      },
-      (error: unknown) => handleRepositoryError(error, "getCategory"),
     );
   };
 
@@ -386,13 +362,11 @@ export const createFunctionalBucketListService = (
   getUserBucketItemsWithCategory: getUserBucketItemsWithCategory(repository),
   getPublicBucketItems: getPublicBucketItems(repository),
   getBucketItem: getBucketItem(repository),
-  getBucketItemById: getBucketItemById(repository),
   createBucketItem: createBucketItem(repository),
   updateBucketItem: updateBucketItem(repository),
   completeBucketItem: completeBucketItem(repository),
   deleteBucketItem: deleteBucketItem(repository),
   getCategories: getCategories(repository),
-  getCategory: getCategory(repository),
   getUserStats: getUserStats(repository),
   getBucketItemsByCategory: getBucketItemsByCategory(repository),
   getDashboardData: getDashboardData(repository),
