@@ -1,8 +1,5 @@
 import React from "react";
-import type {
-  Category,
-  BucketItem,
-} from "~/features/bucket-list/types";
+import type { Category, BucketItem } from "~/features/bucket-list/types";
 import {
   ProgressCardSkeleton,
   Card,

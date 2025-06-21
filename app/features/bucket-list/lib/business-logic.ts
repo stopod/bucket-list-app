@@ -104,7 +104,6 @@ export const groupItemsByCategory = (
     .filter((group) => group.items.length > 0);
 };
 
-
 /**
  * バリデーション - バケットリスト項目作成データの検証
  */

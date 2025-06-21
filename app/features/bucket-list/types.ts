@@ -113,4 +113,3 @@ export const STATUS_COLORS: Record<Status, string> = {
   in_progress: "bg-blue-100 text-blue-800 border-blue-200",
   completed: "bg-green-100 text-green-800 border-green-200",
 } as const;
-
