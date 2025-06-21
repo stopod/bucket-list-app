@@ -63,13 +63,6 @@ export interface BucketItemFormData {
   is_public: boolean;
 }
 
-// 更新用の型（完了時のコメント追加など）
-export interface BucketItemCompletionData {
-  completion_comment?: string;
-  completed_at: string;
-  status: "completed";
-}
-
 // フィルター・ソート用の型
 export interface BucketListFilters {
   profile_id?: string;
@@ -121,13 +114,3 @@ export const STATUS_COLORS: Record<Status, string> = {
   completed: "bg-green-100 text-green-800 border-green-200",
 } as const;
 
-// 派生型定義 - Pick/Omitを使った型安全な部分型
-export type CategoryDisplayItem = Pick<
-  BucketItem,
-  "id" | "title" | "status" | "category_id"
->;
-export type StatsSummary = Pick<BucketItem, "status" | "completed_at">;
-export type MinimalBucketItem = Pick<
-  BucketItem,
-  "id" | "title" | "status" | "category_id" | "priority"
->;

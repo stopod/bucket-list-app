@@ -1,16 +1,13 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 
 /**
- * カテゴリ別展開状態管理とテキスト展開状態管理を提供するカスタムHook
+ * カテゴリ別展開状態管理を提供するカスタムHook
  */
 export function useExpandableList() {
   // カテゴリ別に表示する項目数を管理 (categoryId -> showCount)
   const [expandedCategories, setExpandedCategories] = useState<
     Record<string, number>
   >({});
-
-  // テキスト展開状態を管理 (itemId -> expanded)
-  const [expandedTexts, setExpandedTexts] = useState<Set<string>>(new Set());
 
   /**
    * カテゴリの表示項目数を取得
@@ -36,19 +33,6 @@ export function useExpandableList() {
   }, []);
 
   /**
-   * カテゴリを完全に展開（全件表示）
-   */
-  const expandCategoryFully = useCallback(
-    (categoryId: string, totalCount: number) => {
-      setExpandedCategories((prev) => ({
-        ...prev,
-        [categoryId]: totalCount,
-      }));
-    },
-    [],
-  );
-
-  /**
    * カテゴリを初期状態に折りたたむ
    */
   const collapseCategory = useCallback(
@@ -60,31 +44,6 @@ export function useExpandableList() {
     },
     [],
   );
-
-  /**
-   * テキストの展開状態を取得
-   */
-  const isTextExpanded = useCallback(
-    (itemId: string) => {
-      return expandedTexts.has(itemId);
-    },
-    [expandedTexts],
-  );
-
-  /**
-   * テキストの展開状態を切り替え
-   */
-  const toggleTextExpansion = useCallback((itemId: string) => {
-    setExpandedTexts((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-      return newSet;
-    });
-  }, []);
 
   /**
    * カテゴリが完全に展開されているかチェック
@@ -122,29 +81,12 @@ export function useExpandableList() {
   return {
     // State getters
     getCategoryShowCount,
-    isTextExpanded,
     isCategoryFullyExpanded,
     needsShowMoreButton,
     getRemainingCount,
 
     // State setters
     expandCategory,
-    expandCategoryFully,
     collapseCategory,
-    toggleTextExpansion,
   };
-}
-
-/**
- * 展開可能リストで使用する型定義
- */
-export interface ExpandableListItem {
-  id: string;
-  [key: string]: any;
-}
-
-export interface ExpandableCategory {
-  id: string | number;
-  items: ExpandableListItem[];
-  [key: string]: any;
 }

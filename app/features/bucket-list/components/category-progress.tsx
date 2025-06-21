@@ -2,7 +2,6 @@ import React from "react";
 import type {
   Category,
   BucketItem,
-  CategoryDisplayItem,
 } from "~/features/bucket-list/types";
 import {
   ProgressCardSkeleton,
@@ -11,6 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui";
+
+// このコンポーネント内でのみ使用する型定義
+type CategoryDisplayItem = Pick<
+  BucketItem,
+  "id" | "title" | "status" | "category_id"
+>;
 
 interface CategoryProgressProps {
   categories?: Category[];
