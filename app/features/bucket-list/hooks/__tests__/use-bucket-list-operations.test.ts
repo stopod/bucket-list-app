@@ -155,7 +155,7 @@ describe("useBucketListOperations", () => {
 
     it("loadUserItemsWithCategoryが正しく動作すること", async () => {
       const mockItemsWithCategory = [mockBucketItemWithCategory];
-      mockRepository.findByProfileId = vi.fn().mockResolvedValue(mockItemsWithCategory);
+      mockRepository.findAllWithCategory = vi.fn().mockResolvedValue(mockItemsWithCategory);
 
       const { result } = renderHook(() =>
         useBucketListOperations(mockRepository)
@@ -165,7 +165,11 @@ describe("useBucketListOperations", () => {
         await result.current.loadUserItemsWithCategory("user-123");
       });
 
-      expect(mockRepository.findByProfileId).toHaveBeenCalledWith("user-123", undefined, undefined);
+      // TDD: getUserBucketItemsWithCategoryはfindAllWithCategoryを呼ぶ
+      expect(mockRepository.findAllWithCategory).toHaveBeenCalledWith(
+        { profile_id: "user-123" },
+        undefined
+      );
     });
 
     it("loadUserItemsでフィルターとソートが適用されること", async () => {
@@ -254,6 +258,8 @@ describe("useBucketListOperations", () => {
 
     it("updateItemが正しく動作すること", async () => {
       const mockUpdatedItem = { ...mockBucketItem, ...mockUpdateData };
+      // TDD: updateBucketItemは最初にfindByIdを呼んでからupdateを呼ぶ
+      mockRepository.findById = vi.fn().mockResolvedValue(mockBucketItem);
       mockRepository.update = vi.fn().mockResolvedValue(mockUpdatedItem);
 
       const { result } = renderHook(() =>
@@ -264,11 +270,14 @@ describe("useBucketListOperations", () => {
         await result.current.updateItem("test-id", mockUpdateData);
       });
 
+      expect(mockRepository.findById).toHaveBeenCalledWith("test-id");
       expect(mockRepository.update).toHaveBeenCalledWith("test-id", mockUpdateData);
     });
 
     it("completeItemが正しく動作すること", async () => {
       const mockCompletedItem = { ...mockBucketItem, status: "completed" as const };
+      // TDD: completeItemは内部でupdateBucketItemを呼ぶため、findById→updateの順で呼ばれる
+      mockRepository.findById = vi.fn().mockResolvedValue(mockBucketItem);
       mockRepository.update = vi.fn().mockResolvedValue(mockCompletedItem);
 
       const { result } = renderHook(() =>
@@ -279,9 +288,11 @@ describe("useBucketListOperations", () => {
         await result.current.completeItem("test-id", "完了コメント");
       });
 
+      expect(mockRepository.findById).toHaveBeenCalledWith("test-id");
       expect(mockRepository.update).toHaveBeenCalledWith("test-id", {
         status: "completed",
-        completed_comment: "完了コメント",
+        completed_at: expect.any(String),
+        completion_comment: "完了コメント",
       });
     });
 
@@ -320,6 +331,8 @@ describe("useBucketListOperations", () => {
     it("updateItem成功時にonItemUpdatedが呼ばれること", async () => {
       const onItemUpdated = vi.fn();
       const mockUpdatedItem = { ...mockBucketItem, ...mockUpdateData };
+      // TDD: updateBucketItemは最初にfindByIdを呼んでからupdateを呼ぶ
+      mockRepository.findById = vi.fn().mockResolvedValue(mockBucketItem);
       mockRepository.update = vi.fn().mockResolvedValue(mockUpdatedItem);
 
       const { result } = renderHook(() =>
@@ -380,9 +393,9 @@ describe("useBucketListOperations", () => {
         useBucketListOperations(mockRepository)
       );
 
-      // 操作開始
-      const createPromiseResult = act(async () => {
-        await result.current.createItem(mockInsertData);
+      // TDD: 操作開始（await を追加せずローディング状態を確認）
+      act(() => {
+        result.current.createItem(mockInsertData);
       });
 
       // ローディング状態の確認
@@ -390,13 +403,11 @@ describe("useBucketListOperations", () => {
       expect(result.current.isAnyLoading).toBe(true);
 
       // 操作完了
-      act(() => {
+      await act(async () => {
         resolveCreate!({ ...mockBucketItem, ...mockInsertData });
       });
 
-      await createPromiseResult;
-
-      // ローディング状態の確認
+      // TDD: 完了後のローディング状態の確認
       expect(result.current.isCreating).toBe(false);
       expect(result.current.isItemCreated).toBe(true);
     });
@@ -434,12 +445,12 @@ describe("useBucketListOperations", () => {
         result.current.resetAll();
       });
 
-      // 状態がリセットされていることを確認
+      // TDD: 状態がリセットされていることを確認（nullが初期値）
       expect(result.current.items).toEqual([]);
       expect(result.current.itemsWithCategory).toEqual([]);
-      expect(result.current.currentItem).toBeUndefined();
+      expect(result.current.currentItem).toBeNull();
       expect(result.current.categories).toEqual([]);
-      expect(result.current.userStats).toBeUndefined();
+      expect(result.current.userStats).toBeNull();
     });
 
     it("clearErrorsが全てのエラーをクリアすること", async () => {
@@ -467,8 +478,8 @@ describe("useBucketListOperations", () => {
         result.current.clearErrors();
       });
 
-      // エラーがクリアされていることを確認
-      expect(result.current.createError).toBeUndefined();
+      // TDD: エラーがクリアされていることを確認（nullが初期値）
+      expect(result.current.createError).toBeNull();
       expect(result.current.hasAnyError).toBe(false);
     });
   });
