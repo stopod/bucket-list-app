@@ -500,10 +500,10 @@ describe("useBucketListOperations", () => {
         upcomingItems: [],
       };
 
-      // 複数のRepository操作をモック
+      // TDD: getDashboardDataはfindAllWithCategoryとfindAllCategoriesのみ呼び出す
+      // getUserStatsは呼ばれない（computeUserStatsで計算される）
       mockRepository.findAllWithCategory = vi.fn().mockResolvedValue([mockBucketItemWithCategory]);
       mockRepository.findAllCategories = vi.fn().mockResolvedValue([mockCategory]);
-      mockRepository.getUserStats = vi.fn().mockResolvedValue(mockUserStats);
 
       const { result } = renderHook(() =>
         useBucketListOperations(mockRepository)
@@ -513,9 +513,9 @@ describe("useBucketListOperations", () => {
         await result.current.loadDashboardData("user-123");
       });
 
-      expect(mockRepository.findAllWithCategory).toHaveBeenCalled();
+      expect(mockRepository.findAllWithCategory).toHaveBeenCalledWith({ profile_id: "user-123" }, undefined);
       expect(mockRepository.findAllCategories).toHaveBeenCalled();
-      expect(mockRepository.getUserStats).toHaveBeenCalledWith("user-123");
+      // TDD: getUserStatsは呼ばれない（関数型serviceはcomputeUserStatsを使用）
       expect(result.current.isDashboardLoaded).toBe(true);
     });
 
