@@ -12,9 +12,10 @@ import {
   assertDueType,
 } from "~/features/bucket-list/types";
 import {
-  createBucketListService,
-  createAuthenticatedBucketListService,
+  createAuthenticatedFunctionalBucketListRepository,
 } from "~/features/bucket-list/lib/repository-factory";
+import { createFunctionalBucketListService } from "~/features/bucket-list/services/functional-bucket-list-service";
+import { isSuccess, isFailure } from "~/shared/types/result";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -68,22 +69,43 @@ export async function loader({ request }: Route.LoaderArgs) {
         | undefined,
     };
 
-    // 認証済みクライアントでデータ取得
+    // TDD: 関数型Repository＋Serviceでデータ取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(
+    const functionalRepository = createAuthenticatedFunctionalBucketListRepository(
       authenticatedSupabase,
+      authResult.user!.id,
     );
+    const functionalService = createFunctionalBucketListService(functionalRepository);
 
-    // フィルター条件付きでデータを取得
-    const [bucketItems, categories, stats] = await Promise.all([
-      bucketListService.getUserBucketItemsWithCategory(
+    // TDD: 関数型サービスでフィルター条件付きデータを取得
+    const [bucketItemsResult, categoriesResult, statsResult] = await Promise.all([
+      functionalService.getUserBucketItemsWithCategory(
         authResult.user!.id,
         filters,
       ),
-      bucketListService.getCategories(),
-      bucketListService.getUserStats(authResult.user!.id),
+      functionalService.getCategories(),
+      functionalService.getUserStats(authResult.user!.id),
     ]);
+
+    // TDD: Result型による安全なエラーハンドリング
+    if (isFailure(bucketItemsResult)) {
+      console.error("Bucket items fetch error:", bucketItemsResult.error);
+      throw new Response("Failed to load bucket items", { status: 500 });
+    }
+    if (isFailure(categoriesResult)) {
+      console.error("Categories fetch error:", categoriesResult.error);
+      throw new Response("Failed to load categories", { status: 500 });
+    }
+    if (isFailure(statsResult)) {
+      console.error("Stats fetch error:", statsResult.error);
+      throw new Response("Failed to load stats", { status: 500 });
+    }
+
+    // TDD: 関数型アプローチで成功時のデータ抽出
+    const bucketItems = bucketItemsResult.data;
+    const categories = categoriesResult.data;
+    const stats = statsResult.data;
 
     // カテゴリ別にグループ化
     const itemsByCategory = categories

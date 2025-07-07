@@ -3,7 +3,9 @@ import type { Route } from "./+types/dashboard";
 import { Link, useNavigation } from "react-router";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth } from "~/lib/auth-server";
-import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedFunctionalBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
+import { createFunctionalBucketListService } from "~/features/bucket-list/services/functional-bucket-list-service";
+import { isSuccess, isFailure } from "~/shared/types/result";
 import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { Button } from "~/components/ui/button";
 import { AchievementStats } from "~/features/bucket-list/components/achievement-stats";
@@ -16,7 +18,7 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
-    // SSR-compatible authentication check
+    // TDD: SSR-compatible authentication check
     const authResult = await getServerAuth(request);
 
     // 認証されていない場合はリダイレクト
@@ -27,20 +29,29 @@ export async function loader({ request }: Route.LoaderArgs) {
       });
     }
 
-    // 認証済みSupabaseクライアントでRepository経由でデータ取得
+    // TDD: 関数型Repository＋Serviceでデータ取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(
+    const functionalRepository = createAuthenticatedFunctionalBucketListRepository(
       authenticatedSupabase,
       authResult.user!.id,
     );
+    const functionalService = createFunctionalBucketListService(functionalRepository);
 
-    // ダッシュボードデータを取得
-    const dashboardData = await bucketListService.getDashboardData(
+    // TDD: 関数型サービスでダッシュボードデータを取得
+    const dashboardDataResult = await functionalService.getDashboardData(
       authResult.user!.id,
     );
 
-    // 最近完了した項目（直近5件）
+    // TDD: Result型による安全なエラーハンドリング
+    if (isFailure(dashboardDataResult)) {
+      console.error("Dashboard data fetch error:", dashboardDataResult.error);
+      throw new Response("Failed to load dashboard data", { status: 500 });
+    }
+
+    const dashboardData = dashboardDataResult.data;
+
+    // TDD: 最近完了した項目（直近5件）を関数型アプローチで取得
     const recentCompletedItems = dashboardData.items
       .filter((item) => item.status === "completed" && item.completed_at)
       .sort(
@@ -50,7 +61,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       )
       .slice(0, 5);
 
-    // 期限が近い項目（今後30日以内）
+    // TDD: 期限が近い項目（今後30日以内）を関数型アプローチで取得
     const upcomingItems = dashboardData.items
       .filter((item) => {
         if (!item.due_date || item.status === "completed") return false;
@@ -65,6 +76,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       )
       .slice(0, 5);
 
+    // TDD: 関数型アプローチで成功時のデータ返却
     return {
       bucketItems: dashboardData.items,
       categories: dashboardData.categories,
@@ -78,6 +90,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     if (error instanceof Response) {
       throw error;
     }
+    // TDD: 関数型アプローチでもエラーログは維持
     console.error("Loader error:", error);
     throw new Response("Server error", { status: 500 });
   }

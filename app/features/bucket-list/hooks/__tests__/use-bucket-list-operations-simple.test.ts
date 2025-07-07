@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { useBucketListOperations } from "../use-bucket-list-operations";
 import type { BucketListRepository } from "~/features/bucket-list/repositories";
 
@@ -126,8 +126,16 @@ describe("useBucketListOperations - 基本テスト", () => {
     expect(typeof result.current.resetAll).toBe("function");
     expect(typeof result.current.clearErrors).toBe("function");
 
-    // 関数を呼び出してもエラーが発生しないことを確認
-    expect(() => result.current.resetAll()).not.toThrow();
-    expect(() => result.current.clearErrors()).not.toThrow();
+    // TDD: 関数を呼び出してもエラーが発生しないことを確認（act()でラップ）
+    act(() => {
+      result.current.resetAll();
+    });
+    
+    act(() => {
+      result.current.clearErrors();
+    });
+    
+    // 実行後もエラーが発生しないことを確認
+    expect(result.current.hasAnyError).toBe(false);
   });
 });

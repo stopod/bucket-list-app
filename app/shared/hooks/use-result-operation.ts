@@ -24,10 +24,11 @@ export function useResultOperation<T, E = BucketListError>(
 ) {
   const { onSuccess, onError, initialData = null } = options;
 
-  const [state, setState] = useState<ResultOperationState<T, E>>({
+  const [state, setState] = useState<ResultOperationState<T, E> & { hasExecuted: boolean }>({
     isLoading: false,
     error: null,
     data: initialData,
+    hasExecuted: false,
   });
 
   const execute = useCallback(
@@ -49,6 +50,7 @@ export function useResultOperation<T, E = BucketListError>(
             isLoading: false,
             error: null,
             data: result.data,
+            hasExecuted: true,
           });
 
           if (onSuccess) {
@@ -59,6 +61,7 @@ export function useResultOperation<T, E = BucketListError>(
             isLoading: false,
             error: result.error,
             data: null,
+            hasExecuted: true,
           });
 
           if (onError) {
@@ -75,6 +78,7 @@ export function useResultOperation<T, E = BucketListError>(
           isLoading: false,
           error: unexpectedError,
           data: null,
+          hasExecuted: true,
         });
 
         if (onError) {
@@ -92,6 +96,7 @@ export function useResultOperation<T, E = BucketListError>(
       isLoading: false,
       error: null,
       data: initialData,
+      hasExecuted: false,
     });
   }, [initialData]);
 
@@ -107,7 +112,7 @@ export function useResultOperation<T, E = BucketListError>(
     execute,
     reset,
     clearError,
-    isSuccess: !state.isLoading && !state.error && state.data !== null,
+    isSuccess: !state.isLoading && !state.error && state.hasExecuted && state.data !== null,
     isError: !state.isLoading && !!state.error,
     hasData: state.data !== null,
   };
@@ -121,10 +126,11 @@ export function useParallelResultOperations<T, E = BucketListError>(
 ) {
   const { onSuccess, onError } = options;
 
-  const [state, setState] = useState<ResultOperationState<T[], E>>({
+  const [state, setState] = useState<ResultOperationState<T[], E> & { hasExecuted: boolean }>({
     isLoading: false,
     error: null,
     data: null,
+    hasExecuted: false,
   });
 
   const executeAll = useCallback(
@@ -151,6 +157,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
               isLoading: false,
               error: result.error,
               data: null,
+              hasExecuted: true,
             });
 
             if (onError) {
@@ -166,6 +173,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
           isLoading: false,
           error: null,
           data: successData,
+          hasExecuted: true,
         });
 
         if (onSuccess) {
@@ -180,6 +188,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
           isLoading: false,
           error: unexpectedError,
           data: null,
+          hasExecuted: true,
         });
 
         if (onError) {
@@ -197,6 +206,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
       isLoading: false,
       error: null,
       data: null,
+      hasExecuted: false,
     });
   }, []);
 
@@ -204,7 +214,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
     ...state,
     executeAll,
     reset,
-    isSuccess: !state.isLoading && !state.error && state.data !== null,
+    isSuccess: !state.isLoading && !state.error && state.hasExecuted && state.data !== null,
     isError: !state.isLoading && !!state.error,
   };
 }

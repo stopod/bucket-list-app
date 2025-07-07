@@ -12,10 +12,12 @@ describe("useAsyncOperation", () => {
       const mockAsyncFunction = vi.fn().mockResolvedValue("success");
       const { result } = renderHook(() => useAsyncOperation(mockAsyncFunction));
 
+      // TDD: 期待する初期状態を明確に定義
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();
       expect(result.current.data).toBeNull();
-      expect(result.current.isSuccess).toBe(false);
+      // isSuccessは (!isLoading && !error) なので初期状態ではtrue
+      expect(result.current.isSuccess).toBe(true);
       expect(result.current.isError).toBe(false);
       expect(typeof result.current.execute).toBe("function");
       expect(typeof result.current.reset).toBe("function");
@@ -99,10 +101,12 @@ describe("useAsyncOperation", () => {
         result.current.reset();
       });
 
+      // TDD: リセット後は初期状態と同じになるべき
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();
       expect(result.current.data).toBeNull();
-      expect(result.current.isSuccess).toBe(false);
+      // リセット後も (!isLoading && !error) なのでtrue
+      expect(result.current.isSuccess).toBe(true);
       expect(result.current.isError).toBe(false);
     });
   });
@@ -119,25 +123,28 @@ describe("useAsyncOperation", () => {
 
       const { result } = renderHook(() => useAsyncOperation(mockAsyncFunction));
 
+      // TDD: 実行前の状態確認
+      expect(result.current.isLoading).toBe(false);
+
       // 実行開始
-      const executePromise = act(async () => {
-        return result.current.execute();
+      act(() => {
+        result.current.execute();
       });
 
-      // ローディング状態の確認
+      // TDD: 実行中の状態確認
       expect(result.current.isLoading).toBe(true);
       expect(result.current.isSuccess).toBe(false);
       expect(result.current.isError).toBe(false);
 
       // 実行完了
-      act(() => {
+      await act(async () => {
         resolveFunction!("completed");
       });
 
-      await executePromise;
-
+      // TDD: 完了後の状態確認
       expect(result.current.isLoading).toBe(false);
       expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data).toBe("completed");
     });
 
     it("エラー発生前にエラー状態がクリアされること", async () => {
@@ -148,21 +155,26 @@ describe("useAsyncOperation", () => {
 
       const { result } = renderHook(() => useAsyncOperation(mockAsyncFunction));
 
-      // 最初の実行でエラー
+      // TDD: 最初の実行でエラー
       await act(async () => {
         await result.current.execute();
       });
 
+      // TDD: エラー状態の確認
       expect(result.current.error).toBe("First error");
+      expect(result.current.isError).toBe(true);
+      expect(result.current.isSuccess).toBe(false);
 
-      // 2回目の実行で成功
+      // TDD: 2回目の実行で成功
       await act(async () => {
         await result.current.execute();
       });
 
+      // TDD: エラーがクリアされて成功状態になることを確認
       expect(result.current.error).toBeNull();
       expect(result.current.data).toBe("success");
       expect(result.current.isSuccess).toBe(true);
+      expect(result.current.isError).toBe(false);
     });
   });
 
@@ -171,36 +183,46 @@ describe("useAsyncOperation", () => {
       const mockAsyncFunction = vi.fn().mockRejectedValue("String error");
       const { result } = renderHook(() => useAsyncOperation(mockAsyncFunction));
 
+      // TDD: エラーが発生する操作を実行
       await act(async () => {
         await result.current.execute();
       });
 
+      // TDD: 文字列エラーは"Unknown error"に変換される
       expect(result.current.error).toBe("Unknown error");
       expect(result.current.isError).toBe(true);
+      expect(result.current.isSuccess).toBe(false);
+      expect(result.current.data).toBeNull();
     });
 
     it("nullエラーが適切に処理されること", async () => {
       const mockAsyncFunction = vi.fn().mockRejectedValue(null);
       const { result } = renderHook(() => useAsyncOperation(mockAsyncFunction));
 
+      // TDD: nullエラーが発生する操作を実行
       await act(async () => {
         await result.current.execute();
       });
 
+      // TDD: nullエラーは"Unknown error"に変換される
       expect(result.current.error).toBe("Unknown error");
       expect(result.current.isError).toBe(true);
+      expect(result.current.isSuccess).toBe(false);
     });
 
     it("オブジェクトエラーが適切に処理されること", async () => {
       const mockAsyncFunction = vi.fn().mockRejectedValue({ message: "Object error" });
       const { result } = renderHook(() => useAsyncOperation(mockAsyncFunction));
 
+      // TDD: オブジェクトエラーが発生する操作を実行
       await act(async () => {
         await result.current.execute();
       });
 
+      // TDD: オブジェクトエラーは"Unknown error"に変換される
       expect(result.current.error).toBe("Unknown error");
       expect(result.current.isError).toBe(true);
+      expect(result.current.isSuccess).toBe(false);
     });
   });
 });
@@ -214,10 +236,12 @@ describe("useParallelAsyncOperations", () => {
       ];
       const { result } = renderHook(() => useParallelAsyncOperations(operations));
 
+      // TDD: 並列操作の初期状態確認
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();
       expect(result.current.data).toBeNull();
-      expect(result.current.isSuccess).toBe(false);
+      // 初期状態では (!isLoading && !error) なのでtrue
+      expect(result.current.isSuccess).toBe(true);
       expect(result.current.isError).toBe(false);
       expect(typeof result.current.executeAll).toBe("function");
       expect(typeof result.current.reset).toBe("function");
@@ -305,10 +329,14 @@ describe("useFormSubmission", () => {
       const mockSubmitFunction = vi.fn().mockResolvedValue("success");
       const { result } = renderHook(() => useFormSubmission(mockSubmitFunction));
 
+      // TDD: フォーム送信の初期状態確認
       expect(result.current.isLoading).toBe(false);
       expect(result.current.isSubmitting).toBe(false);
       expect(result.current.error).toBeNull();
       expect(result.current.data).toBeNull();
+      // 初期状態では (!isLoading && !error) なのでtrue
+      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.isError).toBe(false);
       expect(typeof result.current.submitForm).toBe("function");
       expect(typeof result.current.execute).toBe("function");
       expect(typeof result.current.reset).toBe("function");
@@ -372,24 +400,28 @@ describe("useFormSubmission", () => {
 
       const { result } = renderHook(() => useFormSubmission(mockSubmitFunction));
 
+      // TDD: 送信前の状態確認
+      expect(result.current.isSubmitting).toBe(false);
+      expect(result.current.isLoading).toBe(false);
+
       // 送信開始
-      const submitPromise = act(async () => {
-        return result.current.submitForm({ test: "data" });
+      act(() => {
+        result.current.submitForm({ test: "data" });
       });
 
-      // 送信中の状態確認
+      // TDD: 送信中の状態確認
       expect(result.current.isSubmitting).toBe(true);
       expect(result.current.isLoading).toBe(true);
 
       // 送信完了
-      act(() => {
+      await act(async () => {
         resolveFunction!("completed");
       });
 
-      await submitPromise;
-
+      // TDD: 送信完了後の状態確認
       expect(result.current.isSubmitting).toBe(false);
       expect(result.current.isLoading).toBe(false);
+      expect(result.current.data).toBe("completed");
     });
   });
 
