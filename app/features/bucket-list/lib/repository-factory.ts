@@ -1,13 +1,16 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~/shared/types/database";
 import type { BucketListRepository } from "../repositories";
+import type { FunctionalBucketListRepository } from "../repositories/functional-bucket-list-repository";
 import { SupabaseBucketListRepository } from "../repositories/supabase-bucket-list-repository";
+import { createFunctionalBucketListRepository } from "../repositories/functional-bucket-list-repository";
 import { BucketListService } from "../services";
 import { createFunctionalBucketListService } from "../services/functional-bucket-list-service";
 
 // Repository Factory
 export class RepositoryFactory {
   private static bucketListRepository: BucketListRepository | null = null;
+  private static functionalBucketListRepository: FunctionalBucketListRepository | null = null;
   private static bucketListService: BucketListService | null = null;
 
   static createBucketListRepository(
@@ -17,6 +20,15 @@ export class RepositoryFactory {
       this.bucketListRepository = new SupabaseBucketListRepository(supabase);
     }
     return this.bucketListRepository;
+  }
+
+  static createFunctionalBucketListRepository(
+    supabase: SupabaseClient<Database>,
+  ): FunctionalBucketListRepository {
+    if (!this.functionalBucketListRepository) {
+      this.functionalBucketListRepository = createFunctionalBucketListRepository(supabase);
+    }
+    return this.functionalBucketListRepository;
   }
 
   static createBucketListService(
@@ -35,9 +47,14 @@ export class RepositoryFactory {
     this.bucketListService = null; // サービスも再作成が必要
   }
 
+  static setFunctionalBucketListRepository(repository: FunctionalBucketListRepository): void {
+    this.functionalBucketListRepository = repository;
+  }
+
   // インスタンスをリセット（テスト用）
   static reset(): void {
     this.bucketListRepository = null;
+    this.functionalBucketListRepository = null;
     this.bucketListService = null;
   }
 }
@@ -58,6 +75,15 @@ export function createAuthenticatedBucketListService(
   return new BucketListService(repository);
 }
 
+// 認証済みクライアント用の関数型Repository作成関数
+export function createAuthenticatedFunctionalBucketListRepository(
+  supabase: SupabaseClient<Database>,
+  userId?: string,
+): FunctionalBucketListRepository {
+  // Create a new repository instance for each user context
+  return createFunctionalBucketListRepository(supabase);
+}
+
 // 認証済みクライアント用の関数型サービス作成関数
 export function createAuthenticatedFunctionalBucketListService(
   supabase: SupabaseClient<Database>,
@@ -66,6 +92,12 @@ export function createAuthenticatedFunctionalBucketListService(
   // Create a new repository instance with user context for security
   const repository = new SupabaseBucketListRepository(supabase, userId);
   return createFunctionalBucketListService(repository);
+}
+
+// 関数型Repository作成用の便利関数
+export async function createFunctionalBucketListRepositoryAsync(): Promise<FunctionalBucketListRepository> {
+  const { supabase } = await import("~/lib/supabase");
+  return RepositoryFactory.createFunctionalBucketListRepository(supabase);
 }
 
 // 関数型サービス作成用の便利関数
