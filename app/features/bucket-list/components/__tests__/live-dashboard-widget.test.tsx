@@ -117,17 +117,21 @@ const mockDashboardData = {
 
 // フック機能のモック
 vi.mock("~/features/bucket-list/hooks/use-bucket-list-operations", () => ({
-  useDashboardData: vi.fn().mockReturnValue({
-    data: mockDashboardData,
-    isLoading: false,
-    error: null,
-    execute: vi.fn().mockResolvedValue(success(mockDashboardData)),
-  }),
+  useDashboardData: vi.fn(),
 }));
 
 describe("LiveDashboardWidget", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    
+    // デフォルトのモック設定
+    const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
+    vi.mocked(useDashboardData).mockReturnValue({
+      data: mockDashboardData,
+      isLoading: false,
+      error: null,
+      execute: vi.fn().mockResolvedValue(success(mockDashboardData)),
+    });
   });
 
   afterEach(() => {
@@ -159,7 +163,7 @@ describe("LiveDashboardWidget", () => {
       );
 
       expect(screen.getByText("3")).toBeInTheDocument(); // 総項目数
-      expect(screen.getByText("1")).toBeInTheDocument(); // 完了済み
+      expect(screen.getAllByText("1")).toHaveLength(2); // 完了済み and 進行中
       expect(screen.getByText("33%")).toBeInTheDocument(); // 達成率
     });
 
@@ -203,7 +207,9 @@ describe("LiveDashboardWidget", () => {
 
   describe("自動更新機能テスト", () => {
     it("自動更新が有効な場合、指定間隔で更新されること", async () => {
-      const mockExecute = vi.fn().mockResolvedValue(success(mockDashboardData));
+      const mockExecute = vi.fn().mockImplementation(async () => {
+        return success(mockDashboardData);
+      });
       const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       
       vi.mocked(useDashboardData).mockReturnValue({
@@ -222,7 +228,9 @@ describe("LiveDashboardWidget", () => {
       );
 
       // 初回読み込み
-      expect(mockExecute).toHaveBeenCalledTimes(1);
+      await waitFor(() => {
+        expect(mockExecute).toHaveBeenCalledTimes(1);
+      });
 
       // 5秒後に自動更新
       act(() => {
@@ -236,7 +244,9 @@ describe("LiveDashboardWidget", () => {
 
     it("自動更新トグルボタンが正しく動作すること", async () => {
       const user = userEvent.setup();
-      const mockExecute = vi.fn().mockResolvedValue(success(mockDashboardData));
+      const mockExecute = vi.fn().mockImplementation(async () => {
+        return success(mockDashboardData);
+      });
       const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       
       vi.mocked(useDashboardData).mockReturnValue({
@@ -268,7 +278,9 @@ describe("LiveDashboardWidget", () => {
 
     it("自動更新が無効な場合、定期更新されないこと", async () => {
       const user = userEvent.setup();
-      const mockExecute = vi.fn().mockResolvedValue(success(mockDashboardData));
+      const mockExecute = vi.fn().mockImplementation(async () => {
+        return success(mockDashboardData);
+      });
       const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       
       vi.mocked(useDashboardData).mockReturnValue({
@@ -328,7 +340,9 @@ describe("LiveDashboardWidget", () => {
 
     it("手動更新ボタンクリック時に更新が実行されること", async () => {
       const user = userEvent.setup();
-      const mockExecute = vi.fn().mockResolvedValue(success(mockDashboardData));
+      const mockExecute = vi.fn().mockImplementation(async () => {
+        return success(mockDashboardData);
+      });
       const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       
       vi.mocked(useDashboardData).mockReturnValue({
@@ -352,8 +366,8 @@ describe("LiveDashboardWidget", () => {
       expect(mockExecute).toHaveBeenCalledTimes(initialCallCount + 1);
     });
 
-    it("更新中は手動更新ボタンが無効化されること", () => {
-      const { useDashboardData } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("更新中は手動更新ボタンが無効化されること", async () => {
+      const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useDashboardData).mockReturnValue({
         data: mockDashboardData,
         isLoading: true,
@@ -374,8 +388,8 @@ describe("LiveDashboardWidget", () => {
   });
 
   describe("ローディング状態テスト", () => {
-    it("初回読み込み中はローディング表示されること", () => {
-      const { useDashboardData } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("初回読み込み中はローディング表示されること", async () => {
+      const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useDashboardData).mockReturnValue({
         data: null,
         isLoading: true,
@@ -407,8 +421,8 @@ describe("LiveDashboardWidget", () => {
   });
 
   describe("エラーハンドリングテスト", () => {
-    it("エラーが発生した場合、エラーメッセージが表示されること", () => {
-      const { useDashboardData } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("エラーが発生した場合、エラーメッセージが表示されること", async () => {
+      const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useDashboardData).mockReturnValue({
         data: null,
         isLoading: false,
@@ -430,7 +444,9 @@ describe("LiveDashboardWidget", () => {
 
     it("エラー状態で再読み込みボタンが動作すること", async () => {
       const user = userEvent.setup();
-      const mockExecute = vi.fn().mockResolvedValue(success(mockDashboardData));
+      const mockExecute = vi.fn().mockImplementation(async () => {
+        return success(mockDashboardData);
+      });
       const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       
       vi.mocked(useDashboardData).mockReturnValue({
@@ -454,13 +470,13 @@ describe("LiveDashboardWidget", () => {
   });
 
   describe("空データ状態テスト", () => {
-    it("データが空の場合、空状態メッセージが表示されること", () => {
+    it("データが空の場合、空状態メッセージが表示されること", async () => {
       const emptyData = {
         ...mockDashboardData,
         items: [],
       };
 
-      const { useDashboardData } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+      const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useDashboardData).mockReturnValue({
         data: emptyData,
         isLoading: false,
@@ -479,8 +495,8 @@ describe("LiveDashboardWidget", () => {
       expect(screen.getByText("新しい目標を追加してみましょう！")).toBeInTheDocument();
     });
 
-    it("データがnullの場合、データなしメッセージが表示されること", () => {
-      const { useDashboardData } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("データがnullの場合、データなしメッセージが表示されること", async () => {
+      const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useDashboardData).mockReturnValue({
         data: null,
         isLoading: false,
@@ -513,7 +529,9 @@ describe("LiveDashboardWidget", () => {
 
     it("手動更新後は最終更新時刻が表示されること", async () => {
       const user = userEvent.setup();
-      const mockExecute = vi.fn().mockResolvedValue(success(mockDashboardData));
+      const mockExecute = vi.fn().mockImplementation(async () => {
+        return success(mockDashboardData);
+      });
       const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       
       vi.mocked(useDashboardData).mockReturnValue({
@@ -539,7 +557,7 @@ describe("LiveDashboardWidget", () => {
   });
 
   describe("期限計算テスト", () => {
-    it("期限が7日以内の項目は緊急表示されること", () => {
+    it("期限が7日以内の項目は緊急表示されること", async () => {
       const urgentItem = {
         ...mockItems[1],
         due_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 5日後
@@ -550,7 +568,7 @@ describe("LiveDashboardWidget", () => {
         upcomingItems: [urgentItem],
       };
 
-      const { useDashboardData } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+      const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useDashboardData).mockReturnValue({
         data: urgentData,
         isLoading: false,
@@ -569,7 +587,7 @@ describe("LiveDashboardWidget", () => {
       expect(upcomingItem).toHaveClass("bg-red-50");
     });
 
-    it("期限が8日以上の項目は通常表示されること", () => {
+    it("期限が8日以上の項目は通常表示されること", async () => {
       const normalItem = {
         ...mockItems[1],
         due_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 15日後
@@ -580,7 +598,7 @@ describe("LiveDashboardWidget", () => {
         upcomingItems: [normalItem],
       };
 
-      const { useDashboardData } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+      const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useDashboardData).mockReturnValue({
         data: normalData,
         isLoading: false,
@@ -601,9 +619,11 @@ describe("LiveDashboardWidget", () => {
   });
 
   describe("カスタマイズオプションテスト", () => {
-    it("カスタム更新間隔が設定されること", () => {
-      const mockExecute = vi.fn().mockResolvedValue(success(mockDashboardData));
-      const { useDashboardData } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("カスタム更新間隔が設定されること", async () => {
+      const mockExecute = vi.fn().mockImplementation(async () => {
+        return success(mockDashboardData);
+      });
+      const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       
       vi.mocked(useDashboardData).mockReturnValue({
         data: mockDashboardData,
@@ -628,9 +648,11 @@ describe("LiveDashboardWidget", () => {
       expect(mockExecute).toHaveBeenCalledTimes(2); // 初回 + 10秒後
     });
 
-    it("更新間隔を0にすると自動更新が無効になること", () => {
-      const mockExecute = vi.fn().mockResolvedValue(success(mockDashboardData));
-      const { useDashboardData } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("更新間隔を0にすると自動更新が無効になること", async () => {
+      const mockExecute = vi.fn().mockImplementation(async () => {
+        return success(mockDashboardData);
+      });
+      const { useDashboardData } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       
       vi.mocked(useDashboardData).mockReturnValue({
         data: mockDashboardData,

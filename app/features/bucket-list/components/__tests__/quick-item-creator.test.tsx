@@ -7,6 +7,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { act } from "@testing-library/react";
 import { QuickItemCreator, MinimalQuickCreator } from "../quick-item-creator";
 import type { BucketListRepository } from "../../repositories";
 import type { BucketItem, Category, Priority } from "../../types";
@@ -289,7 +290,7 @@ describe("QuickItemCreator", () => {
       expect(mockExecute).toHaveBeenCalled();
     });
 
-    it("タイトルが空の場合、エラーメッセージが表示されること", async () => {
+    it("タイトルが空の場合、送信ボタンが無効化されること", async () => {
       const user = userEvent.setup();
       render(
         <QuickItemCreator
@@ -301,13 +302,11 @@ describe("QuickItemCreator", () => {
         />
       );
 
-      // タイトルなしで送信
-      await user.click(screen.getByRole("button", { name: "追加" }));
-
-      expect(mockOnError).toHaveBeenCalledWith("タイトルとカテゴリは必須です");
+      // タイトルが空の場合、送信ボタンは無効化される
+      expect(screen.getByRole("button", { name: "追加" })).toBeDisabled();
     });
 
-    it("カテゴリが選択されていない場合、エラーメッセージが表示されること", async () => {
+    it("カテゴリが選択されていない場合、送信ボタンが無効化されること", async () => {
       const user = userEvent.setup();
       render(
         <QuickItemCreator
@@ -323,13 +322,12 @@ describe("QuickItemCreator", () => {
       await user.type(screen.getByLabelText(/タイトル/), "新しい項目");
       await user.selectOptions(screen.getByLabelText(/カテゴリ/), "");
 
-      await user.click(screen.getByRole("button", { name: "追加" }));
-
-      expect(mockOnError).toHaveBeenCalledWith("タイトルとカテゴリは必須です");
+      // カテゴリが未選択の場合、送信ボタンは無効化される
+      expect(screen.getByRole("button", { name: "追加" })).toBeDisabled();
     });
 
-    it("送信中の場合、ボタンが無効化されること", () => {
-      const { useCreateBucketItem } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("送信中の場合、ボタンが無効化されること", async () => {
+      const { useCreateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useCreateBucketItem).mockReturnValue({
         isLoading: true,
         error: null,
@@ -447,8 +445,8 @@ describe("QuickItemCreator", () => {
   });
 
   describe("エラーハンドリングテスト", () => {
-    it("作成エラーが発生した場合、エラーメッセージが表示されること", () => {
-      const { useCreateBucketItem } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("作成エラーが発生した場合、エラーメッセージが表示されること", async () => {
+      const { useCreateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useCreateBucketItem).mockReturnValue({
         isLoading: false,
         error: createApplicationError("作成エラー"),
@@ -610,8 +608,8 @@ describe("MinimalQuickCreator", () => {
       expect(screen.getByRole("button", { name: "追加" })).toBeDisabled();
     });
 
-    it("送信中の場合、フォームが無効化されること", () => {
-      const { useCreateBucketItem } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("送信中の場合、フォームが無効化されること", async () => {
+      const { useCreateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useCreateBucketItem).mockReturnValue({
         isLoading: true,
         error: null,
@@ -662,7 +660,9 @@ describe("MinimalQuickCreator", () => {
       // onSuccessコールバックを直接呼び出してテスト
       const createItemHook = vi.mocked(useCreateBucketItem).mock.calls[0][1];
       if (createItemHook?.onSuccess) {
-        createItemHook.onSuccess(mockCreatedItem);
+        await act(async () => {
+          createItemHook.onSuccess(mockCreatedItem);
+        });
       }
 
       expect(titleInput).toHaveValue("");

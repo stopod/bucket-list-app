@@ -75,17 +75,21 @@ const mockOnError = vi.fn();
 
 // フック機能のモック
 vi.mock("~/features/bucket-list/hooks/use-bucket-list-operations", () => ({
-  useUpdateBucketItem: vi.fn().mockReturnValue({
-    isLoading: false,
-    isSuccess: false,
-    error: null,
-    execute: vi.fn().mockResolvedValue(success(mockUpdatedItem)),
-  }),
+  useUpdateBucketItem: vi.fn(),
 }));
 
 describe("QuickStatusChanger", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    
+    // デフォルトのモック設定
+    const { useUpdateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
+    vi.mocked(useUpdateBucketItem).mockReturnValue({
+      isLoading: false,
+      isSuccess: false,
+      error: null,
+      execute: vi.fn().mockResolvedValue(success(mockUpdatedItem)),
+    });
   });
 
   describe("基本的な描画テスト", () => {
@@ -232,13 +236,22 @@ describe("QuickStatusChanger", () => {
   });
 
   describe("ローディング状態テスト", () => {
-    it("変更中の場合、ローディング表示されること", () => {
-      const { useUpdateBucketItem } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("変更中の場合、ローディング表示されること", async () => {
+      const user = userEvent.setup();
+      let executeResolve: (value: any) => void;
+      
+      const mockExecute = vi.fn().mockImplementation(() => {
+        return new Promise((resolve) => {
+          executeResolve = resolve;
+        });
+      });
+
+      const { useUpdateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useUpdateBucketItem).mockReturnValue({
-        isLoading: true,
+        isLoading: false,
         isSuccess: false,
         error: null,
-        execute: vi.fn(),
+        execute: mockExecute,
       });
 
       render(
@@ -250,11 +263,18 @@ describe("QuickStatusChanger", () => {
         />
       );
 
+      // ステータス変更を開始
+      await user.click(screen.getByText("進行中"));
+
+      // ローディング表示を確認
       expect(screen.getByText("ステータスを変更中...")).toBeInTheDocument();
+      
+      // 処理完了
+      executeResolve(success(mockUpdatedItem));
     });
 
-    it("変更中の場合、全てのボタンが無効化されること", () => {
-      const { useUpdateBucketItem } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("変更中の場合、全てのボタンが無効化されること", async () => {
+      const { useUpdateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useUpdateBucketItem).mockReturnValue({
         isLoading: true,
         isSuccess: false,
@@ -278,8 +298,8 @@ describe("QuickStatusChanger", () => {
   });
 
   describe("エラーハンドリングテスト", () => {
-    it("エラーが発生した場合、エラーメッセージが表示されること", () => {
-      const { useUpdateBucketItem } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("エラーが発生した場合、エラーメッセージが表示されること", async () => {
+      const { useUpdateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useUpdateBucketItem).mockReturnValue({
         isLoading: false,
         isSuccess: false,
@@ -333,8 +353,8 @@ describe("QuickStatusChanger", () => {
   });
 
   describe("成功時の処理テスト", () => {
-    it("成功メッセージが表示されること", () => {
-      const { useUpdateBucketItem } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("成功メッセージが表示されること", async () => {
+      const { useUpdateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useUpdateBucketItem).mockReturnValue({
         isLoading: false,
         isSuccess: true,
@@ -405,8 +425,8 @@ describe("QuickStatusChanger", () => {
       });
     });
 
-    it("無効化されたボタンが適切に処理されること", () => {
-      const { useUpdateBucketItem } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("無効化されたボタンが適切に処理されること", async () => {
+      const { useUpdateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useUpdateBucketItem).mockReturnValue({
         isLoading: true,
         isSuccess: false,
@@ -432,8 +452,17 @@ describe("QuickStatusChanger", () => {
 });
 
 describe("QuickStatusButton", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    
+    // デフォルトのモック設定
+    const { useUpdateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
+    vi.mocked(useUpdateBucketItem).mockReturnValue({
+      isLoading: false,
+      isSuccess: false,
+      error: null,
+      execute: vi.fn().mockResolvedValue(success(mockUpdatedItem)),
+    });
   });
 
   describe("基本的な描画テスト", () => {
@@ -574,8 +603,8 @@ describe("QuickStatusButton", () => {
   });
 
   describe("ローディング状態テスト", () => {
-    it("変更中の場合、ローディング表示されること", () => {
-      const { useUpdateBucketItem } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("変更中の場合、ローディング表示されること", async () => {
+      const { useUpdateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useUpdateBucketItem).mockReturnValue({
         isLoading: true,
         isSuccess: false,
@@ -596,8 +625,8 @@ describe("QuickStatusButton", () => {
       expect(screen.getByText("⏳")).toBeInTheDocument();
     });
 
-    it("変更中の場合、ボタンが無効化されること", () => {
-      const { useUpdateBucketItem } = require("~/features/bucket-list/hooks/use-bucket-list-operations");
+    it("変更中の場合、ボタンが無効化されること", async () => {
+      const { useUpdateBucketItem } = await import("~/features/bucket-list/hooks/use-bucket-list-operations");
       vi.mocked(useUpdateBucketItem).mockReturnValue({
         isLoading: true,
         isSuccess: false,
