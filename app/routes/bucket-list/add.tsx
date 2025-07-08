@@ -3,10 +3,12 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { redirect } from "react-router";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth } from "~/lib/auth-server";
-import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { BucketItemForm } from "~/features/bucket-list/components/bucket-item-form";
 import type { BucketItemFormData } from "~/features/bucket-list/types";
+import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { getCategories, createBucketItem } from "~/features/bucket-list/services/functional-bucket-list-service";
+import { isSuccess, isFailure } from "~/shared/types/result";
 
 export function meta() {
   return [{ title: "やりたいことを追加" }];
@@ -28,46 +30,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // 認証済みクライアントでカテゴリ一覧を取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-
-    // 直接SQLでカテゴリを確認
-    const { data: directCategories, error: directError } =
-      await authenticatedSupabase.from("categories").select("*");
-
-    console.log("Direct categories query:", directCategories?.length || 0);
-    if (directError) {
-      console.log("Direct categories error:", directError);
-    }
-
-    // 基本クライアントでも試してみる（RLSテスト）
-    const { supabase: basicSupabase } = await import("~/lib/supabase");
-    const { data: basicCategories, error: basicError } = await basicSupabase
-      .from("categories")
-      .select("*");
-
-    console.log("Basic client categories:", basicCategories?.length || 0);
-    if (basicError) {
-      console.log("Basic client error:", basicError);
-    }
-
     const bucketListService = createAuthenticatedBucketListService(
       authenticatedSupabase,
     );
-    const categories = await bucketListService.getCategories();
+    const repository = bucketListService.getRepository();
 
+    // 関数型サービスを使用してカテゴリを取得
+    const categoriesResult = await getCategories(repository)();
+    
+    if (isFailure(categoriesResult)) {
+      console.error("Categories loading failed:", categoriesResult.error);
+      throw new Response("カテゴリの取得に失敗しました", { status: 500 });
+    }
+
+    const categories = categoriesResult.data;
     console.log("Categories loaded:", categories.length);
     console.log("User ID:", authResult.user?.id);
-
-    // プロファイルの存在確認
-    const { data: profile, error: profileError } = await authenticatedSupabase
-      .from("profiles")
-      .select("id")
-      .eq("id", authResult.user!.id)
-      .single();
-
-    console.log("Profile exists:", !!profile);
-    if (profileError) {
-      console.log("Profile error:", profileError);
-    }
 
     return {
       categories,
@@ -126,11 +104,10 @@ export async function action({ request }: ActionFunctionArgs) {
     const bucketListService = createAuthenticatedBucketListService(
       authenticatedSupabase,
     );
+    const repository = bucketListService.getRepository();
 
-    // Create new bucket item
-
-    // 新しい項目を作成
-    const newItem = await bucketListService.createBucketItem({
+    // 関数型サービスを使用して新しい項目を作成
+    const createResult = await createBucketItem(repository)({
       profile_id: authResult.user!.id,
       title: data.title.trim(),
       description: data.description?.trim() || null,
@@ -142,9 +119,9 @@ export async function action({ request }: ActionFunctionArgs) {
       is_public: data.is_public,
     });
 
-    // 新規作成時に「completed」ステータスで作成された場合、completed_atを設定
-    if ((data.status || "not_started") === "completed") {
-      await bucketListService.completeBucketItem(newItem.id);
+    if (isFailure(createResult)) {
+      console.error("Bucket item creation failed:", createResult.error);
+      throw new Response("項目の作成に失敗しました", { status: 500 });
     }
 
     console.log("Bucket item created successfully");

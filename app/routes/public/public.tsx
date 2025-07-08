@@ -8,7 +8,6 @@ import {
 } from "~/lib/auth-server";
 import { assertPriority, assertStatus } from "~/features/bucket-list/types";
 import {
-  createBucketListService,
   createAuthenticatedBucketListService,
 } from "~/features/bucket-list/lib/repository-factory";
 import { Button } from "~/components/ui/button";

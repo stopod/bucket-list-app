@@ -13,6 +13,11 @@ import type {
 export class BucketListService {
   constructor(private repository: BucketListRepository) {}
 
+  // リポジトリへのアクセス（関数型サービスとの連携用）
+  getRepository(): BucketListRepository {
+    return this.repository;
+  }
+
   // バケットリスト項目の操作
   async getUserBucketItems(
     profileId: string,

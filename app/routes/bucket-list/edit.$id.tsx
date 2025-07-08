@@ -6,7 +6,6 @@ import {
   getServerAuth,
   createAuthenticatedSupabaseClient,
 } from "~/lib/auth-server";
-import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { BucketItemForm } from "~/features/bucket-list/components/bucket-item-form";
 import type {
   BucketItemFormData,
@@ -17,6 +16,9 @@ import {
   assertStatus,
   assertDueType,
 } from "~/features/bucket-list/types";
+import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { getCategories, getBucketItemById, updateBucketItem, completeBucketItem } from "~/features/bucket-list/services/functional-bucket-list-service";
+import { isSuccess, isFailure } from "~/shared/types/result";
 
 export function meta() {
   return [{ title: "やりたいことを編集" }];
@@ -46,16 +48,26 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     const bucketListService = createAuthenticatedBucketListService(
       authenticatedSupabase,
     );
+    const repository = bucketListService.getRepository();
 
-    // バケットリスト項目とカテゴリを取得
-    const [item, categories] = await Promise.all([
-      bucketListService.getBucketItemById(itemId),
-      bucketListService.getCategories(),
+    // 関数型サービスを使用してバケットリスト項目とカテゴリを取得
+    const [itemResult, categoriesResult] = await Promise.all([
+      getBucketItemById(repository)(itemId),
+      getCategories(repository)(),
     ]);
 
-    if (!item) {
+    if (isFailure(itemResult)) {
+      console.error("Item loading failed:", itemResult.error);
       throw new Response("Item not found", { status: 404 });
     }
+
+    if (isFailure(categoriesResult)) {
+      console.error("Categories loading failed:", categoriesResult.error);
+      throw new Response("カテゴリの取得に失敗しました", { status: 500 });
+    }
+
+    const item = itemResult.data;
+    const categories = categoriesResult.data;
 
     // 自分のアイテムかチェック
     if (item.profile_id !== authResult.user!.id) {
@@ -124,12 +136,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const bucketListService = createAuthenticatedBucketListService(
       authenticatedSupabase,
     );
+    const repository = bucketListService.getRepository();
 
-    // 既存の項目データを取得してステータス変更を判定
-    const existingItem = await bucketListService.getBucketItemById(itemId);
-    if (!existingItem) {
+    // 関数型サービスを使用して既存の項目データを取得してステータス変更を判定
+    const existingItemResult = await getBucketItemById(repository)(itemId);
+    if (isFailure(existingItemResult)) {
+      console.error("Item loading failed:", existingItemResult.error);
       throw new Response("Item not found", { status: 404 });
     }
+
+    const existingItem = existingItemResult.data;
 
     // 自分のアイテムかチェック
     if (existingItem.profile_id !== authResult.user!.id) {
@@ -141,8 +157,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
       data.status === "completed" && existingItem.status !== "completed";
 
     if (isBecomingCompleted) {
-      // completeBucketItemを使用して適切にcompleted_atを設定
-      await bucketListService.completeBucketItem(itemId);
+      // 関数型サービスを使用してcompleteBucketItemを実行
+      const completeResult = await completeBucketItem(repository)(itemId);
+      if (isFailure(completeResult)) {
+        console.error("Item completion failed:", completeResult.error);
+        throw new Response("完了設定に失敗しました", { status: 500 });
+      }
 
       // 完了以外のフィールドも更新が必要な場合は追加で更新
       const hasOtherChanges =
@@ -155,7 +175,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         data.is_public !== existingItem.is_public;
 
       if (hasOtherChanges) {
-        await bucketListService.updateBucketItem(itemId, {
+        const updateResult = await updateBucketItem(repository)(itemId, {
           title: data.title.trim(),
           description: data.description?.trim() || null,
           category_id: data.category_id,
@@ -164,10 +184,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
           due_type: data.due_type || null,
           is_public: data.is_public,
         });
+        if (isFailure(updateResult)) {
+          console.error("Item update failed:", updateResult.error);
+          throw new Response("更新に失敗しました", { status: 500 });
+        }
       }
     } else {
       // 通常の更新（ステータス変更が完了以外、または完了→他のステータス変更）
-      await bucketListService.updateBucketItem(itemId, {
+      const updateResult = await updateBucketItem(repository)(itemId, {
         title: data.title.trim(),
         description: data.description?.trim() || null,
         category_id: data.category_id,
@@ -177,6 +201,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
         due_type: data.due_type || null,
         is_public: data.is_public,
       });
+      if (isFailure(updateResult)) {
+        console.error("Item update failed:", updateResult.error);
+        throw new Response("更新に失敗しました", { status: 500 });
+      }
     }
 
     // 成功時はやりたいこと一覧ページにリダイレクト
