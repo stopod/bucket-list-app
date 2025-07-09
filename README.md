@@ -1,151 +1,266 @@
-# 📚 バケットリストアプリ ドキュメント
+# 🎯 バケットリスト アプリ
 
-> **人生でやりたいことリストアプリケーション**の包括的ドキュメント集
+> **人生でやりたいことリストを管理する TypeScript/React アプリケーション**
 
-## 🧭 ナビゲーション
+## 🌟 概要
 
-### 👨‍💻 開発者向けドキュメント
+このアプリケーションは、個人の目標や願望を管理し、達成をサポートするための Bucket List (バケットリスト) 管理システムです。
 
-**実装・保守に必要な技術情報**
+### 主な機能
 
-| ドキュメント                                            | 概要                         | 対象読者                 |
-| ------------------------------------------------------- | ---------------------------- | ------------------------ |
-| [🏗 アーキテクチャ](./docs/development/architecture.md) | システム設計・構成・パターン | 開発者・アーキテクト     |
-| [🔐 認証システム](./docs/development/authentication.md) | 認証実装・セキュリティ・実例 | 開発者・セキュリティ担当 |
-| [🧪 テスト戦略](./docs/development/testing.md)          | テスト実装・規約・自動化     | 開発者・QA担当           |
-| [🗄️ データベース](./docs/development/database.md)       | DB設計・運用・最適化         | 開発者・DBA              |
+- ✅ やりたいこと項目の作成・編集・削除
+- 🏷️ カテゴリ、優先度、ステータス管理
+- 📊 達成状況の可視化とダッシュボード
+- 🔍 検索・フィルター・ソート機能
+- 🌐 公開リスト機能
+- 📱 レスポンシブデザイン
+- 🔐 Supabase認証システム
 
-### 📊 プロジェクト管理
+## 🚀 クイックスタート
 
-**プロジェクトの進捗・計画・要件**
+### 前提条件
 
-| ドキュメント                                    | 概要                           | 対象読者             |
-| ----------------------------------------------- | ------------------------------ | -------------------- |
-| [📋 要件定義](./docs/project/requirements.md)   | 機能要件・非機能要件・仕様     | 全員                 |
-| [📈 プロジェクト状況](./docs/project/status.md) | 進捗・品質指標・次のアクション | PM・開発者           |
-| [🗺️ ロードマップ](./docs/project/roadmap.md)    | 今後の計画・機能拡張予定       | PM・ステークホルダー |
+- Node.js 18.x 以上
+- Docker & Docker Compose
+- Supabase アカウント
 
-### 📚 アーカイブ・参考資料
+### 開発環境セットアップ
 
-**過去の分析・学習コンテンツ**
+```bash
+# 1. リポジトリのクローン
+git clone <repository-url>
+cd bucket-list-app
 
-| ドキュメント                                                | 概要                         | 対象読者             |
-| ----------------------------------------------------------- | ---------------------------- | -------------------- |
-| [🔍 クリーンアップ分析](./docs/archive/cleanup-analysis.md) | コード品質分析・改善レポート | 開発者・アーキテクト |
-| [📖 学習コンテンツ](./docs/archive/learning-materials.md)   | 演習・クイズ・教育コンテンツ | 学習者・新規参加者   |
+# 2. 依存関係のインストール
+npm install
 
-## 📝 ドキュメント作成ガイド
+# 3. 環境変数の設定
+cp .env.example .env.local
+# .env.local を編集して Supabase の設定を追加
 
-### テンプレート活用
+# 4. データベースの起動（Docker）
+docker compose -f compose.dev.yaml up -d
 
-新しいドキュメント作成時は、適切なテンプレートを使用してください：
-
-| 用途             | テンプレート                                                        | 使用例                 |
-| ---------------- | ------------------------------------------------------------------- | ---------------------- |
-| 機能実装ガイド   | [implementation-guide.md](./docs/templates/implementation-guide.md) | 新機能の実装手順書     |
-| プロジェクト状況 | [project-status.md](./docs/templates/project-status.md)             | 週次・月次進捗レポート |
-| 要件定義         | [requirements.md](./docs/templates/requirements.md)                 | 新機能の要件定義書     |
-
-### ドキュメント作成規約
-
-1. **読み手ファースト**: 対象読者を明確にし、レベルに合わせた内容
-2. **構造化**: 見出し・表・リストを活用した読みやすい構成
-3. **実例重視**: コード例・設定例を豊富に含める
-4. **更新履歴**: 変更内容・更新者・日付を記録
-5. **リンク活用**: 関連ドキュメントへの適切なリンク設定
-
-### ファイル命名規則
-
-```
-development/    # 開発者向け技術ドキュメント
-├── architecture.md     # システムアーキテクチャ
-├── authentication.md   # 認証システム
-├── testing.md         # テスト戦略
-└── database.md        # データベース設計
-
-project/        # プロジェクト管理ドキュメント
-├── requirements.md    # 要件定義
-├── status.md         # プロジェクト状況
-└── roadmap.md        # ロードマップ
-
-archive/        # アーカイブ・参考資料
-├── cleanup-analysis.md    # コード分析レポート
-└── learning-materials.md  # 学習コンテンツ
-
-templates/      # ドキュメントテンプレート
-├── implementation-guide.md  # 実装ガイド用
-├── project-status.md       # 状況レポート用
-└── requirements.md         # 要件定義用
+# 5. 開発サーバーの起動
+npm run dev
 ```
 
-## 🔍 クイックファインド
+### 本番環境デプロイ
 
-### 実装に関する情報
+```bash
+# Docker を使用したデプロイ
+docker compose up -d
+```
 
-- **新機能開発**: [アーキテクチャ](./docs/development/architecture.md) → [テスト戦略](./development/testing.md)
-- **認証まわり**: [認証システム](./docs/development/authentication.md)
-- **データベース**: [データベース設計](./development/database.md)
+## 📋 利用可能なスクリプト
 
-### プロジェクト情報
+### 開発・ビルド
 
-- **現在の状況**: [プロジェクト状況](./docs/project/status.md)
-- **何ができる？**: [要件定義](./docs/project/requirements.md)
-- **今後の予定**: [ロードマップ](./docs/project/roadmap.md)
+```bash
+npm run dev          # 開発サーバー起動
+npm run build        # 本番ビルド
+npm run start        # 本番サーバー起動
+npm run typecheck    # TypeScript 型チェック
+```
 
-### 困ったときは
+### テスト・品質管理
 
-- **エラー解決**: 各実装ガイドの「🔧 トラブルシューティング」セクション
-- **コード例**: [認証システム](./docs/development/authentication.md)、[アーキテクチャ](./docs/development/architecture.md)
-- **過去の改善**: [クリーンアップ分析](./docs/archive/cleanup-analysis.md)
+```bash
+npm test             # テスト実行
+npm run test:ui      # UI付きテスト実行
+npm run test:coverage # テストカバレッジ測定
+```
 
-## 🤝 ドキュメント改善
+## 🏗️ アーキテクチャ
 
-### フィードバック歓迎
+### 技術スタック
 
-- **内容の改善提案**: Issue または PR でお知らせください
-- **新規ドキュメント要望**: 必要なドキュメントがあればご提案ください
-- **テンプレート改善**: より使いやすいテンプレートのアイデア募集
+- **フロントエンド**: React Router v7 (SSR)、TailwindCSS、shadcn-ui
+- **バックエンド**: Node.js with TypeScript
+- **データベース**: Supabase PostgreSQL
+- **認証**: Supabase Auth
+- **テスト**: Vitest、React Testing Library
+- **デプロイ**: Docker、Docker Compose
 
-### 貢献方法
+### アーキテクチャパターン
 
-1. **既存ドキュメント更新**: 情報が古い・不足している箇所の修正
-2. **新規ドキュメント作成**: テンプレートを使用した新しいドキュメント作成
-3. **テンプレート改善**: より良いテンプレートの提案・作成
+- **Clean Architecture**: Repository Pattern + Service Layer
+- **Dependency Injection**: Factory Pattern による DI
+- **Type Safety**: TypeScript による型安全性
+- **Functional Programming**: Result型による安全なエラーハンドリング
+- **SSR**: React Router v7 による Server-Side Rendering
 
-## 📄 ライセンス・免責事項
+### プロジェクト構成
 
-### ライセンス
+```
+app/
+├── features/               # 機能別モジュール
+│   └── bucket-list/
+│       ├── components/     # UI コンポーネント
+│       ├── services/       # ビジネスロジック
+│       ├── repositories/   # データアクセス層
+│       └── types.ts        # 型定義
+├── shared/                 # 共通モジュール
+│   ├── types/             # 共通型定義
+│   ├── utils/             # ユーティリティ
+│   └── layouts/           # レイアウト
+├── components/ui/         # UI コンポーネント
+└── routes/                # ページルーティング
+```
+
+## 🔧 設定
+
+### 環境変数
+
+```bash
+# Supabase設定
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# 環境設定
+NODE_ENV=development|production
+```
+
+### データベース設定
+
+主要テーブル：
+- `profiles`: ユーザープロファイル
+- `categories`: カテゴリマスター
+- `bucket_items`: バケットリスト項目
+
+詳細な設定は `CLAUDE.md` を参照してください。
+
+## 🧪 テスト
+
+### テスト戦略
+
+- **単体テスト**: 各関数・コンポーネントの動作確認
+- **統合テスト**: サービス層の結合テスト
+- **UI テスト**: コンポーネントのレンダリング・インタラクション
+- **認証テスト**: 認証フローの包括テスト
+
+### テスト実行
+
+```bash
+# 全てのテストを実行
+npm test
+
+# 特定のテストファイルを実行
+npm test -- --grep "bucket-list"
+
+# カバレッジ測定
+npm run test:coverage
+```
+
+### テスト結果（最新）
+
+- **テスト成功率**: 94.7% (411/434 tests)
+- **カバレッジ**: 90%以上の目標を達成
+
+## 🔐 セキュリティ
+
+### 認証・認可
+
+- Supabase Auth による認証
+- Row Level Security (RLS) によるデータ保護
+- JWT トークンベースの認証
+- SSR対応の認証フロー
+
+### セキュリティ対策
+
+- XSS 対策（入力値サニタイズ）
+- CSRF 対策（SameSite Cookie）
+- 適切なエラーハンドリング
+- 環境変数による秘匿情報管理
+
+## 📊 パフォーマンス
+
+### 最適化施策
+
+- **フロントエンド**: コンポーネントの再利用、状態管理最適化
+- **バックエンド**: 適切なインデックス設計、N+1問題の回避
+- **ビルド**: コード分割、バンドルサイズ最適化
+
+### パフォーマンス指標
+
+- **初回読み込み時間**: < 3秒
+- **インタラクション応答時間**: < 500ms
+- **バンドルサイズ**: gzip圧縮後 < 200KB
+
+## 🤝 コントリビューション
+
+### 開発規約
+
+1. **コミットメッセージ**: [Conventional Commits](https://www.conventionalcommits.org/) 形式
+2. **コード規約**: ESLint + Prettier による自動整形
+3. **テスト**: 新機能には必ずテストを追加
+4. **PR**: 機能単位での小さなPRを推奨
+
+### 開発フロー
+
+```bash
+# 1. 機能ブランチの作成
+git checkout -b feature/new-feature
+
+# 2. 開発・テスト
+npm run dev
+npm test
+
+# 3. コミット
+git commit -m "feat: 新機能の追加"
+
+# 4. PR作成
+git push origin feature/new-feature
+```
+
+## 📚 ドキュメント
+
+### 詳細ドキュメント
+
+- **[CLAUDE.md](./CLAUDE.md)**: 開発ガイドライン・設定詳細
+- **[docs/](./docs/)**: 技術仕様・アーキテクチャ詳細
+
+### 学習リソース
+
+- **React Router v7**: [公式ドキュメント](https://reactrouter.com/)
+- **Supabase**: [公式ドキュメント](https://supabase.com/docs)
+- **TypeScript**: [ハンドブック](https://www.typescriptlang.org/docs/)
+
+## 🐛 トラブルシューティング
+
+### よくある問題
+
+1. **ビルドエラー**: `npm run typecheck` で型エラーを確認
+2. **認証エラー**: 環境変数の設定を確認
+3. **データベース接続エラー**: Docker コンテナの起動状態を確認
+
+### ログ確認
+
+```bash
+# 開発サーバーのログ
+npm run dev
+
+# Docker コンテナのログ
+docker compose logs -f
+```
+
+## 📄 ライセンス
 
 このプロジェクトは [MIT License](./LICENSE) の下で公開されています。
 
-### 免責事項・利用条件
+## 🙏 謝辞
 
-⚠️ **本ソフトウェアの利用について**
+このプロジェクトは以下の技術・ライブラリを使用しています：
 
-- **AS IS 提供**: 本ソフトウェアは「現状のまま」提供され、動作保証はありません
-- **責任制限**: 利用による一切の損害について開発者は責任を負いません
-- **サポート**: バグ修正・機能追加・技術サポートの義務はありません
-- **セキュリティ**: セキュリティ上の問題について保証はありません
-
-### 利用者の責任
-
-✅ **ご利用前に必ずお読みください**
-
-- データのバックアップは利用者の責任で実施してください
-- 本番環境での利用は自己責任でお願いします
-- 個人情報・機密情報の取り扱いには十分注意してください
-- 法的問題が発生した場合、利用者が責任を負います
-
-### サポート・貢献
-
-🤝 **コミュニティベース**
-
-- 本プロジェクトはコミュニティベースで運営されています
-- Issue・PRは歓迎しますが、対応を保証するものではありません
-- フィードバックは Best Effort ベースで対応します
+- [React Router](https://reactrouter.com/)
+- [Supabase](https://supabase.com/)
+- [TailwindCSS](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Vitest](https://vitest.dev/)
 
 ---
 
-**📅 最終更新**: 2025-01-11  
-**✍️ 担当者**: Development Team  
-**🔄 次回見直し**: プロジェクト重要マイルストーン時
+**📅 最終更新**: 2025-01-16  
+**✍️ 更新者**: Development Team  
+**🔄 バージョン**: 1.0.0
