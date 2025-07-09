@@ -10,6 +10,7 @@ import { BucketItemForm } from "~/features/bucket-list/components/bucket-item-fo
 import type {
   BucketItemFormData,
   BucketItem,
+  Category,
 } from "~/features/bucket-list/types";
 import {
   assertPriority,
@@ -17,8 +18,8 @@ import {
   assertDueType,
 } from "~/features/bucket-list/types";
 import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
-import { getCategories, getBucketItemById, updateBucketItem, completeBucketItem } from "~/features/bucket-list/services/functional-bucket-list-service";
-import { isSuccess, isFailure } from "~/shared/types/result";
+import { getCategories, getBucketItem, updateBucketItem, completeBucketItem } from "~/features/bucket-list/services/functional-bucket-list-service";
+import { isFailure } from "~/shared/types/result";
 
 export function meta() {
   return [{ title: "やりたいことを編集" }];
@@ -52,7 +53,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
     // 関数型サービスを使用してバケットリスト項目とカテゴリを取得
     const [itemResult, categoriesResult] = await Promise.all([
-      getBucketItemById(repository)(itemId),
+      getBucketItem(repository)(itemId),
       getCategories(repository)(),
     ]);
 
@@ -139,7 +140,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const repository = bucketListService.getRepository();
 
     // 関数型サービスを使用して既存の項目データを取得してステータス変更を判定
-    const existingItemResult = await getBucketItemById(repository)(itemId);
+    const existingItemResult = await getBucketItem(repository)(itemId);
     if (isFailure(existingItemResult)) {
       console.error("Item loading failed:", existingItemResult.error);
       throw new Response("Item not found", { status: 404 });
@@ -223,8 +224,8 @@ export default function EditBucketItemPage({
 }: {
   loaderData: {
     item: BucketItem;
-    categories: any[];
-    user: any;
+    categories: Category[];
+    user: { id: string; email: string };
   };
 }) {
   const { item, categories } = loaderData;

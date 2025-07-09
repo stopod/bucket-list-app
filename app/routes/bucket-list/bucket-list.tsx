@@ -9,12 +9,11 @@ import {
 import {
   assertPriority,
   assertStatus,
-  assertDueType,
 } from "~/features/bucket-list/types";
 import {
   createAuthenticatedFunctionalBucketListService,
 } from "~/features/bucket-list/lib/repository-factory";
-import { isSuccess, isFailure } from "~/shared/types/result";
+import { isFailure } from "~/shared/types/result";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -27,12 +26,11 @@ import {
 import { DeleteConfirmationDialog } from "~/features/bucket-list/components/delete-confirmation-dialog";
 import { AchievementStats } from "~/features/bucket-list/components/achievement-stats";
 import { CategoryProgress } from "~/features/bucket-list/components/category-progress";
-import { ControlledExpandableText } from "~/features/bucket-list/components/expandable-text";
 import { useExpandableList } from "~/features/bucket-list/hooks/use-expandable-list";
 import { BucketItemDetailDialog } from "~/features/bucket-list/components/bucket-item-detail-dialog";
 import { BucketItemSkeleton } from "~/components/ui";
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [{ title: "やりたいこと一覧" }];
 }
 
@@ -195,7 +193,6 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
     getCategoryShowCount,
     needsShowMoreButton,
     getRemainingCount,
-    isCategoryFullyExpanded,
     expandCategory,
     collapseCategory,
   } = useExpandableList();
@@ -513,10 +510,6 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                 categoryId,
                 categoryItems.length,
               );
-              const isFullyExpanded = isCategoryFullyExpanded(
-                categoryId,
-                categoryItems.length,
-              );
 
               return (
                 <div
@@ -717,7 +710,6 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
           isOpen={detailDialog.isOpen}
           onClose={closeDetailDialog}
           item={detailDialog.item}
-          categories={categories}
           onDelete={openDeleteDialog}
           onStatusChange={handleStatusChange}
           isSubmitting={deleteDialog.isSubmitting}

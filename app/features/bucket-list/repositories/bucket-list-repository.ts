@@ -41,7 +41,7 @@ export interface BucketListRepository {
   getUserStats(profileId: string): Promise<UserBucketStats | null>;
 }
 
-// エラー型定義
+// エラー型定義（既存コードとの互換性のため）
 export class BucketListRepositoryError extends Error {
   constructor(
     message: string,
@@ -74,3 +74,4 @@ export function createError<T>(
 ): RepositoryResult<T> {
   return { data: null, error: new BucketListRepositoryError(message, code) };
 }
+

@@ -31,7 +31,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     );
 
     // まず項目が存在し、自分のものかチェック
-    const item = await bucketListService.getBucketItemById(itemId);
+    const item = await bucketListService.getBucketItem(itemId);
     if (!item) {
       throw new Response("Item not found", { status: 404 });
     }

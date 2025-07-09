@@ -16,7 +16,6 @@ import {
 } from "~/components/ui";
 import type {
   BucketItemWithCategory,
-  Category,
   Status,
   Priority,
 } from "../types";
@@ -37,8 +36,6 @@ interface BucketItemDetailDialogProps {
   onClose: () => void;
   /** 表示する項目データ */
   item: BucketItemWithCategory | null;
-  /** カテゴリ一覧 */
-  categories: Category[];
   /** 削除ダイアログを開く関数 */
   onDelete: (item: { id: string; title: string }) => void;
   /** ステータス変更関数 */
@@ -59,7 +56,6 @@ export function BucketItemDetailDialog({
   isOpen,
   onClose,
   item,
-  categories,
   onDelete,
   onStatusChange,
   isSubmitting = false,

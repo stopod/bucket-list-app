@@ -4,14 +4,14 @@ import { Link, useNavigation } from "react-router";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth } from "~/lib/auth-server";
 import { createAuthenticatedFunctionalBucketListService } from "~/features/bucket-list/lib/repository-factory";
-import { isSuccess, isFailure } from "~/shared/types/result";
+import { isFailure } from "~/shared/types/result";
 import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { Button } from "~/components/ui/button";
 import { AchievementStats } from "~/features/bucket-list/components/achievement-stats";
 import { CategoryProgress } from "~/features/bucket-list/components/category-progress";
 import { StatCardSkeleton, ProgressCardSkeleton } from "~/components/ui";
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [{ title: "ダッシュボード - やりたいこと一覧" }];
 }
 
