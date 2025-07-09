@@ -274,7 +274,8 @@ export const createOptimizedFunctionalBucketListService = (
         const stats = computeUserStats(processedItems);
         
         return {
-          user_id: profileId,
+          profile_id: profileId,
+          display_name: null,
           total_items: processedItems.length,
           completed_items: completedItems.length,
           in_progress_items: activeItems.filter(item => item.status === 'in_progress').length,
@@ -311,7 +312,8 @@ export const createOptimizedFunctionalBucketListService = (
         return {
           items: processedItems,
           stats: {
-            user_id: profileId,
+            profile_id: profileId,
+            display_name: null,
             total_items: processedItems.length,
             completed_items: selectCompletedItems(processedItems).length,
             in_progress_items: selectActiveItems(processedItems).filter(item => item.status === 'in_progress').length,

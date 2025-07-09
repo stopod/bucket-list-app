@@ -3,28 +3,28 @@
  */
 import { defineConfig } from 'vite';
 import { reactRouter } from '@react-router/dev/vite';
-import { bundleAnalyzer } from 'vite-plugin-bundle-analyzer';
-import { compression } from 'vite-plugin-compression2';
+// import { bundleAnalyzer } from 'vite-plugin-bundle-analyzer';
+// import { compression } from 'vite-plugin-compression2';
 
 export default defineConfig({
   plugins: [
     reactRouter(),
-    // バンドル分析
-    bundleAnalyzer({
-      analyzerMode: 'static',
-      reportFilename: 'bundle-analyzer-report.html',
-      openAnalyzer: false,
-    }),
-    // Gzip圧縮
-    compression({
-      algorithm: 'gzip',
-      threshold: 1024,
-    }),
-    // Brotli圧縮
-    compression({
-      algorithm: 'brotliCompress',
-      threshold: 1024,
-    }),
+    // バンドル分析（プラグインがインストールされていない場合はコメントアウト）
+    // bundleAnalyzer({
+    //   analyzerMode: 'static',
+    //   reportFilename: 'bundle-analyzer-report.html',
+    //   openAnalyzer: false,
+    // }),
+    // Gzip圧縮（プラグインがインストールされていない場合はコメントアウト）
+    // compression({
+    //   algorithm: 'gzip',
+    //   threshold: 1024,
+    // }),
+    // Brotli圧縮（プラグインがインストールされていない場合はコメントアウト）
+    // compression({
+    //   algorithm: 'brotliCompress',
+    //   threshold: 1024,
+    // }),
   ],
   build: {
     // 最適化設定

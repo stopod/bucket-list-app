@@ -28,7 +28,7 @@ const mockUser: User = {
   aud: "authenticated",
   role: "authenticated",
   email_confirmed_at: "2023-01-01T00:00:00Z",
-  phone_confirmed_at: null,
+  phone_confirmed_at: "2023-01-01T00:00:00Z",
   confirmed_at: "2023-01-01T00:00:00Z",
   last_sign_in_at: "2023-01-01T00:00:00Z",
   app_metadata: {},
@@ -70,7 +70,13 @@ describe("AuthGuard - Simple Tests", () => {
     const { supabase } = await import("~/lib/supabase");
     vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback) => {
       return {
-        data: { subscription: { unsubscribe: vi.fn() } },
+        data: { 
+          subscription: { 
+            id: 'test-subscription',
+            callback: callback,
+            unsubscribe: vi.fn() 
+          } 
+        },
       };
     });
   });

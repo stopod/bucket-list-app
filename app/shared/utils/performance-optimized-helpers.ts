@@ -171,7 +171,7 @@ export const createBatchProcessor = <T, U>(
 /**
  * メモ化された関数型セレクター
  */
-export const createMemoizedSelector = <T, U>(
+export const createMemoizedSelector = <T extends object, U>(
   selector: (data: T) => U,
   equalityFn: (a: U, b: U) => boolean = (a, b) => a === b
 ) => {

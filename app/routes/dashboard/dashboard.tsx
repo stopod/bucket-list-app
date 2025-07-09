@@ -3,8 +3,7 @@ import type { Route } from "./+types/dashboard";
 import { Link, useNavigation } from "react-router";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth } from "~/lib/auth-server";
-import { createAuthenticatedFunctionalBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
-import { createFunctionalBucketListService } from "~/features/bucket-list/services/functional-bucket-list-service";
+import { createAuthenticatedFunctionalBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { isSuccess, isFailure } from "~/shared/types/result";
 import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { Button } from "~/components/ui/button";
@@ -32,11 +31,13 @@ export async function loader({ request }: Route.LoaderArgs) {
     // TDD: 関数型Repository＋Serviceでデータ取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const functionalRepository = createAuthenticatedFunctionalBucketListRepository(
+    const functionalService = createAuthenticatedFunctionalBucketListService(
       authenticatedSupabase,
       authResult.user!.id,
     );
-    const functionalService = createFunctionalBucketListService(functionalRepository);
+    
+    console.log("Dashboard loader - Service created successfully");
+    console.log("Dashboard loader - User ID:", authResult.user?.id);
 
     // TDD: 関数型サービスでダッシュボードデータを取得
     const dashboardDataResult = await functionalService.getDashboardData(
@@ -46,6 +47,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     // TDD: Result型による安全なエラーハンドリング
     if (isFailure(dashboardDataResult)) {
       console.error("Dashboard data fetch error:", dashboardDataResult.error);
+      console.error("Full error details:", JSON.stringify(dashboardDataResult.error, null, 2));
       throw new Response("Failed to load dashboard data", { status: 500 });
     }
 
@@ -92,6 +94,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
     // TDD: 関数型アプローチでもエラーログは維持
     console.error("Loader error:", error);
+    console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
+    console.error("Error type:", typeof error);
     throw new Response("Server error", { status: 500 });
   }
 }

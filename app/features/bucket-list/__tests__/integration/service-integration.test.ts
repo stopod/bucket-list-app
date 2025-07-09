@@ -9,7 +9,7 @@ import {
   getCategories,
   getUserStats
 } from '~/features/bucket-list/services/functional-bucket-list-service';
-import { createBucketListRepository } from '~/features/bucket-list/lib/repository-factory';
+import { RepositoryFactory } from '~/features/bucket-list/lib/repository-factory';
 import { calculateUserStats, calculateCategoryStats } from '~/features/bucket-list/lib/business-logic';
 import { isSuccess, isFailure } from '~/shared/types/result';
 import type { BucketItem } from '~/features/bucket-list/types';
@@ -20,7 +20,7 @@ type BucketItemRow = Database['public']['Tables']['bucket_items']['Row'];
 // テストデータ
 const mockBucketItems: BucketItemRow[] = [
   {
-    id: 1,
+    id: 'test-item-1',
     title: 'テスト項目1',
     description: '説明1',
     category_id: 1,
@@ -29,14 +29,14 @@ const mockBucketItems: BucketItemRow[] = [
     is_public: true,
     due_type: 'specific_date',
     due_date: '2024-12-31',
-    user_id: 'test-user-id',
+    profile_id: 'test-user-id',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
     completed_at: '2024-01-15T00:00:00Z',
     completion_comment: '完了しました',
   },
   {
-    id: 2,
+    id: 'test-item-2',
     title: 'テスト項目2',
     description: '説明2',
     category_id: 2,
@@ -45,14 +45,14 @@ const mockBucketItems: BucketItemRow[] = [
     is_public: false,
     due_type: 'this_year',
     due_date: null,
-    user_id: 'test-user-id',
+    profile_id: 'test-user-id',
     created_at: '2024-01-02T00:00:00Z',
     updated_at: '2024-01-02T00:00:00Z',
     completed_at: null,
     completion_comment: null,
   },
   {
-    id: 3,
+    id: 'test-item-3',
     title: 'テスト項目3',
     description: '説明3',
     category_id: 1,
@@ -61,7 +61,7 @@ const mockBucketItems: BucketItemRow[] = [
     is_public: true,
     due_type: 'unspecified',
     due_date: null,
-    user_id: 'test-user-id',
+    profile_id: 'test-user-id',
     created_at: '2024-01-03T00:00:00Z',
     updated_at: '2024-01-03T00:00:00Z',
     completed_at: null,
@@ -70,8 +70,8 @@ const mockBucketItems: BucketItemRow[] = [
 ];
 
 const mockCategories = [
-  { id: 1, name: '旅行・観光', color: '#3B82F6' },
-  { id: 2, name: 'スキル習得・学習', color: '#10B981' },
+  { id: 1, name: '旅行・観光', color: '#3B82F6', created_at: '2024-01-01T00:00:00Z' },
+  { id: 2, name: 'スキル習得・学習', color: '#10B981', created_at: '2024-01-01T00:00:00Z' },
 ];
 
 // モックリポジトリ
@@ -109,6 +109,7 @@ describe('サービス統合テスト', () => {
         is_public: false,
         due_type: 'unspecified' as const,
         due_date: null,
+        profile_id: 'test-user-id',
       };
 
       const createdItem = { ...mockBucketItems[0], ...newItem };

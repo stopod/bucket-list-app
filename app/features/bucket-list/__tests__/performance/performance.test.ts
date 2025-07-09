@@ -17,7 +17,7 @@ type BucketItemRow = Database['public']['Tables']['bucket_items']['Row'];
 // テスト用のデータ生成
 const generateTestData = (count: number): BucketItemRow[] => {
   return Array.from({ length: count }, (_, i) => ({
-    id: i + 1,
+    id: `test-item-${i + 1}`,
     title: `テスト項目 ${i + 1}`,
     description: `テスト説明 ${i + 1}`,
     category_id: (i % 3) + 1,
@@ -26,7 +26,7 @@ const generateTestData = (count: number): BucketItemRow[] => {
     is_public: i % 2 === 0,
     due_type: 'specific_date' as const,
     due_date: '2024-12-31',
-    user_id: 'test-user',
+    profile_id: 'test-user',
     created_at: new Date(Date.now() - i * 1000 * 60 * 60).toISOString(),
     updated_at: new Date(Date.now() - i * 1000 * 60 * 30).toISOString(),
     completed_at: i % 3 === 2 ? new Date().toISOString() : null,
@@ -113,7 +113,7 @@ describe('パフォーマンステスト', () => {
       const items = generateTestData(1000);
       const pipeline = optimizedPipeline(
         (items: BucketItemRow[]) => items.filter(item => item.status !== 'completed'),
-        (items: BucketItemRow[]) => items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+        (items: BucketItemRow[]) => items.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()),
         (items: BucketItemRow[]) => items.slice(0, 100)
       );
       

@@ -333,7 +333,10 @@ export const getDashboardData =
     const [items, categories] = combinedResult.data;
 
     // ビジネスロジック関数を使用して各種データを計算
-    const stats = computeUserStats(items); // Repository呼び出しの代わりに計算
+    const stats = {
+      ...computeUserStats(items), // Repository呼び出しの代わりに計算
+      profile_id: profileId,
+    };
     const itemsByCategory = groupItems(items, categories) as Array<{
       category: Category;
       items: (BucketItem & { category: Category })[];
