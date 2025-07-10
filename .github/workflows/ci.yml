@@ -28,8 +28,8 @@ jobs:
       - name: Run TypeScript type check
         run: npm run typecheck
 
-      - name: Run core business logic tests
-        run: npm test -- --run app/features/bucket-list/lib/ app/features/bucket-list/services/
+      - name: Run all tests
+        run: npm test -- --run
 
       - name: Run linter
         run: npm run lint:check
@@ -67,11 +67,5 @@ jobs:
         run: npm run quality:check
 
       - name: Generate coverage report
-        run: npm run test:coverage -- --run app/features/bucket-list/lib/ app/features/bucket-list/services/
+        run: npm run test:coverage
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage/coverage-final.json
-          flags: unittests
-          name: codecov-umbrella
