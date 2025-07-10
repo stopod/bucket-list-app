@@ -6,11 +6,7 @@ import { getServerAuth } from "~/lib/auth-server";
 import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { BucketItemForm } from "~/features/bucket-list/components/bucket-item-form";
 import type { BucketItemFormData } from "~/features/bucket-list/types";
-import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
-import {
-  getCategories,
-  createBucketItem,
-} from "~/features/bucket-list/services/functional-bucket-list-service";
+import { createAuthenticatedFunctionalBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
 import { isFailure } from "~/shared/types/result";
 
 export function meta() {
@@ -30,16 +26,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
       });
     }
 
-    // 認証済みクライアントでカテゴリ一覧を取得
+    // 関数型Repository を直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase
+    const repository = createAuthenticatedFunctionalBucketListRepository(
+      authenticatedSupabase,
+      authResult.user?.id
     );
-    const repository = bucketListService.getRepository();
 
-    // 関数型サービスを使用してカテゴリを取得
-    const categoriesResult = await getCategories(repository)();
+    // 関数型Repositoryを直接使用してカテゴリを取得
+    const categoriesResult = await repository.findAllCategories();
 
     if (isFailure(categoriesResult)) {
       console.error("Categories loading failed:", categoriesResult.error);
@@ -99,16 +95,16 @@ export async function action({ request }: ActionFunctionArgs) {
       throw new Response("タイトルは必須です", { status: 400 });
     }
 
-    // 認証済みクライアントでデータを保存
+    // 関数型Repository を直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase
+    const repository = createAuthenticatedFunctionalBucketListRepository(
+      authenticatedSupabase,
+      authResult.user?.id
     );
-    const repository = bucketListService.getRepository();
 
-    // 関数型サービスを使用して新しい項目を作成
-    const createResult = await createBucketItem(repository)({
+    // 関数型Repositoryを直接使用して新しい項目を作成
+    const createResult = await repository.create({
       profile_id: authResult.user!.id,
       title: data.title.trim(),
       description: data.description?.trim() || null,

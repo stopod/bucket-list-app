@@ -63,13 +63,15 @@ export class RepositoryFactory {
   }
 }
 
-// 便利関数：Supabaseクライアントから直接サービスを取得
+// DEPRECATED: 従来型アプローチ - 後方互換性のために保持
+// 新規実装では createAuthenticatedFunctionalBucketListRepository を使用してください
 export async function createBucketListService(): Promise<BucketListService> {
   const { supabase } = await import("~/lib/supabase");
   return RepositoryFactory.createBucketListService(supabase);
 }
 
-// 認証済みクライアント用のサービス作成関数（クラスベース）
+// DEPRECATED: 従来型アプローチ - 後方互換性のために保持
+// 新規実装では createAuthenticatedFunctionalBucketListRepository を使用してください
 export function createAuthenticatedBucketListService(
   supabase: SupabaseClient<Database>,
   userId?: string
@@ -104,7 +106,8 @@ export async function createFunctionalBucketListRepositoryAsync(): Promise<Funct
   return RepositoryFactory.createFunctionalBucketListRepository(supabase);
 }
 
-// 関数型サービス作成用の便利関数
+// DEPRECATED: 関数型サービス作成用の便利関数
+// 新規実装では createAuthenticatedFunctionalBucketListService を使用してください
 export async function createFunctionalBucketListServiceAsync() {
   const { supabase } = await import("~/lib/supabase");
   const repository = RepositoryFactory.createBucketListRepository(supabase);

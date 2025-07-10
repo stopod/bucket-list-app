@@ -7,7 +7,8 @@ import {
   createAuthenticatedSupabaseClient,
 } from "~/lib/auth-server";
 import { assertPriority, assertStatus } from "~/features/bucket-list/types";
-import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedFunctionalBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
+import { isFailure } from "~/shared/types/result";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -55,18 +56,32 @@ export async function loader({ request }: Route.LoaderArgs) {
         | undefined,
     };
 
-    // 認証済みクライアントでデータ取得
+    // 関数型Repositoryを直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase
+    const repository = createAuthenticatedFunctionalBucketListRepository(
+      authenticatedSupabase,
+      authResult.user?.id
     );
 
     // 公開されたやりたいことと全カテゴリを取得
-    const [publicBucketItems, categories] = await Promise.all([
-      bucketListService.getPublicBucketItems(filters),
-      bucketListService.getCategories(),
+    const [publicBucketItemsResult, categoriesResult] = await Promise.all([
+      repository.findPublic(filters),
+      repository.findAllCategories(),
     ]);
+
+    if (isFailure(publicBucketItemsResult)) {
+      console.error("Public items fetch error:", publicBucketItemsResult.error);
+      throw new Response("Failed to load public items", { status: 500 });
+    }
+
+    if (isFailure(categoriesResult)) {
+      console.error("Categories fetch error:", categoriesResult.error);
+      throw new Response("カテゴリの取得に失敗しました", { status: 500 });
+    }
+
+    const publicBucketItems = publicBucketItemsResult.data;
+    const categories = categoriesResult.data;
 
     // カテゴリ情報を含むアイテムに変換
     const itemsWithCategory = publicBucketItems.map((item) => ({

@@ -17,13 +17,7 @@ import {
   assertStatus,
   assertDueType,
 } from "~/features/bucket-list/types";
-import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
-import {
-  getCategories,
-  getBucketItem,
-  updateBucketItem,
-  completeBucketItem,
-} from "~/features/bucket-list/services/functional-bucket-list-service";
+import { createAuthenticatedFunctionalBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
 import { isFailure } from "~/shared/types/result";
 
 export function meta() {
@@ -48,18 +42,18 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       throw new Response("Item ID is required", { status: 400 });
     }
 
-    // 認証済みクライアントでデータを取得
+    // 関数型Repositoryを直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase
+    const repository = createAuthenticatedFunctionalBucketListRepository(
+      authenticatedSupabase,
+      authResult.user?.id
     );
-    const repository = bucketListService.getRepository();
 
-    // 関数型サービスを使用してバケットリスト項目とカテゴリを取得
+    // 関数型Repositoryを直接使用してバケットリスト項目とカテゴリを取得
     const [itemResult, categoriesResult] = await Promise.all([
-      getBucketItem(repository)(itemId),
-      getCategories(repository)(),
+      repository.findById(itemId),
+      repository.findAllCategories(),
     ]);
 
     if (isFailure(itemResult)) {
@@ -74,6 +68,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
     const item = itemResult.data;
     const categories = categoriesResult.data;
+
+    // 関数型RepositoryのfindByIdがnullを返す場合がある
+    if (!item) {
+      throw new Response("Item not found", { status: 404 });
+    }
 
     // 自分のアイテムかチェック
     if (item.profile_id !== authResult.user!.id) {
@@ -136,22 +135,27 @@ export async function action({ request, params }: ActionFunctionArgs) {
       throw new Response("タイトルは必須です", { status: 400 });
     }
 
-    // 認証済みクライアントでデータを更新
+    // 関数型Repositoryを直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase
+    const repository = createAuthenticatedFunctionalBucketListRepository(
+      authenticatedSupabase,
+      authResult.user?.id
     );
-    const repository = bucketListService.getRepository();
 
-    // 関数型サービスを使用して既存の項目データを取得してステータス変更を判定
-    const existingItemResult = await getBucketItem(repository)(itemId);
+    // 関数型Repositoryを直接使用して既存の項目データを取得してステータス変更を判定
+    const existingItemResult = await repository.findById(itemId);
     if (isFailure(existingItemResult)) {
       console.error("Item loading failed:", existingItemResult.error);
       throw new Response("Item not found", { status: 404 });
     }
 
     const existingItem = existingItemResult.data;
+
+    // 関数型RepositoryのfindByIdがnullを返す場合がある
+    if (!existingItem) {
+      throw new Response("Item not found", { status: 404 });
+    }
 
     // 自分のアイテムかチェック
     if (existingItem.profile_id !== authResult.user!.id) {
@@ -163,8 +167,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
       data.status === "completed" && existingItem.status !== "completed";
 
     if (isBecomingCompleted) {
-      // 関数型サービスを使用してcompleteBucketItemを実行
-      const completeResult = await completeBucketItem(repository)(itemId);
+      // 関数型Repositoryでステータスを完了に更新
+      const completeResult = await repository.update(itemId, {
+        status: "completed",
+        completed_at: new Date().toISOString(),
+        completion_comment: null,
+      });
       if (isFailure(completeResult)) {
         console.error("Item completion failed:", completeResult.error);
         throw new Response("完了設定に失敗しました", { status: 500 });
@@ -181,7 +189,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         data.is_public !== existingItem.is_public;
 
       if (hasOtherChanges) {
-        const updateResult = await updateBucketItem(repository)(itemId, {
+        const updateResult = await repository.update(itemId, {
           title: data.title.trim(),
           description: data.description?.trim() || null,
           category_id: data.category_id,
@@ -197,7 +205,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       }
     } else {
       // 通常の更新（ステータス変更が完了以外、または完了→他のステータス変更）
-      const updateResult = await updateBucketItem(repository)(itemId, {
+      const updateResult = await repository.update(itemId, {
         title: data.title.trim(),
         description: data.description?.trim() || null,
         category_id: data.category_id,

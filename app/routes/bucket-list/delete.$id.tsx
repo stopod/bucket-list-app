@@ -4,7 +4,8 @@ import {
   getServerAuth,
   createAuthenticatedSupabaseClient,
 } from "~/lib/auth-server";
-import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedFunctionalBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
+import { isFailure } from "~/shared/types/result";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   try {
@@ -23,15 +24,22 @@ export async function action({ request, params }: ActionFunctionArgs) {
       throw new Response("Item ID is required", { status: 400 });
     }
 
-    // 認証済みクライアントでデータを削除
+    // 関数型Repositoryを直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase
+    const repository = createAuthenticatedFunctionalBucketListRepository(
+      authenticatedSupabase,
+      authResult.user?.id
     );
 
     // まず項目が存在し、自分のものかチェック
-    const item = await bucketListService.getBucketItem(itemId);
+    const itemResult = await repository.findById(itemId);
+    if (isFailure(itemResult)) {
+      console.error("Item loading failed:", itemResult.error);
+      throw new Response("Item not found", { status: 404 });
+    }
+
+    const item = itemResult.data;
     if (!item) {
       throw new Response("Item not found", { status: 404 });
     }
@@ -42,7 +50,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     // 項目を削除
-    await bucketListService.deleteBucketItem(itemId);
+    const deleteResult = await repository.delete(itemId);
+    if (isFailure(deleteResult)) {
+      console.error("Delete failed:", deleteResult.error);
+      throw new Response("削除に失敗しました", { status: 500 });
+    }
 
     // 成功時はやりたいこと一覧ページにリダイレクト
     return redirect("/bucket-list");
