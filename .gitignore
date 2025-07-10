@@ -12,3 +12,7 @@
 .env
 .env.local
 .env.production
+
+# reports
+/playwright-report/
+/test-results/
