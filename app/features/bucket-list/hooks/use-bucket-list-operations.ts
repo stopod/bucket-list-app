@@ -3,7 +3,7 @@ import type {
   Category,
   UserBucketStats,
 } from "~/features/bucket-list/types";
-import type { BucketListRepository } from "~/features/bucket-list/repositories";
+import type { FunctionalBucketListRepository } from "~/features/bucket-list/repositories/bucket-list.repository";
 import type { BucketListError } from "~/shared/types/errors";
 import { useResultOperation } from "~/shared/hooks/use-result-operation";
 
@@ -11,7 +11,7 @@ import { useResultOperation } from "~/shared/hooks/use-result-operation";
  * バケットリスト項目作成Hook
  */
 export function useCreateBucketItem(
-  repository: BucketListRepository,
+  repository: FunctionalBucketListRepository,
   options: {
     onSuccess?: (item: BucketItem) => void;
     onError?: (error: BucketListError) => void;
@@ -29,7 +29,7 @@ export function useCreateBucketItem(
  * バケットリスト項目更新Hook
  */
 export function useUpdateBucketItem(
-  repository: BucketListRepository,
+  repository: FunctionalBucketListRepository,
   options: {
     onSuccess?: (item: BucketItem) => void;
     onError?: (error: BucketListError) => void;
@@ -47,7 +47,7 @@ export function useUpdateBucketItem(
  * バケットリスト項目削除Hook
  */
 export function useDeleteBucketItem(
-  repository: BucketListRepository,
+  repository: FunctionalBucketListRepository,
   options: {
     onSuccess?: () => void;
     onError?: (error: BucketListError) => void;
@@ -64,7 +64,7 @@ export function useDeleteBucketItem(
 /**
  * カテゴリ一覧取得Hook
  */
-export function useCategories(_repository: BucketListRepository) {
+export function useCategories(_repository: FunctionalBucketListRepository) {
   return useResultOperation<Category[], BucketListError>({
     initialData: [],
   });
@@ -73,7 +73,7 @@ export function useCategories(_repository: BucketListRepository) {
 /**
  * ダッシュボードデータ取得Hook（複合データ）
  */
-export function useDashboardData(_repository: BucketListRepository) {
+export function useDashboardData(_repository: FunctionalBucketListRepository) {
   return useResultOperation<
     {
       items: (BucketItem & { category: Category })[];

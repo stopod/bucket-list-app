@@ -6,7 +6,7 @@ import { getServerAuth } from "~/lib/auth-server";
 import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { BucketItemForm } from "~/features/bucket-list/components/bucket-item-form";
 import type { BucketItemFormData } from "~/features/bucket-list/types";
-import { createAuthenticatedFunctionalBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
 import { isFailure } from "~/shared/types/result";
 
 export function meta() {
@@ -29,9 +29,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // 関数型Repository を直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const repository = createAuthenticatedFunctionalBucketListRepository(
-      authenticatedSupabase,
-      authResult.user?.id
+    const repository = createAuthenticatedBucketListRepository(
+      authenticatedSupabase
     );
 
     // 関数型Repositoryを直接使用してカテゴリを取得
@@ -98,9 +97,8 @@ export async function action({ request }: ActionFunctionArgs) {
     // 関数型Repository を直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const repository = createAuthenticatedFunctionalBucketListRepository(
-      authenticatedSupabase,
-      authResult.user?.id
+    const repository = createAuthenticatedBucketListRepository(
+      authenticatedSupabase
     );
 
     // 関数型Repositoryを直接使用して新しい項目を作成

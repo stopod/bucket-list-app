@@ -7,7 +7,7 @@ import {
   createAuthenticatedSupabaseClient,
 } from "~/lib/auth-server";
 import { assertPriority, assertStatus } from "~/features/bucket-list/types";
-import { createAuthenticatedFunctionalBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
 import { isFailure } from "~/shared/types/result";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -59,9 +59,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     // 関数型Repositoryを直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const repository = createAuthenticatedFunctionalBucketListRepository(
-      authenticatedSupabase,
-      authResult.user?.id
+    const repository = createAuthenticatedBucketListRepository(
+      authenticatedSupabase
     );
 
     // 公開されたやりたいことと全カテゴリを取得

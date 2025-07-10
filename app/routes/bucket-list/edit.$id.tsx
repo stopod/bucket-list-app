@@ -17,7 +17,7 @@ import {
   assertStatus,
   assertDueType,
 } from "~/features/bucket-list/types";
-import { createAuthenticatedFunctionalBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
 import { isFailure } from "~/shared/types/result";
 
 export function meta() {
@@ -45,9 +45,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     // 関数型Repositoryを直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const repository = createAuthenticatedFunctionalBucketListRepository(
-      authenticatedSupabase,
-      authResult.user?.id
+    const repository = createAuthenticatedBucketListRepository(
+      authenticatedSupabase
     );
 
     // 関数型Repositoryを直接使用してバケットリスト項目とカテゴリを取得
@@ -138,9 +137,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
     // 関数型Repositoryを直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const repository = createAuthenticatedFunctionalBucketListRepository(
-      authenticatedSupabase,
-      authResult.user?.id
+    const repository = createAuthenticatedBucketListRepository(
+      authenticatedSupabase
     );
 
     // 関数型Repositoryを直接使用して既存の項目データを取得してステータス変更を判定

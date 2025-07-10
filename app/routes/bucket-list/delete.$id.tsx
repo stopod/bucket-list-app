@@ -4,7 +4,7 @@ import {
   getServerAuth,
   createAuthenticatedSupabaseClient,
 } from "~/lib/auth-server";
-import { createAuthenticatedFunctionalBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
 import { isFailure } from "~/shared/types/result";
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -27,9 +27,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
     // 関数型Repositoryを直接取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const repository = createAuthenticatedFunctionalBucketListRepository(
-      authenticatedSupabase,
-      authResult.user?.id
+    const repository = createAuthenticatedBucketListRepository(
+      authenticatedSupabase
     );
 
     // まず項目が存在し、自分のものかチェック

@@ -7,7 +7,7 @@ import {
   createAuthenticatedSupabaseClient,
 } from "~/lib/auth-server";
 import { assertPriority, assertStatus } from "~/features/bucket-list/types";
-import { createAuthenticatedFunctionalBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { isFailure } from "~/shared/types/result";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -64,9 +64,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     // TDD: 関数型Repository＋Serviceでデータ取得
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
-    const functionalService = createAuthenticatedFunctionalBucketListService(
-      authenticatedSupabase,
-      authResult.user!.id
+    const functionalService = createAuthenticatedBucketListService(
+      authenticatedSupabase
     );
 
     // TDD: 関数型サービスでフィルター条件付きデータを取得
