@@ -75,8 +75,8 @@ const handleSupabaseError = (error: any, operation: string): BucketListError => 
   
   return createDatabaseError(
     `${operation} failed: ${message}`,
-    code,
-    { originalError: error }
+    "read",
+    code
   );
 };
 
@@ -381,8 +381,8 @@ export const handleRepositoryResult = async <T>(
     return failure(
       createDatabaseError(
         "Unexpected repository error",
-        "UNEXPECTED_ERROR",
-        { originalError: error }
+        "read",
+        "UNEXPECTED_ERROR"
       )
     );
   }

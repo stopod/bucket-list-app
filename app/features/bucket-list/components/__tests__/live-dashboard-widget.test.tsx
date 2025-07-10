@@ -9,7 +9,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { LiveDashboardWidget } from "../live-dashboard-widget";
 import type { BucketListRepository } from "../../repositories";
-import type { BucketItem, Category } from "../../types";
+import type { BucketItem, BucketItemWithCategory, Category } from "../../types";
 import { success, failure } from "~/shared/types/result";
 import { createApplicationError } from "~/shared/types/errors";
 
@@ -29,7 +29,6 @@ const mockRepository: BucketListRepository = {
   findAllCategories: vi.fn(),
   findCategoryById: vi.fn(),
   getUserStats: vi.fn(),
-  softDelete: vi.fn(),
 };
 
 // モックカテゴリデータ
@@ -41,7 +40,7 @@ const mockCategory: Category = {
 };
 
 // モックアイテムデータ
-const mockItems: BucketItem[] = [
+const mockItems: BucketItemWithCategory[] = [
   {
     id: "item-1",
     profile_id: "user-1",
@@ -57,6 +56,7 @@ const mockItems: BucketItem[] = [
     updated_at: "2023-01-01T00:00:00Z",
     completed_at: "2023-01-15T12:00:00Z",
     completion_comment: null,
+    category: mockCategory,
   },
   {
     id: "item-2",
@@ -73,6 +73,7 @@ const mockItems: BucketItem[] = [
     updated_at: "2023-01-01T00:00:00Z",
     completed_at: null,
     completion_comment: null,
+    category: mockCategory,
   },
   {
     id: "item-3",
@@ -89,6 +90,7 @@ const mockItems: BucketItem[] = [
     updated_at: "2023-01-01T00:00:00Z",
     completed_at: null,
     completion_comment: null,
+    category: mockCategory,
   },
 ];
 

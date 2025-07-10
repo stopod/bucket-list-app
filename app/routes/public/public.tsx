@@ -467,7 +467,6 @@ export default function PublicBucketListPage({
           isOpen={detailDialog.isOpen}
           onClose={closeDetailDialog}
           item={detailDialog.item}
-          categories={categories}
           onDelete={() => {}} // 読み取り専用のため未使用
           onStatusChange={() => {}} // 読み取り専用のため未使用
           isSubmitting={false}

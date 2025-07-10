@@ -27,7 +27,6 @@ const mockRepository: BucketListRepository = {
   findAllCategories: vi.fn(),
   findCategoryById: vi.fn(),
   getUserStats: vi.fn(),
-  softDelete: vi.fn(),
 };
 
 // モックカテゴリデータ

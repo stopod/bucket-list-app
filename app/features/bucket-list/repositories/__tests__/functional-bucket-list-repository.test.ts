@@ -24,6 +24,8 @@ const mockBucketItem: BucketItem = {
   is_public: false,
   due_type: "specific_date",
   due_date: "2024-12-31",
+  completed_at: null,
+  completion_comment: null,
   created_at: "2024-01-01T00:00:00.000Z",
   updated_at: "2024-01-01T00:00:00.000Z",
 };
@@ -31,11 +33,8 @@ const mockBucketItem: BucketItem = {
 const mockCategory: Category = {
   id: 1,
   name: "旅行・観光",
-  description: "旅行や観光に関する項目",
   color: "#FF6B6B",
-  icon: "🗺️",
   created_at: "2024-01-01T00:00:00.000Z",
-  updated_at: "2024-01-01T00:00:00.000Z",
 };
 
 const mockUserStats: UserBucketStats = {
@@ -45,8 +44,7 @@ const mockUserStats: UserBucketStats = {
   not_started_items: 5,
   in_progress_items: 2,
   completion_rate: 0.3,
-  created_at: "2024-01-01T00:00:00.000Z",
-  updated_at: "2024-01-01T00:00:00.000Z",
+  display_name: null,
 };
 
 const mockInsertData: BucketItemInsert = {
@@ -85,36 +83,40 @@ describe("FunctionalBucketListRepository", () => {
     mockSingle = vi.fn();
     mockOr = vi.fn();
     mockOrder = vi.fn(() => ({ data: [], error: null }));
-    mockEq = vi.fn(() => ({
-      select: mockSelect,
-      single: mockSingle,
-      or: mockOr,
-      order: mockOrder,
-    }));
-    mockSelect = vi.fn(() => ({
-      eq: mockEq,
-      single: mockSingle,
-      or: mockOr,
-      order: mockOrder,
-    }));
-    mockInsert = vi.fn(() => ({
-      select: mockSelect,
-      single: mockSingle,
-    }));
-    mockUpdate = vi.fn(() => ({
-      eq: mockEq,
-      select: mockSelect,
-      single: mockSingle,
-    }));
-    mockDelete = vi.fn(() => ({
-      eq: mockEq,
-    }));
-    mockFrom = vi.fn(() => ({
-      select: mockSelect,
-      insert: mockInsert,
-      update: mockUpdate,
-      delete: mockDelete,
-    }));
+    
+    // Create a mock chain object that has all the necessary methods
+    const mockChain = {
+      select: vi.fn(),
+      single: vi.fn(),
+      or: vi.fn(),
+      order: vi.fn(),
+      eq: vi.fn(),
+      insert: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    };
+    
+    // Set up the chain to return itself for method chaining
+    mockChain.select.mockReturnValue(mockChain);
+    mockChain.single.mockReturnValue(mockChain);
+    mockChain.or.mockReturnValue(mockChain);
+    mockChain.order.mockReturnValue(mockChain);
+    mockChain.eq.mockReturnValue(mockChain);
+    mockChain.insert.mockReturnValue(mockChain);
+    mockChain.update.mockReturnValue(mockChain);
+    mockChain.delete.mockReturnValue(mockChain);
+    
+    // Override specific methods for testing
+    mockEq = mockChain.eq;
+    mockSelect = mockChain.select;
+    mockSingle = mockChain.single;
+    mockOr = mockChain.or;
+    mockOrder = mockChain.order;
+    mockInsert = mockChain.insert;
+    mockUpdate = mockChain.update;
+    mockDelete = mockChain.delete;
+    
+    mockFrom = vi.fn(() => mockChain);
 
     mockSupabase = {
       from: mockFrom,
