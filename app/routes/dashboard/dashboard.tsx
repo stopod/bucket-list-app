@@ -33,21 +33,21 @@ export async function loader({ request }: Route.LoaderArgs) {
       await createAuthenticatedSupabaseClient(authResult);
     const functionalService = createAuthenticatedFunctionalBucketListService(
       authenticatedSupabase,
-      authResult.user!.id,
+      authResult.user!.id
     );
-    
-    console.log("Dashboard loader - Service created successfully");
-    console.log("Dashboard loader - User ID:", authResult.user?.id);
 
     // TDD: 関数型サービスでダッシュボードデータを取得
     const dashboardDataResult = await functionalService.getDashboardData(
-      authResult.user!.id,
+      authResult.user!.id
     );
 
     // TDD: Result型による安全なエラーハンドリング
     if (isFailure(dashboardDataResult)) {
       console.error("Dashboard data fetch error:", dashboardDataResult.error);
-      console.error("Full error details:", JSON.stringify(dashboardDataResult.error, null, 2));
+      console.error(
+        "Full error details:",
+        JSON.stringify(dashboardDataResult.error, null, 2)
+      );
       throw new Response("Failed to load dashboard data", { status: 500 });
     }
 
@@ -59,14 +59,16 @@ export async function loader({ request }: Route.LoaderArgs) {
       .sort(
         (a, b) =>
           new Date(b.completed_at!).getTime() -
-          new Date(a.completed_at!).getTime(),
+          new Date(a.completed_at!).getTime()
       )
       .slice(0, 5);
 
     // TDD: 期限が近い項目（今後30日以内）を関数型アプローチで取得
     const upcomingItems = dashboardData.items
       .filter((item) => {
-        if (!item.due_date || item.status === "completed") return false;
+        if (!item.due_date || item.status === "completed") {
+          return false;
+        }
         const dueDate = new Date(item.due_date);
         const thirtyDaysFromNow = new Date();
         thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
@@ -74,7 +76,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       })
       .sort(
         (a, b) =>
-          new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime(),
+          new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime()
       )
       .slice(0, 5);
 
@@ -94,7 +96,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
     // TDD: 関数型アプローチでもエラーログは維持
     console.error("Loader error:", error);
-    console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
+    console.error(
+      "Error stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
     console.error("Error type:", typeof error);
     throw new Response("Server error", { status: 500 });
   }
@@ -263,7 +268,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
                 <div className="space-y-3">
                   {recentCompletedItems.map((item) => {
                     const category = categories.find(
-                      (cat) => cat.id === item.category_id,
+                      (cat) => cat.id === item.category_id
                     );
                     return (
                       <div
@@ -284,7 +289,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
                           </div>
                           <span className="text-xs text-green-600">
                             {new Date(item.completed_at!).toLocaleDateString(
-                              "ja-JP",
+                              "ja-JP"
                             )}
                           </span>
                         </div>
@@ -315,12 +320,12 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
                 <div className="space-y-3">
                   {upcomingItems.map((item) => {
                     const category = categories.find(
-                      (cat) => cat.id === item.category_id,
+                      (cat) => cat.id === item.category_id
                     );
                     const daysUntilDue = Math.ceil(
                       (new Date(item.due_date!).getTime() -
                         new Date().getTime()) /
-                        (1000 * 60 * 60 * 24),
+                        (1000 * 60 * 60 * 24)
                     );
                     const isUrgent = daysUntilDue <= 7;
 

@@ -73,7 +73,9 @@ export function BucketItemForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title.trim()) return;
+    if (!formData.title.trim()) {
+      return;
+    }
     onSubmit(formData);
   };
 

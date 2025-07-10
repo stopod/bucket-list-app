@@ -10,7 +10,7 @@ interface AuthenticatedLayoutProps {
 
 export function AuthenticatedLayout({
   children,
-  title,
+  title: _title,
 }: AuthenticatedLayoutProps) {
   const { user, loading, signOut } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);

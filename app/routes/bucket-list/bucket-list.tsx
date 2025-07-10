@@ -6,13 +6,8 @@ import {
   getServerAuth,
   createAuthenticatedSupabaseClient,
 } from "~/lib/auth-server";
-import {
-  assertPriority,
-  assertStatus,
-} from "~/features/bucket-list/types";
-import {
-  createAuthenticatedFunctionalBucketListService,
-} from "~/features/bucket-list/lib/repository-factory";
+import { assertPriority, assertStatus } from "~/features/bucket-list/types";
+import { createAuthenticatedFunctionalBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { isFailure } from "~/shared/types/result";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -71,18 +66,19 @@ export async function loader({ request }: Route.LoaderArgs) {
       await createAuthenticatedSupabaseClient(authResult);
     const functionalService = createAuthenticatedFunctionalBucketListService(
       authenticatedSupabase,
-      authResult.user!.id,
+      authResult.user!.id
     );
 
     // TDD: 関数型サービスでフィルター条件付きデータを取得
-    const [bucketItemsResult, categoriesResult, statsResult] = await Promise.all([
-      functionalService.getUserBucketItemsWithCategory(
-        authResult.user!.id,
-        filters,
-      ),
-      functionalService.getCategories(),
-      functionalService.getUserStats(authResult.user!.id),
-    ]);
+    const [bucketItemsResult, categoriesResult, statsResult] =
+      await Promise.all([
+        functionalService.getUserBucketItemsWithCategory(
+          authResult.user!.id,
+          filters
+        ),
+        functionalService.getCategories(),
+        functionalService.getUserStats(authResult.user!.id),
+      ]);
 
     // TDD: Result型による安全なエラーハンドリング
     if (isFailure(bucketItemsResult)) {
@@ -278,7 +274,9 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
 
   // 削除実行
   const handleDelete = async () => {
-    if (!deleteDialog.item) return;
+    if (!deleteDialog.item) {
+      return;
+    }
 
     setDeleteDialog((prev) => ({ ...prev, isSubmitting: true }));
 
@@ -300,7 +298,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
       setDeleteDialog((prev) => ({ ...prev, isSubmitting: false }));
 
       // TODO: 将来的にはユーザーにエラーメッセージを表示
-      alert("削除に失敗しました。もう一度お試しください。");
+      console.error("削除に失敗しました。もう一度お試しください。");
     }
   };
 
@@ -499,16 +497,16 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
               const categoryId = category.id.toString();
               const showCount = getCategoryShowCount(
                 categoryId,
-                categoryItems.length,
+                categoryItems.length
               );
               const visibleItems = categoryItems.slice(0, showCount);
               const hasMore = needsShowMoreButton(
                 categoryId,
-                categoryItems.length,
+                categoryItems.length
               );
               const remainingCount = getRemainingCount(
                 categoryId,
-                categoryItems.length,
+                categoryItems.length
               );
 
               return (
@@ -653,7 +651,7 @@ export default function BucketListPage({ loaderData }: Route.ComponentProps) {
                               <p className="text-xs text-green-600">
                                 達成日:{" "}
                                 {new Date(item.completed_at).toLocaleDateString(
-                                  "ja-JP",
+                                  "ja-JP"
                                 )}
                               </p>
                             </div>

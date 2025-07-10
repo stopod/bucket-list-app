@@ -27,7 +27,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
     const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase,
+      authenticatedSupabase
     );
 
     // まず項目が存在し、自分のものかチェック

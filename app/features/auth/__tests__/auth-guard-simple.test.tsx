@@ -55,9 +55,7 @@ function DummyComponent({ title = "Protected Content" }: { title?: string }) {
 function TestWrapper({ children }: { children: React.ReactNode }) {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        {children}
-      </AuthProvider>
+      <AuthProvider>{children}</AuthProvider>
     </BrowserRouter>
   );
 }
@@ -65,20 +63,22 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
 describe("AuthGuard - Simple Tests", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-    
+
     // デフォルトのモック設定
     const { supabase } = await import("~/lib/supabase");
-    vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback) => {
-      return {
-        data: { 
-          subscription: { 
-            id: 'test-subscription',
-            callback: callback,
-            unsubscribe: vi.fn() 
-          } 
-        },
-      };
-    });
+    vi.mocked(supabase.auth.onAuthStateChange).mockImplementation(
+      (callback) => {
+        return {
+          data: {
+            subscription: {
+              id: "test-subscription",
+              callback: callback,
+              unsubscribe: vi.fn(),
+            },
+          },
+        };
+      }
+    );
   });
 
   describe("withAuth HOC", () => {
@@ -99,7 +99,9 @@ describe("AuthGuard - Simple Tests", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("protected-content")).toBeInTheDocument();
-        expect(screen.getByTestId("protected-content")).toHaveTextContent("Protected Content");
+        expect(screen.getByTestId("protected-content")).toHaveTextContent(
+          "Protected Content"
+        );
       });
     });
 
@@ -150,11 +152,13 @@ describe("AuthGuard - Simple Tests", () => {
   describe("useRequireAuth Hook", () => {
     function RequireAuthTestComponent() {
       const { user, loading, isAuthenticated } = useRequireAuth();
-      
+
       return (
         <div>
           <div data-testid="loading">{loading ? "Loading" : "Not Loading"}</div>
-          <div data-testid="authenticated">{isAuthenticated ? "Authenticated" : "Not Authenticated"}</div>
+          <div data-testid="authenticated">
+            {isAuthenticated ? "Authenticated" : "Not Authenticated"}
+          </div>
           <div data-testid="user">{user ? user.email : "No User"}</div>
         </div>
       );
@@ -175,8 +179,12 @@ describe("AuthGuard - Simple Tests", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("loading")).toHaveTextContent("Not Loading");
-        expect(screen.getByTestId("authenticated")).toHaveTextContent("Authenticated");
-        expect(screen.getByTestId("user")).toHaveTextContent("test@example.com");
+        expect(screen.getByTestId("authenticated")).toHaveTextContent(
+          "Authenticated"
+        );
+        expect(screen.getByTestId("user")).toHaveTextContent(
+          "test@example.com"
+        );
       });
     });
 

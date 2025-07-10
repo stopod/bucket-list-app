@@ -9,7 +9,6 @@ import { Input } from "~/components/ui/input";
 import { LoadingOverlay } from "~/components/ui/loading-overlay";
 import type {
   BucketItem,
-  Category,
   Priority,
   BucketItemFormData,
 } from "~/features/bucket-list/types";
@@ -69,7 +68,9 @@ export function QuickItemCreator({
         priority: defaultPriority,
         is_public: true,
       });
-      if (compact) setIsExpanded(false);
+      if (compact) {
+        setIsExpanded(false);
+      }
       onItemCreated?.(item);
     },
     onError: (error) => {
@@ -79,10 +80,12 @@ export function QuickItemCreator({
 
   // 初回カテゴリ読み込み
   const loadCategories = async () => {
-    if (categoriesHook.data && categoriesHook.data.length > 0) return;
+    if (categoriesHook.data && categoriesHook.data.length > 0) {
+      return;
+    }
 
     const result = await categoriesHook.execute(
-      functionalService.getCategories,
+      functionalService.getCategories
     );
     if (isSuccess(result) && result.data.length > 0 && !formData.category_id) {
       setFormData((prev) => ({
@@ -116,7 +119,7 @@ export function QuickItemCreator({
         priority: formData.priority || "medium",
         status: "not_started",
         is_public: formData.is_public ?? true,
-      },
+      }
     );
 
     if (!isSuccess(result)) {
@@ -132,7 +135,9 @@ export function QuickItemCreator({
       priority: defaultPriority,
       is_public: true,
     });
-    if (compact) setIsExpanded(false);
+    if (compact) {
+      setIsExpanded(false);
+    }
     onCancel?.();
   };
 
@@ -370,7 +375,9 @@ export function MinimalQuickCreator({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) return;
+    if (!title.trim()) {
+      return;
+    }
 
     const result = await createItem.execute(
       functionalService.createBucketItem,
@@ -381,7 +388,7 @@ export function MinimalQuickCreator({
         priority: "medium",
         status: "not_started",
         is_public: true,
-      },
+      }
     );
 
     if (!isSuccess(result)) {

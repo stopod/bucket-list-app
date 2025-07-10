@@ -23,9 +23,11 @@ import {
  * 統計計算 - 達成率の計算
  */
 export const calculateAchievementRate = (items: BucketItem[]): number => {
-  if (items.length === 0) return 0;
+  if (items.length === 0) {
+    return 0;
+  }
   const completedCount = items.filter(
-    (item) => item.status === "completed",
+    (item) => item.status === "completed"
   ).length;
   return Math.round((completedCount / items.length) * 100);
 };
@@ -35,7 +37,7 @@ export const calculateAchievementRate = (items: BucketItem[]): number => {
  */
 export const calculateCategoryStats = (
   items: BucketItem[],
-  categories: Category[],
+  categories: Category[]
 ): Array<{
   category: Category;
   total: number;
@@ -45,10 +47,10 @@ export const calculateCategoryStats = (
   return categories
     .map((category) => {
       const categoryItems = items.filter(
-        (item) => item.category_id === category.id,
+        (item) => item.category_id === category.id
       );
       const completedItems = categoryItems.filter(
-        (item) => item.status === "completed",
+        (item) => item.status === "completed"
       );
       const rate =
         categoryItems.length > 0
@@ -72,10 +74,10 @@ export const calculateUserStats = (items: BucketItem[]): UserBucketStats => {
   const total = items.length;
   const completed = items.filter((item) => item.status === "completed").length;
   const inProgress = items.filter(
-    (item) => item.status === "in_progress",
+    (item) => item.status === "in_progress"
   ).length;
   const notStarted = items.filter(
-    (item) => item.status === "not_started",
+    (item) => item.status === "not_started"
   ).length;
 
   return {
@@ -94,7 +96,7 @@ export const calculateUserStats = (items: BucketItem[]): UserBucketStats => {
  */
 export const groupItemsByCategory = (
   items: BucketItem[],
-  categories: Category[],
+  categories: Category[]
 ): Array<{ category: Category; items: BucketItem[] }> => {
   return categories
     .map((category) => ({
@@ -108,7 +110,7 @@ export const groupItemsByCategory = (
  * バリデーション - バケットリスト項目作成データの検証
  */
 export const validateBucketItemInsert = (
-  data: BucketItemInsert,
+  data: BucketItemInsert
 ): Result<BucketItemInsert, BucketListError> => {
   const errors: ValidationError[] = [];
 
@@ -117,7 +119,7 @@ export const validateBucketItemInsert = (
     errors.push(createValidationError("title", "タイトルは必須です"));
   } else if (data.title.length > 200) {
     errors.push(
-      createValidationError("title", "タイトルは200文字以内で入力してください"),
+      createValidationError("title", "タイトルは200文字以内で入力してください")
     );
   }
 
@@ -126,8 +128,8 @@ export const validateBucketItemInsert = (
     errors.push(
       createValidationError(
         "description",
-        "説明は1000文字以内で入力してください",
-      ),
+        "説明は1000文字以内で入力してください"
+      )
     );
   }
 
@@ -163,7 +165,7 @@ export const validateBucketItemInsert = (
  * バリデーション - バケットリスト項目更新データの検証
  */
 export const validateBucketItemUpdate = (
-  data: BucketItemUpdate,
+  data: BucketItemUpdate
 ): Result<BucketItemUpdate, BucketListError> => {
   const errors: ValidationError[] = [];
 
@@ -175,8 +177,8 @@ export const validateBucketItemUpdate = (
       errors.push(
         createValidationError(
           "title",
-          "タイトルは200文字以内で入力してください",
-        ),
+          "タイトルは200文字以内で入力してください"
+        )
       );
     }
   }
@@ -190,8 +192,8 @@ export const validateBucketItemUpdate = (
     errors.push(
       createValidationError(
         "description",
-        "説明は1000文字以内で入力してください",
-      ),
+        "説明は1000文字以内で入力してください"
+      )
     );
   }
 
@@ -227,15 +229,15 @@ export const validateBucketItemUpdate = (
  * ビジネスルール - 完了済みアイテムの編集可否チェック
  */
 export const canEditCompletedItem = (
-  item: BucketItem,
+  item: BucketItem
 ): Result<boolean, BucketListError> => {
   if (item.status === "completed") {
     return failure(
       createBusinessRuleError(
         "completed_item_edit",
         "完了済みのアイテムは編集できません",
-        { itemId: item.id, status: item.status },
-      ),
+        { itemId: item.id, status: item.status }
+      )
     );
   }
   return success(true);
@@ -246,14 +248,14 @@ export const canEditCompletedItem = (
  */
 export const getRecentlyCompletedItems = (
   items: BucketItem[],
-  limit: number = 5,
+  limit: number = 5
 ): BucketItem[] => {
   return items
     .filter((item) => item.status === "completed" && item.completed_at)
     .sort(
       (a, b) =>
         new Date(b.completed_at!).getTime() -
-        new Date(a.completed_at!).getTime(),
+        new Date(a.completed_at!).getTime()
     )
     .slice(0, limit);
 };
@@ -264,7 +266,7 @@ export const getRecentlyCompletedItems = (
 export const getUpcomingItems = (
   items: BucketItem[],
   days: number = 30,
-  limit: number = 5,
+  limit: number = 5
 ): BucketItem[] => {
   const now = new Date();
   const future = new Date();
@@ -272,13 +274,15 @@ export const getUpcomingItems = (
 
   return items
     .filter((item) => {
-      if (!item.due_date || item.status === "completed") return false;
+      if (!item.due_date || item.status === "completed") {
+        return false;
+      }
       const dueDate = new Date(item.due_date);
       return dueDate >= now && dueDate <= future;
     })
     .sort(
       (a, b) =>
-        new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime(),
+        new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime()
     )
     .slice(0, limit);
 };

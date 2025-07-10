@@ -16,7 +16,7 @@ import type {
 
 import type { Result } from "~/shared/types/result";
 import type { BucketListError } from "~/shared/types/errors";
-import { success, failure } from "~/shared/types/result";
+import { success } from "~/shared/types/result";
 import { wrapAsync, combineResults } from "~/shared/utils/result-helpers";
 import {
   createDatabaseError,
@@ -40,7 +40,7 @@ import {
  */
 const handleRepositoryError = (
   error: unknown,
-  operation: string,
+  operation: string
 ): BucketListError => {
   if (error instanceof Error) {
     if (
@@ -53,16 +53,17 @@ const handleRepositoryError = (
       error.message.includes("database") ||
       error.message.includes("supabase")
     ) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return createDatabaseError(error.message, operation as any);
     }
     return createApplicationError(
       `${operation} failed: ${error.message}`,
-      error,
+      error
     );
   }
   return createApplicationError(
     `Unknown error in ${operation}`,
-    new Error(String(error)),
+    new Error(String(error))
   );
 };
 
@@ -74,11 +75,11 @@ export const getUserBucketItems =
   async (
     profileId: string,
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ): Promise<Result<BucketItem[], BucketListError>> => {
     return wrapAsync(
       () => repository.findByProfileId(profileId, filters, sort),
-      (error: unknown) => handleRepositoryError(error, "getUserBucketItems"),
+      (error: unknown) => handleRepositoryError(error, "getUserBucketItems")
     );
   };
 
@@ -90,7 +91,7 @@ export const getUserBucketItemsWithCategory =
   async (
     profileId: string,
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ): Promise<
     Result<(BucketItem & { category: Category })[], BucketListError>
   > => {
@@ -102,7 +103,7 @@ export const getUserBucketItemsWithCategory =
     return wrapAsync(
       () => repository.findAllWithCategory(userFilters, sort),
       (error: unknown) =>
-        handleRepositoryError(error, "getUserBucketItemsWithCategory"),
+        handleRepositoryError(error, "getUserBucketItemsWithCategory")
     );
   };
 
@@ -113,11 +114,11 @@ export const getPublicBucketItems =
   (repository: BucketListRepository) =>
   async (
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ): Promise<Result<BucketItem[], BucketListError>> => {
     return wrapAsync(
       () => repository.findPublic(filters, sort),
-      (error: unknown) => handleRepositoryError(error, "getPublicBucketItems"),
+      (error: unknown) => handleRepositoryError(error, "getPublicBucketItems")
     );
   };
 
@@ -135,7 +136,7 @@ export const getBucketItem =
         }
         return item;
       },
-      (error: unknown) => handleRepositoryError(error, "getBucketItem"),
+      (error: unknown) => handleRepositoryError(error, "getBucketItem")
     );
   };
 
@@ -145,7 +146,7 @@ export const getBucketItem =
 export const createBucketItem =
   (repository: BucketListRepository) =>
   async (
-    data: BucketItemInsert,
+    data: BucketItemInsert
   ): Promise<Result<BucketItem, BucketListError>> => {
     // ビジネスロジック：バリデーション実行
     const validationResult = validateBucketItemInsert(data);
@@ -156,7 +157,7 @@ export const createBucketItem =
     // Repository操作実行
     return wrapAsync(
       () => repository.create(validationResult.data),
-      (error: unknown) => handleRepositoryError(error, "createBucketItem"),
+      (error: unknown) => handleRepositoryError(error, "createBucketItem")
     );
   };
 
@@ -167,7 +168,7 @@ export const updateBucketItem =
   (repository: BucketListRepository) =>
   async (
     id: string,
-    data: BucketItemUpdate,
+    data: BucketItemUpdate
   ): Promise<Result<BucketItem, BucketListError>> => {
     // ビジネスロジック：バリデーション実行
     const validationResult = validateBucketItemUpdate(data);
@@ -189,7 +190,7 @@ export const updateBucketItem =
     // Repository操作実行
     return wrapAsync(
       () => repository.update(id, validationResult.data),
-      (error: unknown) => handleRepositoryError(error, "updateBucketItem"),
+      (error: unknown) => handleRepositoryError(error, "updateBucketItem")
     );
   };
 
@@ -200,7 +201,7 @@ export const completeBucketItem =
   (repository: BucketListRepository) =>
   async (
     id: string,
-    comment?: string,
+    comment?: string
   ): Promise<Result<BucketItem, BucketListError>> => {
     const updateData: BucketItemUpdate = {
       status: "completed",
@@ -219,7 +220,7 @@ export const deleteBucketItem =
   async (id: string): Promise<Result<void, BucketListError>> => {
     return wrapAsync(
       () => repository.delete(id),
-      (error: unknown) => handleRepositoryError(error, "deleteBucketItem"),
+      (error: unknown) => handleRepositoryError(error, "deleteBucketItem")
     );
   };
 
@@ -231,7 +232,7 @@ export const getCategories =
   async (): Promise<Result<Category[], BucketListError>> => {
     return wrapAsync(
       () => repository.findAllCategories(),
-      (error: unknown) => handleRepositoryError(error, "getCategories"),
+      (error: unknown) => handleRepositoryError(error, "getCategories")
     );
   };
 
@@ -241,7 +242,7 @@ export const getCategories =
 export const getUserStats =
   (repository: BucketListRepository) =>
   async (
-    profileId: string,
+    profileId: string
   ): Promise<Result<UserBucketStats, BucketListError>> => {
     return wrapAsync(
       async () => {
@@ -251,7 +252,7 @@ export const getUserStats =
         }
         return stats;
       },
-      (error: unknown) => handleRepositoryError(error, "getUserStats"),
+      (error: unknown) => handleRepositoryError(error, "getUserStats")
     );
   };
 
@@ -261,7 +262,7 @@ export const getUserStats =
 export const getBucketItemsByCategory =
   (repository: BucketListRepository) =>
   async (
-    profileId: string,
+    profileId: string
   ): Promise<
     Result<
       Array<{
@@ -300,7 +301,7 @@ export const getBucketItemsByCategory =
 export const getDashboardData =
   (repository: BucketListRepository) =>
   async (
-    profileId: string,
+    profileId: string
   ): Promise<
     Result<
       {
@@ -359,7 +360,7 @@ export const getDashboardData =
  * 関数の一元管理と使いやすさのため
  */
 export const createFunctionalBucketListService = (
-  repository: BucketListRepository,
+  repository: BucketListRepository
 ) => ({
   getUserBucketItems: getUserBucketItems(repository),
   getUserBucketItemsWithCategory: getUserBucketItemsWithCategory(repository),

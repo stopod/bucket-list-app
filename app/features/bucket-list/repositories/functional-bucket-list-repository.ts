@@ -29,62 +29,80 @@ export interface FunctionalBucketListRepository {
     filters?: BucketListFilters,
     sort?: BucketListSort
   ) => Promise<Result<BucketItem[], BucketListError>>;
-  
+
   readonly findAllWithCategory: (
     filters?: BucketListFilters,
     sort?: BucketListSort
-  ) => Promise<Result<(BucketItem & { category: Category })[], BucketListError>>;
-  
-  readonly findById: (id: string) => Promise<Result<BucketItem | null, BucketListError>>;
-  
+  ) => Promise<
+    Result<(BucketItem & { category: Category })[], BucketListError>
+  >;
+
+  readonly findById: (
+    id: string
+  ) => Promise<Result<BucketItem | null, BucketListError>>;
+
   readonly findByProfileId: (
     profileId: string,
     filters?: BucketListFilters,
     sort?: BucketListSort
   ) => Promise<Result<BucketItem[], BucketListError>>;
-  
+
   readonly findPublic: (
     filters?: BucketListFilters,
     sort?: BucketListSort
   ) => Promise<Result<BucketItem[], BucketListError>>;
-  
-  readonly create: (data: BucketItemInsert) => Promise<Result<BucketItem, BucketListError>>;
-  
+
+  readonly create: (
+    data: BucketItemInsert
+  ) => Promise<Result<BucketItem, BucketListError>>;
+
   readonly update: (
     id: string,
     data: BucketItemUpdate
   ) => Promise<Result<BucketItem, BucketListError>>;
-  
+
   readonly delete: (id: string) => Promise<Result<void, BucketListError>>;
 
   // カテゴリの操作
-  readonly findAllCategories: () => Promise<Result<Category[], BucketListError>>;
-  
-  readonly findCategoryById: (id: number) => Promise<Result<Category | null, BucketListError>>;
+  readonly findAllCategories: () => Promise<
+    Result<Category[], BucketListError>
+  >;
+
+  readonly findCategoryById: (
+    id: number
+  ) => Promise<Result<Category | null, BucketListError>>;
 
   // 統計の操作
-  readonly getUserStats: (profileId: string) => Promise<Result<UserBucketStats | null, BucketListError>>;
+  readonly getUserStats: (
+    profileId: string
+  ) => Promise<Result<UserBucketStats | null, BucketListError>>;
 }
 
 /**
  * Supabaseエラーを適切なBucketListErrorに変換
  */
-const handleSupabaseError = (error: any, operation: string): BucketListError => {
-  const message = error?.message || "Unknown database error";
-  const code = error?.code || "UNKNOWN_ERROR";
-  
-  return createDatabaseError(
-    `${operation} failed: ${message}`,
-    "read",
-    code
-  );
+const handleSupabaseError = (
+  error: unknown,
+  operation: string
+): BucketListError => {
+  const message =
+    (error as { message?: string })?.message || "Unknown database error";
+  const code = (error as { code?: string })?.code || "UNKNOWN_ERROR";
+
+  return createDatabaseError(`${operation} failed: ${message}`, "read", code);
 };
 
 /**
  * フィルターを適用するヘルパー関数
  */
-const applyFilters = (query: any, filters?: BucketListFilters) => {
-  if (!filters) return query;
+const applyFilters = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  query: any,
+  filters?: BucketListFilters
+) => {
+  if (!filters) {
+    return query;
+  }
 
   let filteredQuery = query;
 
@@ -115,7 +133,11 @@ const applyFilters = (query: any, filters?: BucketListFilters) => {
 /**
  * ソートを適用するヘルパー関数
  */
-const applySort = (query: any, sort?: BucketListSort) => {
+const applySort = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  query: any,
+  sort?: BucketListSort
+) => {
   if (!sort) {
     return query.order("created_at", { ascending: false });
   }
@@ -129,15 +151,14 @@ const applySort = (query: any, sort?: BucketListSort) => {
 export const createFunctionalBucketListRepository = (
   supabase: SupabaseClient<Database>
 ): FunctionalBucketListRepository => {
-  
   return {
     findAll: async (filters, sort) => {
       try {
-        let query = supabase.from("bucket_items").select("*");
-        query = applyFilters(query, filters);
-        query = applySort(query, sort);
+        const query = supabase.from("bucket_items").select("*");
+        const filteredQuery = applyFilters(query, filters);
+        const sortedQuery = applySort(filteredQuery, sort);
 
-        const { data, error } = await query;
+        const { data, error } = await sortedQuery;
 
         if (error) {
           return failure(handleSupabaseError(error, "findAll"));
@@ -151,14 +172,14 @@ export const createFunctionalBucketListRepository = (
 
     findAllWithCategory: async (filters, sort) => {
       try {
-        let query = supabase.from("bucket_items").select(`
+        const query = supabase.from("bucket_items").select(`
           *,
           category:categories(*)
         `);
-        query = applyFilters(query, filters);
-        query = applySort(query, sort);
+        const filteredQuery = applyFilters(query, filters);
+        const sortedQuery = applySort(filteredQuery, sort);
 
-        const { data, error } = await query;
+        const { data, error } = await sortedQuery;
 
         if (error) {
           return failure(handleSupabaseError(error, "findAllWithCategory"));
@@ -194,15 +215,15 @@ export const createFunctionalBucketListRepository = (
 
     findByProfileId: async (profileId, filters, sort) => {
       try {
-        let query = supabase
+        const query = supabase
           .from("bucket_items")
           .select("*")
           .eq("profile_id", profileId);
 
-        query = applyFilters(query, filters);
-        query = applySort(query, sort);
+        const filteredQuery = applyFilters(query, filters);
+        const sortedQuery = applySort(filteredQuery, sort);
 
-        const { data, error } = await query;
+        const { data, error } = await sortedQuery;
 
         if (error) {
           return failure(handleSupabaseError(error, "findByProfileId"));
@@ -216,15 +237,15 @@ export const createFunctionalBucketListRepository = (
 
     findPublic: async (filters, sort) => {
       try {
-        let query = supabase
+        const query = supabase
           .from("bucket_items")
           .select("*")
           .eq("is_public", true);
 
-        query = applyFilters(query, filters);
-        query = applySort(query, sort);
+        const filteredQuery = applyFilters(query, filters);
+        const sortedQuery = applySort(filteredQuery, sort);
 
-        const { data, error } = await query;
+        const { data, error } = await sortedQuery;
 
         if (error) {
           return failure(handleSupabaseError(error, "findPublic"));
@@ -377,7 +398,7 @@ export const handleRepositoryResult = async <T>(
 ): Promise<Result<T, BucketListError>> => {
   try {
     return await operation();
-  } catch (error) {
+  } catch {
     return failure(
       createDatabaseError(
         "Unexpected repository error",

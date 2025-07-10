@@ -18,7 +18,12 @@ import {
   assertDueType,
 } from "~/features/bucket-list/types";
 import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
-import { getCategories, getBucketItem, updateBucketItem, completeBucketItem } from "~/features/bucket-list/services/functional-bucket-list-service";
+import {
+  getCategories,
+  getBucketItem,
+  updateBucketItem,
+  completeBucketItem,
+} from "~/features/bucket-list/services/functional-bucket-list-service";
 import { isFailure } from "~/shared/types/result";
 
 export function meta() {
@@ -47,7 +52,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
     const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase,
+      authenticatedSupabase
     );
     const repository = bucketListService.getRepository();
 
@@ -135,7 +140,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
     const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase,
+      authenticatedSupabase
     );
     const repository = bucketListService.getRepository();
 
@@ -255,7 +260,7 @@ export default function EditBucketItemPage({
     } catch (error) {
       console.error("Submit error:", error);
       setIsSubmitting(false);
-      alert("送信に失敗しました。もう一度お試しください。");
+      console.error("送信に失敗しました。もう一度お試しください。");
     }
   };
 

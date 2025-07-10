@@ -1,0 +1,5 @@
+# lint-stagedを実行
+npx lint-staged
+
+# 全テストを実行（高速・確実）
+npm test -- --run

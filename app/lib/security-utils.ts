@@ -2,7 +2,9 @@
 
 // CSP（Content Security Policy）設定
 export const setupCSP = () => {
-  if (typeof document === "undefined") return;
+  if (typeof document === "undefined") {
+    return;
+  }
 
   const csp = [
     "default-src 'self'",
@@ -20,7 +22,7 @@ export const setupCSP = () => {
 
   // 既存のCSPメタタグを削除
   const existingCSP = document.querySelector(
-    'meta[http-equiv="Content-Security-Policy"]',
+    'meta[http-equiv="Content-Security-Policy"]'
   );
   if (existingCSP) {
     existingCSP.remove();
@@ -35,7 +37,9 @@ export const setupCSP = () => {
 
 // セキュリティヘッダーのクライアントサイド検証
 export const validateSecurityHeaders = () => {
-  if (typeof window === "undefined") return { isSecure: true, issues: [] };
+  if (typeof window === "undefined") {
+    return { isSecure: true, issues: [] };
+  }
 
   const issues: string[] = [];
 
@@ -98,7 +102,7 @@ export const sanitizeString = (str: string): string => {
     "/": "&#x2F;",
   };
 
-  return str.replace(/[&<>"'\/]/g, (s) => map[s]);
+  return str.replace(/[&<>"'/]/g, (s) => map[s]);
 };
 
 // 入力検証ユーティリティ
@@ -110,25 +114,40 @@ export const validators = {
   },
 
   password: (
-    password: string,
+    password: string
   ): { valid: boolean; score: number; feedback: string[] } => {
     const feedback: string[] = [];
     let score = 0;
 
-    if (password.length >= 8) score += 1;
-    else feedback.push("8文字以上である必要があります");
+    if (password.length >= 8) {
+      score += 1;
+    } else {
+      feedback.push("8文字以上である必要があります");
+    }
 
-    if (/[a-z]/.test(password)) score += 1;
-    else feedback.push("小文字を含める必要があります");
+    if (/[a-z]/.test(password)) {
+      score += 1;
+    } else {
+      feedback.push("小文字を含める必要があります");
+    }
 
-    if (/[A-Z]/.test(password)) score += 1;
-    else feedback.push("大文字を含める必要があります");
+    if (/[A-Z]/.test(password)) {
+      score += 1;
+    } else {
+      feedback.push("大文字を含める必要があります");
+    }
 
-    if (/\d/.test(password)) score += 1;
-    else feedback.push("数字を含める必要があります");
+    if (/\d/.test(password)) {
+      score += 1;
+    } else {
+      feedback.push("数字を含める必要があります");
+    }
 
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
-    else feedback.push("特殊文字を含めることを推奨します");
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      score += 1;
+    } else {
+      feedback.push("特殊文字を含めることを推奨します");
+    }
 
     return {
       valid: score >= 3,
@@ -164,7 +183,7 @@ class RateLimit {
 
     // 古い試行を削除
     const recentAttempts = attempts.filter(
-      (time) => now - time < this.windowMs,
+      (time) => now - time < this.windowMs
     );
 
     if (recentAttempts.length >= this.maxAttempts) {
@@ -179,7 +198,9 @@ class RateLimit {
 
   getRemainingTime(key: string): number {
     const attempts = this.attempts.get(key) || [];
-    if (attempts.length === 0) return 0;
+    if (attempts.length === 0) {
+      return 0;
+    }
 
     const oldestAttempt = Math.min(...attempts);
     const timeToReset = this.windowMs - (Date.now() - oldestAttempt);
@@ -193,7 +214,9 @@ export const authRateLimit = new RateLimit(5, 15 * 60 * 1000); // 15分間で5�
 
 // セキュリティ初期化
 export const initializeSecurity = () => {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") {
+    return;
+  }
 
   // CSP設定
   setupCSP();

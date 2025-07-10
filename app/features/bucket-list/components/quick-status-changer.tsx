@@ -44,7 +44,9 @@ export function QuickStatusChanger({
   });
 
   const handleStatusChange = async (newStatus: Status) => {
-    if (item.status === newStatus || updateBucketItem.isLoading) return;
+    if (item.status === newStatus || updateBucketItem.isLoading) {
+      return;
+    }
 
     setIsChanging(true);
 
@@ -58,7 +60,7 @@ export function QuickStatusChanger({
         ...(newStatus === "completed" && {
           completed_at: new Date().toISOString(),
         }),
-      },
+      }
     );
 
     if (!isSuccess(result)) {
@@ -207,7 +209,9 @@ export function QuickStatusButton({
 
   const handleNextStatus = async () => {
     const nextStatus = getNextStatus(item.status);
-    if (!nextStatus || updateBucketItem.isLoading) return;
+    if (!nextStatus || updateBucketItem.isLoading) {
+      return;
+    }
 
     const result = await updateBucketItem.execute(
       functionalService.updateBucketItem,
@@ -217,7 +221,7 @@ export function QuickStatusButton({
         ...(nextStatus === "completed" && {
           completed_at: new Date().toISOString(),
         }),
-      },
+      }
     );
 
     if (!isSuccess(result)) {

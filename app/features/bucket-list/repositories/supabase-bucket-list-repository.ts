@@ -15,12 +15,12 @@ import { BucketListRepositoryError } from "./bucket-list-repository";
 export class SupabaseBucketListRepository implements BucketListRepository {
   constructor(
     private supabase: SupabaseClient<Database>,
-    private userId?: string,
+    private userId?: string
   ) {}
 
   async findAll(
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ): Promise<BucketItem[]> {
     let query = this.supabase.from("bucket_items").select("*");
 
@@ -32,7 +32,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
     if (error) {
       throw new BucketListRepositoryError(
         `Failed to fetch bucket items: ${error.message}`,
-        error.code,
+        error.code
       );
     }
 
@@ -41,7 +41,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
 
   async findAllWithCategory(
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ): Promise<(BucketItem & { category: Category })[]> {
     let query = this.supabase.from("bucket_items").select(`
         *,
@@ -56,7 +56,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
     if (error) {
       throw new BucketListRepositoryError(
         `Failed to fetch bucket items with categories: ${error.message}`,
-        error.code,
+        error.code
       );
     }
 
@@ -77,7 +77,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
       }
       throw new BucketListRepositoryError(
         `Failed to fetch bucket item: ${error.message}`,
-        error.code,
+        error.code
       );
     }
 
@@ -87,7 +87,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
   async findByProfileId(
     profileId: string,
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ): Promise<BucketItem[]> {
     let query = this.supabase
       .from("bucket_items")
@@ -102,7 +102,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
     if (error) {
       throw new BucketListRepositoryError(
         `Failed to fetch user bucket items: ${error.message}`,
-        error.code,
+        error.code
       );
     }
 
@@ -111,7 +111,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
 
   async findPublic(
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ): Promise<BucketItem[]> {
     let query = this.supabase
       .from("bucket_items")
@@ -126,7 +126,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
     if (error) {
       throw new BucketListRepositoryError(
         `Failed to fetch public bucket items: ${error.message}`,
-        error.code,
+        error.code
       );
     }
 
@@ -150,7 +150,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
     if (error) {
       throw new BucketListRepositoryError(
         `Failed to create bucket item: ${error.message}`,
-        error.code,
+        error.code
       );
     }
 
@@ -173,7 +173,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
     if (error) {
       throw new BucketListRepositoryError(
         `Failed to update bucket item: ${error.message}`,
-        error.code,
+        error.code
       );
     }
 
@@ -189,7 +189,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
     if (error) {
       throw new BucketListRepositoryError(
         `Failed to delete bucket item: ${error.message}`,
-        error.code,
+        error.code
       );
     }
   }
@@ -203,7 +203,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
     if (error) {
       throw new BucketListRepositoryError(
         `Failed to fetch categories: ${error.message}`,
-        error.code,
+        error.code
       );
     }
 
@@ -224,7 +224,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
       }
       throw new BucketListRepositoryError(
         `Failed to fetch category: ${error.message}`,
-        error.code,
+        error.code
       );
     }
 
@@ -245,7 +245,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
       }
       throw new BucketListRepositoryError(
         `Failed to fetch user stats: ${error.message}`,
-        error.code,
+        error.code
       );
     }
 
@@ -253,6 +253,7 @@ export class SupabaseBucketListRepository implements BucketListRepository {
   }
 
   // プライベートヘルパーメソッド
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private applyFilters(query: any, filters?: BucketListFilters) {
     if (!filters) {
       return query;
@@ -275,13 +276,14 @@ export class SupabaseBucketListRepository implements BucketListRepository {
     }
     if (filters.search) {
       query = query.or(
-        `title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`,
+        `title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`
       );
     }
 
     return query;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private applySort(query: any, sort?: BucketListSort) {
     if (!sort) {
       return query.order("created_at", { ascending: false });

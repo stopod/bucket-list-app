@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import {
   useAsyncOperation,
@@ -211,7 +211,9 @@ describe("useAsyncOperation", () => {
     });
 
     it("オブジェクトエラーが適切に処理されること", async () => {
-      const mockAsyncFunction = vi.fn().mockRejectedValue({ message: "Object error" });
+      const mockAsyncFunction = vi
+        .fn()
+        .mockRejectedValue({ message: "Object error" });
       const { result } = renderHook(() => useAsyncOperation(mockAsyncFunction));
 
       // TDD: オブジェクトエラーが発生する操作を実行
@@ -234,7 +236,9 @@ describe("useParallelAsyncOperations", () => {
         () => Promise.resolve("result1"),
         () => Promise.resolve("result2"),
       ];
-      const { result } = renderHook(() => useParallelAsyncOperations(operations));
+      const { result } = renderHook(() =>
+        useParallelAsyncOperations(operations)
+      );
 
       // TDD: 並列操作の初期状態確認
       expect(result.current.isLoading).toBe(false);
@@ -271,7 +275,9 @@ describe("useParallelAsyncOperations", () => {
 
     it("一つでもエラーが発生した場合、全体がエラーになること", async () => {
       const operation1 = vi.fn().mockResolvedValue("result1");
-      const operation2 = vi.fn().mockRejectedValue(new Error("Operation2 failed"));
+      const operation2 = vi
+        .fn()
+        .mockRejectedValue(new Error("Operation2 failed"));
       const operations = [operation1, operation2];
       const onError = vi.fn();
 
@@ -291,7 +297,9 @@ describe("useParallelAsyncOperations", () => {
 
     it("空の操作配列でも正しく動作すること", async () => {
       const operations: Array<() => Promise<any>> = [];
-      const { result } = renderHook(() => useParallelAsyncOperations(operations));
+      const { result } = renderHook(() =>
+        useParallelAsyncOperations(operations)
+      );
 
       await act(async () => {
         const executeResult = await result.current.executeAll();
@@ -327,7 +335,9 @@ describe("useFormSubmission", () => {
   describe("基本機能", () => {
     it("初期状態が正しく設定されること", () => {
       const mockSubmitFunction = vi.fn().mockResolvedValue("success");
-      const { result } = renderHook(() => useFormSubmission(mockSubmitFunction));
+      const { result } = renderHook(() =>
+        useFormSubmission(mockSubmitFunction)
+      );
 
       // TDD: フォーム送信の初期状態確認
       expect(result.current.isLoading).toBe(false);
@@ -366,7 +376,9 @@ describe("useFormSubmission", () => {
 
     it("submitFormとexecuteが同じ動作をすること", async () => {
       const mockSubmitFunction = vi.fn().mockResolvedValue("success");
-      const { result } = renderHook(() => useFormSubmission(mockSubmitFunction));
+      const { result } = renderHook(() =>
+        useFormSubmission(mockSubmitFunction)
+      );
 
       const formData = { test: "data" };
 
@@ -398,7 +410,9 @@ describe("useFormSubmission", () => {
           })
       );
 
-      const { result } = renderHook(() => useFormSubmission(mockSubmitFunction));
+      const { result } = renderHook(() =>
+        useFormSubmission(mockSubmitFunction)
+      );
 
       // TDD: 送信前の状態確認
       expect(result.current.isSubmitting).toBe(false);
@@ -439,7 +453,9 @@ describe("useFormSubmission", () => {
     it("redirectOnSuccessオプションが設定されること", () => {
       const mockSubmitFunction = vi.fn().mockResolvedValue("success");
       const { result } = renderHook(() =>
-        useFormSubmission(mockSubmitFunction, { redirectOnSuccess: "/dashboard" })
+        useFormSubmission(mockSubmitFunction, {
+          redirectOnSuccess: "/dashboard",
+        })
       );
 
       // オプションが設定されていることを確認（実際のリダイレクト処理は呼び出し側で実装）
@@ -481,7 +497,9 @@ describe("useFormSubmission", () => {
       );
 
       await act(async () => {
-        const submitResult = await result.current.submitForm({ invalid: "data" });
+        const submitResult = await result.current.submitForm({
+          invalid: "data",
+        });
         expect(submitResult).toBeNull();
       });
 

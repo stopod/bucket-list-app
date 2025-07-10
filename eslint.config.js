@@ -132,8 +132,8 @@ export default [
       "no-script-url": "error",
       "prefer-const": "error",
       "no-var": "error",
-      "eqeqeq": ["error", "always"],
-      "curly": "error",
+      eqeqeq: ["error", "always"],
+      curly: "error",
       "no-unused-vars": "off", // TypeScriptルールを使用
     },
   },

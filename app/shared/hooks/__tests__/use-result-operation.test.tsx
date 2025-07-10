@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import {
@@ -31,7 +30,7 @@ describe("useResultOperation", () => {
   it("初期データが設定されている場合、それが反映されること", () => {
     const initialData = "initial";
     const { result } = renderHook(() =>
-      useResultOperation<string>({ initialData }),
+      useResultOperation<string>({ initialData })
     );
 
     expect(result.current.data).toBe(initialData);
@@ -41,7 +40,7 @@ describe("useResultOperation", () => {
   it("成功時、適切に状態が更新されること", async () => {
     const onSuccess = vi.fn();
     const { result } = renderHook(() =>
-      useResultOperation<string>({ onSuccess }),
+      useResultOperation<string>({ onSuccess })
     );
 
     const mockFunction = vi.fn().mockResolvedValue(success("test data"));
@@ -61,7 +60,7 @@ describe("useResultOperation", () => {
   it("失敗時、適切に状態が更新されること", async () => {
     const onError = vi.fn();
     const { result } = renderHook(() =>
-      useResultOperation<string>({ onError }),
+      useResultOperation<string>({ onError })
     );
 
     const mockFunction = vi.fn().mockResolvedValue(failure(mockError));
@@ -86,7 +85,7 @@ describe("useResultOperation", () => {
       () =>
         new Promise<Result<string, BucketListError>>((resolve) => {
           resolvePromise = resolve;
-        }),
+        })
     );
 
     // 実行開始
@@ -120,7 +119,7 @@ describe("useResultOperation", () => {
   it("予期しないエラーを適切に処理すること", async () => {
     const onError = vi.fn();
     const { result } = renderHook(() =>
-      useResultOperation<string>({ onError }),
+      useResultOperation<string>({ onError })
     );
 
     const unexpectedError = new Error("Unexpected error");
@@ -138,7 +137,7 @@ describe("useResultOperation", () => {
   it("resetが正しく動作すること", async () => {
     const initialData = "initial";
     const { result } = renderHook(() =>
-      useResultOperation<string>({ initialData }),
+      useResultOperation<string>({ initialData })
     );
 
     // データを変更
@@ -183,7 +182,7 @@ describe("useParallelResultOperations", () => {
   it("すべての操作が成功した場合、成功結果を返すこと", async () => {
     const onSuccess = vi.fn();
     const { result } = renderHook(() =>
-      useParallelResultOperations<string>({ onSuccess }),
+      useParallelResultOperations<string>({ onSuccess })
     );
 
     const mockFunction1 = vi.fn().mockResolvedValue(success("result1"));
@@ -193,7 +192,7 @@ describe("useParallelResultOperations", () => {
     await act(async () => {
       await result.current.executeAll(
         [mockFunction1, mockFunction2, mockFunction3],
-        "arg",
+        "arg"
       );
     });
 
@@ -205,7 +204,7 @@ describe("useParallelResultOperations", () => {
   it("一つでも失敗した場合、失敗結果を返すこと", async () => {
     const onError = vi.fn();
     const { result } = renderHook(() =>
-      useParallelResultOperations<string>({ onError }),
+      useParallelResultOperations<string>({ onError })
     );
 
     const mockFunction1 = vi.fn().mockResolvedValue(success("result1"));
@@ -229,7 +228,7 @@ describe("useParallelResultOperations", () => {
   it("予期しないエラーを適切に処理すること", async () => {
     const onError = vi.fn();
     const { result } = renderHook(() =>
-      useParallelResultOperations<string>({ onError }),
+      useParallelResultOperations<string>({ onError })
     );
 
     const unexpectedError = new Error("Unexpected error");
@@ -249,7 +248,7 @@ describe("useResultFormSubmission", () => {
   it("フォーム送信が成功した場合、適切に処理されること", async () => {
     const onSuccess = vi.fn();
     const { result } = renderHook(() =>
-      useResultFormSubmission<string, { name: string }>({ onSuccess }),
+      useResultFormSubmission<string, { name: string }>({ onSuccess })
     );
 
     const mockSubmitFunction = vi
@@ -270,7 +269,7 @@ describe("useResultFormSubmission", () => {
   it("フォーム送信が失敗した場合、適切に処理されること", async () => {
     const onError = vi.fn();
     const { result } = renderHook(() =>
-      useResultFormSubmission<string, { name: string }>({ onError }),
+      useResultFormSubmission<string, { name: string }>({ onError })
     );
 
     const mockSubmitFunction = vi.fn().mockResolvedValue(failure(mockError));
@@ -287,7 +286,7 @@ describe("useResultFormSubmission", () => {
 
   it("送信中はisSubmittingがtrueになること", async () => {
     const { result } = renderHook(() =>
-      useResultFormSubmission<string, { name: string }>(),
+      useResultFormSubmission<string, { name: string }>()
     );
 
     let resolvePromise: (value: Result<string, BucketListError>) => void;
@@ -295,7 +294,7 @@ describe("useResultFormSubmission", () => {
       () =>
         new Promise<Result<string, BucketListError>>((resolve) => {
           resolvePromise = resolve;
-        }),
+        })
     );
 
     // 送信開始
@@ -319,7 +318,7 @@ describe("useResultFormSubmission", () => {
     const { result } = renderHook(() =>
       useResultFormSubmission<string, { name: string }>({
         resetOnSuccess: true,
-      }),
+      })
     );
 
     const mockSubmitFunction = vi.fn().mockResolvedValue(success("submitted"));

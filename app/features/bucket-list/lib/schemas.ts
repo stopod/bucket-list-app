@@ -27,7 +27,9 @@ export const bucketItemSchema = z.object({
     .optional()
     .or(z.literal(""))
     .refine((date) => {
-      if (!date) return true;
+      if (!date) {
+        return true;
+      }
       const parsedDate = new Date(date);
       return !isNaN(parsedDate.getTime());
     }, "有効な日付を入力してください"),

@@ -1,7 +1,5 @@
 import type {
   BucketItem,
-  BucketItemInsert,
-  BucketItemUpdate,
   Category,
   UserBucketStats,
 } from "~/features/bucket-list/types";
@@ -17,7 +15,7 @@ export function useCreateBucketItem(
   options: {
     onSuccess?: (item: BucketItem) => void;
     onError?: (error: BucketListError) => void;
-  } = {},
+  } = {}
 ) {
   const { onSuccess, onError } = options;
 
@@ -35,7 +33,7 @@ export function useUpdateBucketItem(
   options: {
     onSuccess?: (item: BucketItem) => void;
     onError?: (error: BucketListError) => void;
-  } = {},
+  } = {}
 ) {
   const { onSuccess, onError } = options;
 
@@ -53,7 +51,7 @@ export function useDeleteBucketItem(
   options: {
     onSuccess?: () => void;
     onError?: (error: BucketListError) => void;
-  } = {},
+  } = {}
 ) {
   const { onSuccess, onError } = options;
 
@@ -66,7 +64,7 @@ export function useDeleteBucketItem(
 /**
  * カテゴリ一覧取得Hook
  */
-export function useCategories(repository: BucketListRepository) {
+export function useCategories(_repository: BucketListRepository) {
   return useResultOperation<Category[], BucketListError>({
     initialData: [],
   });
@@ -75,7 +73,7 @@ export function useCategories(repository: BucketListRepository) {
 /**
  * ダッシュボードデータ取得Hook（複合データ）
  */
-export function useDashboardData(repository: BucketListRepository) {
+export function useDashboardData(_repository: BucketListRepository) {
   return useResultOperation<
     {
       items: (BucketItem & { category: Category })[];

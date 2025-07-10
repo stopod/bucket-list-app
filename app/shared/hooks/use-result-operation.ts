@@ -20,11 +20,13 @@ interface ResultOperationState<T, E = BucketListError> {
  * Promise<Result<T, E>>を返す関数を安全に実行し、状態を管理する
  */
 export function useResultOperation<T, E = BucketListError>(
-  options: UseResultOperationOptions<T, E> = {},
+  options: UseResultOperationOptions<T, E> = {}
 ) {
   const { onSuccess, onError, initialData = null } = options;
 
-  const [state, setState] = useState<ResultOperationState<T, E> & { hasExecuted: boolean }>({
+  const [state, setState] = useState<
+    ResultOperationState<T, E> & { hasExecuted: boolean }
+  >({
     isLoading: false,
     error: null,
     data: initialData,
@@ -32,6 +34,7 @@ export function useResultOperation<T, E = BucketListError>(
   });
 
   const execute = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async <Args extends any[]>(
       resultFunction: (...args: Args) => Promise<Result<T, E>>,
       ...args: Args
@@ -88,7 +91,7 @@ export function useResultOperation<T, E = BucketListError>(
         return { success: false, error: unexpectedError } as Result<T, E>;
       }
     },
-    [onSuccess, onError],
+    [onSuccess, onError]
   );
 
   const reset = useCallback(() => {
@@ -112,7 +115,11 @@ export function useResultOperation<T, E = BucketListError>(
     execute,
     reset,
     clearError,
-    isSuccess: !state.isLoading && !state.error && state.hasExecuted && state.data !== null,
+    isSuccess:
+      !state.isLoading &&
+      !state.error &&
+      state.hasExecuted &&
+      state.data !== null,
     isError: !state.isLoading && !!state.error,
     hasData: state.data !== null,
   };
@@ -122,11 +129,13 @@ export function useResultOperation<T, E = BucketListError>(
  * 複数のResult操作を並列実行するためのHook
  */
 export function useParallelResultOperations<T, E = BucketListError>(
-  options: UseResultOperationOptions<T[], E> = {},
+  options: UseResultOperationOptions<T[], E> = {}
 ) {
   const { onSuccess, onError } = options;
 
-  const [state, setState] = useState<ResultOperationState<T[], E> & { hasExecuted: boolean }>({
+  const [state, setState] = useState<
+    ResultOperationState<T[], E> & { hasExecuted: boolean }
+  >({
     isLoading: false,
     error: null,
     data: null,
@@ -134,6 +143,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
   });
 
   const executeAll = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async <Args extends any[]>(
       resultFunctions: Array<(...args: Args) => Promise<Result<T, E>>>,
       ...args: Args
@@ -146,7 +156,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
 
       try {
         const results = await Promise.all(
-          resultFunctions.map((fn) => fn(...args)),
+          resultFunctions.map((fn) => fn(...args))
         );
 
         // すべての結果をチェック
@@ -198,7 +208,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
         return { success: false, error: unexpectedError } as Result<T[], E>;
       }
     },
-    [onSuccess, onError],
+    [onSuccess, onError]
   );
 
   const reset = useCallback(() => {
@@ -214,7 +224,11 @@ export function useParallelResultOperations<T, E = BucketListError>(
     ...state,
     executeAll,
     reset,
-    isSuccess: !state.isLoading && !state.error && state.hasExecuted && state.data !== null,
+    isSuccess:
+      !state.isLoading &&
+      !state.error &&
+      state.hasExecuted &&
+      state.data !== null,
     isError: !state.isLoading && !!state.error,
   };
 }
@@ -225,7 +239,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
 export function useResultFormSubmission<T, FormData, E = BucketListError>(
   options: UseResultOperationOptions<T, E> & {
     resetOnSuccess?: boolean;
-  } = {},
+  } = {}
 ) {
   const { resetOnSuccess = false, ...resultOptions } = options;
 
@@ -241,7 +255,7 @@ export function useResultFormSubmission<T, FormData, E = BucketListError>(
   const submitForm = useCallback(
     async (
       submitFunction: (formData: FormData) => Promise<Result<T, E>>,
-      formData: FormData,
+      formData: FormData
     ): Promise<Result<T, E>> => {
       const result = await resultOperation.execute(submitFunction, formData);
 
@@ -251,7 +265,7 @@ export function useResultFormSubmission<T, FormData, E = BucketListError>(
 
       return result;
     },
-    [resultOperation, resetOnSuccess],
+    [resultOperation, resetOnSuccess]
   );
 
   return {

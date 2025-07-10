@@ -16,10 +16,10 @@ export function useExpandableList() {
     (categoryId: string, totalCount: number, defaultShowCount = 5) => {
       return Math.min(
         expandedCategories[categoryId] || defaultShowCount,
-        totalCount,
+        totalCount
       );
     },
-    [expandedCategories],
+    [expandedCategories]
   );
 
   /**
@@ -42,7 +42,7 @@ export function useExpandableList() {
         [categoryId]: defaultShowCount,
       }));
     },
-    [],
+    []
   );
 
   /**
@@ -53,7 +53,7 @@ export function useExpandableList() {
       const showCount = expandedCategories[categoryId] || 5;
       return showCount >= totalCount;
     },
-    [expandedCategories],
+    [expandedCategories]
   );
 
   /**
@@ -64,7 +64,7 @@ export function useExpandableList() {
       const showCount = expandedCategories[categoryId] || defaultShowCount;
       return showCount < totalCount;
     },
-    [expandedCategories],
+    [expandedCategories]
   );
 
   /**
@@ -75,7 +75,7 @@ export function useExpandableList() {
       const showCount = expandedCategories[categoryId] || defaultShowCount;
       return Math.max(0, totalCount - showCount);
     },
-    [expandedCategories],
+    [expandedCategories]
   );
 
   return {

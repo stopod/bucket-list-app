@@ -14,11 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui";
-import type {
-  BucketItemWithCategory,
-  Status,
-  Priority,
-} from "../types";
+import type { BucketItemWithCategory, Status, Priority } from "../types";
 import {
   PRIORITY_LABELS,
   STATUS_LABELS,
@@ -62,7 +58,9 @@ export function BucketItemDetailDialog({
   readOnly = false,
   statusChangingIds = new Set(),
 }: BucketItemDetailDialogProps) {
-  if (!isOpen || !item) return null;
+  if (!isOpen || !item) {
+    return null;
+  }
 
   // 型安全性を確保したラベル取得
   const priorityDisplay = (() => {

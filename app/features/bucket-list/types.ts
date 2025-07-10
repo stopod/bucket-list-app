@@ -38,7 +38,7 @@ export function assertStatus(status: string): Status {
 export function assertDueType(dueType: string): DueType {
   if (
     !["specific_date", "this_year", "next_year", "unspecified"].includes(
-      dueType,
+      dueType
     )
   ) {
     throw new Error(`Invalid due type: ${dueType}`);

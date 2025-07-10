@@ -13,7 +13,6 @@ import { useEffect } from "react";
 import type { Route } from "./+types/root";
 import { AuthProvider } from "./features/auth";
 import { initializeSecurity } from "./lib/security-utils";
-import { Spinner } from "./components/ui";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [

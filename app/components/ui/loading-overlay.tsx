@@ -13,13 +13,15 @@ export function LoadingOverlay({
   message = "処理中...",
   className,
 }: LoadingOverlayProps) {
-  if (!isVisible) return null;
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <div
       className={cn(
         "fixed inset-0 z-70 flex items-center justify-center bg-black bg-opacity-50",
-        className,
+        className
       )}
       role="dialog"
       aria-modal="true"

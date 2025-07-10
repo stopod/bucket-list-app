@@ -1,10 +1,7 @@
 import type { BucketListRepository } from "~/features/bucket-list/repositories";
 import type {
-  BucketItem,
   BucketItemInsert,
   BucketItemUpdate,
-  Category,
-  UserBucketStats,
   BucketListFilters,
   BucketListSort,
 } from "~/features/bucket-list/types";
@@ -22,7 +19,7 @@ export class BucketListService {
   async getUserBucketItems(
     profileId: string,
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ) {
     return this.repository.findByProfileId(profileId, filters, sort);
   }
@@ -30,7 +27,7 @@ export class BucketListService {
   async getUserBucketItemsWithCategory(
     profileId: string,
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ) {
     // プロファイルIDフィルターを追加
     const userFilters = {
@@ -41,7 +38,7 @@ export class BucketListService {
     // Repositoryでフィルタリングを実行
     const allItems = await this.repository.findAllWithCategory(
       userFilters,
-      sort,
+      sort
     );
 
     return allItems;
@@ -49,7 +46,7 @@ export class BucketListService {
 
   async getPublicBucketItems(
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ) {
     return this.repository.findPublic(filters, sort);
   }
@@ -57,7 +54,6 @@ export class BucketListService {
   async getBucketItem(id: string) {
     return this.repository.findById(id);
   }
-
 
   async createBucketItem(data: BucketItemInsert) {
     return this.repository.create(data);

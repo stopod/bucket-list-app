@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import type { Route } from "./+types/home";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { Button, MobileMenu } from "~/components/ui";
 import { useAuth } from "~/features/auth";
 import { AppLayout } from "~/shared/layouts";
 
-export function meta({}: Route.MetaArgs) {
+export function meta(_args: Route.MetaArgs) {
   return [
     { title: "死ぬまでにやること" },
     {
@@ -18,7 +18,6 @@ export function meta({}: Route.MetaArgs) {
 export default function HomePage() {
   const { user, loading, signOut } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const navigate = useNavigate();
 
   // 認証済みユーザーのリダイレクトは削除
   // タイトルクリックで直接ダッシュボードに行くように変更

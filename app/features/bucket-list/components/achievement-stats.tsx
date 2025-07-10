@@ -28,20 +28,38 @@ export function AchievementStats({
 
   // プログレスバーの色を達成率に応じて変更
   const getProgressColor = (rate: number) => {
-    if (rate >= 80) return "bg-green-500";
-    if (rate >= 60) return "bg-blue-500";
-    if (rate >= 40) return "bg-yellow-500";
-    if (rate >= 20) return "bg-orange-500";
+    if (rate >= 80) {
+      return "bg-green-500";
+    }
+    if (rate >= 60) {
+      return "bg-blue-500";
+    }
+    if (rate >= 40) {
+      return "bg-yellow-500";
+    }
+    if (rate >= 20) {
+      return "bg-orange-500";
+    }
     return "bg-red-500";
   };
 
   // 達成レベルのメッセージ
   const getAchievementMessage = (rate: number) => {
-    if (rate >= 90) return "素晴らしい達成率です！🏆";
-    if (rate >= 70) return "とても良いペースです！🌟";
-    if (rate >= 50) return "順調に進んでいます！✨";
-    if (rate >= 30) return "少しずつ前進中！💪";
-    if (rate >= 10) return "スタートを切りました！🚀";
+    if (rate >= 90) {
+      return "素晴らしい達成率です！🏆";
+    }
+    if (rate >= 70) {
+      return "とても良いペースです！🌟";
+    }
+    if (rate >= 50) {
+      return "順調に進んでいます！✨";
+    }
+    if (rate >= 30) {
+      return "少しずつ前進中！💪";
+    }
+    if (rate >= 10) {
+      return "スタートを切りました！🚀";
+    }
     return "これから始めましょう！📝";
   };
 

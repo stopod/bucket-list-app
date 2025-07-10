@@ -8,7 +8,7 @@ import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import type { BucketListRepository } from "~/features/bucket-list/repositories";
 import { useDashboardData } from "~/features/bucket-list/hooks/use-bucket-list-operations";
-import { isSuccess, isFailure } from "~/shared/types/result";
+import { isSuccess } from "~/shared/types/result";
 import { createFunctionalBucketListService } from "~/features/bucket-list/services/functional-bucket-list-service";
 
 interface LiveDashboardWidgetProps {
@@ -38,7 +38,7 @@ export function LiveDashboardWidget({
   const loadDashboardData = async () => {
     const result = await dashboardData.execute(
       functionalService.getDashboardData,
-      profileId,
+      profileId
     );
 
     if (isSuccess(result)) {
@@ -53,7 +53,9 @@ export function LiveDashboardWidget({
 
   // 自動更新
   useEffect(() => {
-    if (!autoRefresh || !refreshInterval) return;
+    if (!autoRefresh || !refreshInterval) {
+      return;
+    }
 
     const interval = setInterval(() => {
       loadDashboardData();
@@ -228,7 +230,7 @@ export function LiveDashboardWidget({
                   ? Math.ceil(
                       (new Date(item.due_date).getTime() -
                         new Date().getTime()) /
-                        (1000 * 60 * 60 * 24),
+                        (1000 * 60 * 60 * 24)
                     )
                   : null;
                 const isUrgent = daysUntilDue !== null && daysUntilDue <= 7;
@@ -269,7 +271,7 @@ export function LiveDashboardWidget({
           <div className="space-y-2">
             {data.itemsByCategory.map(({ category, items }) => {
               const completed = items.filter(
-                (item) => item.status === "completed",
+                (item) => item.status === "completed"
               ).length;
               const total = items.length;
               const rate =

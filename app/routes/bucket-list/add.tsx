@@ -7,8 +7,11 @@ import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { BucketItemForm } from "~/features/bucket-list/components/bucket-item-form";
 import type { BucketItemFormData } from "~/features/bucket-list/types";
 import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
-import { getCategories, createBucketItem } from "~/features/bucket-list/services/functional-bucket-list-service";
-import { isSuccess, isFailure } from "~/shared/types/result";
+import {
+  getCategories,
+  createBucketItem,
+} from "~/features/bucket-list/services/functional-bucket-list-service";
+import { isFailure } from "~/shared/types/result";
 
 export function meta() {
   return [{ title: "やりたいことを追加" }];
@@ -31,21 +34,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
     const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase,
+      authenticatedSupabase
     );
     const repository = bucketListService.getRepository();
 
     // 関数型サービスを使用してカテゴリを取得
     const categoriesResult = await getCategories(repository)();
-    
+
     if (isFailure(categoriesResult)) {
       console.error("Categories loading failed:", categoriesResult.error);
       throw new Response("カテゴリの取得に失敗しました", { status: 500 });
     }
 
     const categories = categoriesResult.data;
-    console.log("Categories loaded:", categories.length);
-    console.log("User ID:", authResult.user?.id);
 
     return {
       categories,
@@ -102,7 +103,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
     const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase,
+      authenticatedSupabase
     );
     const repository = bucketListService.getRepository();
 
@@ -124,8 +125,6 @@ export async function action({ request }: ActionFunctionArgs) {
       throw new Response("項目の作成に失敗しました", { status: 500 });
     }
 
-    console.log("Bucket item created successfully");
-
     // 成功時はやりたいこと一覧ページにリダイレクト
     return redirect("/bucket-list");
   } catch (error) {
@@ -135,11 +134,11 @@ export async function action({ request }: ActionFunctionArgs) {
     console.error("Action error details:", error);
     console.error(
       "Error message:",
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : String(error)
     );
     console.error(
       "Error stack:",
-      error instanceof Error ? error.stack : "No stack",
+      error instanceof Error ? error.stack : "No stack"
     );
     throw new Response("保存に失敗しました", { status: 500 });
   }
@@ -148,6 +147,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function AddBucketItemPage({
   loaderData,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   loaderData: { categories: any[]; user: any };
 }) {
   const { categories } = loaderData;
@@ -177,7 +177,7 @@ export default function AddBucketItemPage({
     } catch (error) {
       console.error("Submit error:", error);
       setIsSubmitting(false);
-      alert("送信に失敗しました。もう一度お試しください。");
+      console.error("送信に失敗しました。もう一度お試しください。");
     }
   };
 

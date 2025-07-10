@@ -105,7 +105,7 @@ export type BucketListError =
 export const createValidationError = (
   field: string,
   message: string,
-  code?: string,
+  code?: string
 ): ValidationError => ({
   type: "ValidationError",
   field,
@@ -116,7 +116,7 @@ export const createValidationError = (
 export const createDatabaseError = (
   message: string,
   operation?: DatabaseError["operation"],
-  code?: string,
+  code?: string
 ): DatabaseError => ({
   type: "DatabaseError",
   message,
@@ -126,7 +126,7 @@ export const createDatabaseError = (
 
 export const createAuthenticationError = (
   message: string,
-  reason: AuthenticationError["reason"],
+  reason: AuthenticationError["reason"]
 ): AuthenticationError => ({
   type: "AuthenticationError",
   message,
@@ -136,7 +136,7 @@ export const createAuthenticationError = (
 export const createNotFoundError = (
   resource: string,
   id?: string,
-  message?: string,
+  message?: string
 ): NotFoundError => ({
   type: "NotFoundError",
   resource,
@@ -147,7 +147,7 @@ export const createNotFoundError = (
 export const createConflictError = (
   resource: string,
   message: string,
-  conflictingData?: unknown,
+  conflictingData?: unknown
 ): ConflictError => ({
   type: "ConflictError",
   resource,
@@ -158,7 +158,7 @@ export const createConflictError = (
 export const createNetworkError = (
   message: string,
   statusCode?: number,
-  url?: string,
+  url?: string
 ): NetworkError => ({
   type: "NetworkError",
   message,
@@ -169,7 +169,7 @@ export const createNetworkError = (
 export const createBusinessRuleError = (
   rule: string,
   message: string,
-  context?: Record<string, unknown>,
+  context?: Record<string, unknown>
 ): BusinessRuleError => ({
   type: "BusinessRuleError",
   rule,
@@ -180,7 +180,7 @@ export const createBusinessRuleError = (
 export const createApplicationError = (
   message: string,
   cause?: Error,
-  context?: Record<string, unknown>,
+  context?: Record<string, unknown>
 ): ApplicationError => ({
   type: "ApplicationError",
   message,
@@ -192,32 +192,32 @@ export const createApplicationError = (
  * エラーの型判定ヘルパー関数群
  */
 export const isValidationError = (
-  error: BucketListError,
+  error: BucketListError
 ): error is ValidationError => error.type === "ValidationError";
 
 export const isDatabaseError = (
-  error: BucketListError,
+  error: BucketListError
 ): error is DatabaseError => error.type === "DatabaseError";
 
 export const isAuthenticationError = (
-  error: BucketListError,
+  error: BucketListError
 ): error is AuthenticationError => error.type === "AuthenticationError";
 
 export const isNotFoundError = (
-  error: BucketListError,
+  error: BucketListError
 ): error is NotFoundError => error.type === "NotFoundError";
 
 export const isConflictError = (
-  error: BucketListError,
+  error: BucketListError
 ): error is ConflictError => error.type === "ConflictError";
 
 export const isNetworkError = (error: BucketListError): error is NetworkError =>
   error.type === "NetworkError";
 
 export const isBusinessRuleError = (
-  error: BucketListError,
+  error: BucketListError
 ): error is BusinessRuleError => error.type === "BusinessRuleError";
 
 export const isApplicationError = (
-  error: BucketListError,
+  error: BucketListError
 ): error is ApplicationError => error.type === "ApplicationError";

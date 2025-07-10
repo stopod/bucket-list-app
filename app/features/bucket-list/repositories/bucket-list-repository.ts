@@ -13,21 +13,21 @@ export interface BucketListRepository {
   // バケットリスト項目の操作
   findAll(
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ): Promise<BucketItem[]>;
   findAllWithCategory(
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ): Promise<(BucketItem & { category: Category })[]>;
   findById(id: string): Promise<BucketItem | null>;
   findByProfileId(
     profileId: string,
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ): Promise<BucketItem[]>;
   findPublic(
     filters?: BucketListFilters,
-    sort?: BucketListSort,
+    sort?: BucketListSort
   ): Promise<BucketItem[]>;
   create(data: BucketItemInsert): Promise<BucketItem>;
   update(id: string, data: BucketItemUpdate): Promise<BucketItem>;
@@ -45,7 +45,7 @@ export interface BucketListRepository {
 export class BucketListRepositoryError extends Error {
   constructor(
     message: string,
-    public code?: string,
+    public code?: string
   ) {
     super(message);
     this.name = "BucketListRepositoryError";
@@ -70,8 +70,7 @@ export function createSuccess<T>(data: T): RepositoryResult<T> {
 
 export function createError<T>(
   message: string,
-  code?: string,
+  code?: string
 ): RepositoryResult<T> {
   return { data: null, error: new BucketListRepositoryError(message, code) };
 }
-

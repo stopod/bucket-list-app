@@ -125,6 +125,7 @@ NODE_ENV=development|production
 ### データベース設定
 
 主要テーブル：
+
 - `profiles`: ユーザープロファイル
 - `categories`: カテゴリマスター
 - `bucket_items`: バケットリスト項目

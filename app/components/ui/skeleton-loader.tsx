@@ -31,7 +31,7 @@ export function Skeleton({
       className={cn(
         "animate-pulse bg-gray-300",
         variantClasses[variant],
-        className,
+        className
       )}
       style={style}
       role="presentation"

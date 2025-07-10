@@ -9,7 +9,7 @@ const supabaseAnonKey =
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
-    "Supabase URL and Anon Key must be set in environment variables for server-side auth.",
+    "Supabase URL and Anon Key must be set in environment variables for server-side auth."
   );
 }
 
@@ -22,7 +22,7 @@ const supabaseServer = createClient<Database>(
       autoRefreshToken: false,
       persistSession: false,
     },
-  },
+  }
 );
 
 export interface ServerAuthResult {
@@ -41,7 +41,9 @@ export interface ServerAuthResult {
 function parseCookies(cookieHeader: string): Record<string, string> {
   const cookies: Record<string, string> = {};
 
-  if (!cookieHeader) return cookies;
+  if (!cookieHeader) {
+    return cookies;
+  }
 
   cookieHeader.split(";").forEach((cookie) => {
     const [name, ...rest] = cookie.split("=");
@@ -63,12 +65,6 @@ function extractSupabaseTokens(cookies: Record<string, string>): {
   expires_at: number | null;
 } {
   // Try different possible cookie patterns used by Supabase
-  const possibleKeys = [
-    "supabase-auth-token",
-    "supabase.auth.token",
-    "sb-access-token",
-    "sb-refresh-token",
-  ];
 
   let access_token: string | null = null;
   let refresh_token: string | null = null;
@@ -131,7 +127,7 @@ async function validateJwtToken(token: string): Promise<User | null> {
     }
 
     return user;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -140,7 +136,9 @@ async function validateJwtToken(token: string): Promise<User | null> {
  * Check if a token is expired
  */
 function isTokenExpired(expiresAt: number | null): boolean {
-  if (!expiresAt) return false;
+  if (!expiresAt) {
+    return false;
+  }
 
   const now = Math.floor(Date.now() / 1000);
   return expiresAt < now;
@@ -175,7 +173,7 @@ function isTokenExpired(expiresAt: number | null): boolean {
  * @returns Promise<ServerAuthResult> - Authentication result
  */
 export async function getServerAuth(
-  request: Request,
+  request: Request
 ): Promise<ServerAuthResult> {
   try {
     const cookieHeader = request.headers.get("Cookie") || "";
@@ -224,7 +222,7 @@ export async function getServerAuth(
         expires_at,
       },
     };
-  } catch (error) {
+  } catch {
     return {
       user: null,
       isAuthenticated: false,
@@ -243,7 +241,7 @@ export async function getServerAuth(
  */
 export async function requireAuth(
   request: Request,
-  redirectTo: string = "/login",
+  redirectTo: string = "/login"
 ): Promise<ServerAuthResult> {
   const authResult = await getServerAuth(request);
 
@@ -267,7 +265,7 @@ export async function requireAuth(
  * @returns Supabase client with user context
  */
 export async function createAuthenticatedSupabaseClient(
-  authResult: ServerAuthResult,
+  authResult: ServerAuthResult
 ) {
   if (!authResult.isAuthenticated || !authResult.session?.access_token) {
     throw new Error("Cannot create authenticated client without valid session");
@@ -313,7 +311,7 @@ export async function createAuthenticatedSupabaseClient(
  */
 export async function withAuth(
   request: Request,
-  redirectTo: string = "/login",
+  redirectTo: string = "/login"
 ): Promise<{
   auth: ServerAuthResult;
   supabase: Awaited<ReturnType<typeof createAuthenticatedSupabaseClient>>;

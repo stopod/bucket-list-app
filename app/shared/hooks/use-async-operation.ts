@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 
 interface UseAsyncOperationOptions {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSuccess?: (result: any) => void;
   onError?: (error: Error) => void;
   throwOnError?: boolean;
@@ -9,12 +10,15 @@ interface UseAsyncOperationOptions {
 interface AsyncOperationState {
   isLoading: boolean;
   error: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useAsyncOperation<T = any>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   asyncFunction: (...args: any[]) => Promise<T>,
-  options: UseAsyncOperationOptions = {},
+  options: UseAsyncOperationOptions = {}
 ) {
   const { onSuccess, onError, throwOnError = false } = options;
 
@@ -25,6 +29,7 @@ export function useAsyncOperation<T = any>(
   });
 
   const execute = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (...args: any[]) => {
       setState((prev) => ({
         ...prev,
@@ -67,7 +72,7 @@ export function useAsyncOperation<T = any>(
         return null;
       }
     },
-    [asyncFunction, onSuccess, onError, throwOnError],
+    [asyncFunction, onSuccess, onError, throwOnError]
   );
 
   const reset = useCallback(() => {
@@ -88,9 +93,10 @@ export function useAsyncOperation<T = any>(
 }
 
 // 複数の非同期操作を並列実行するためのフック
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useParallelAsyncOperations<T = any>(
   operations: Array<() => Promise<T>>,
-  options: UseAsyncOperationOptions = {},
+  options: UseAsyncOperationOptions = {}
 ) {
   const { onSuccess, onError, throwOnError = false } = options;
 
@@ -161,12 +167,14 @@ export function useParallelAsyncOperations<T = any>(
 }
 
 // フォーム送信に特化したフック
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useFormSubmission<T = any>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   submitFunction: (formData: any) => Promise<T>,
   options: UseAsyncOperationOptions & {
     resetFormOnSuccess?: boolean;
     redirectOnSuccess?: string;
-  } = {},
+  } = {}
 ) {
   const {
     resetFormOnSuccess = false,

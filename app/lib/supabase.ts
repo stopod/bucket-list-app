@@ -6,7 +6,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
-    "Supabase URL and Anon Key must be set in environment variables.",
+    "Supabase URL and Anon Key must be set in environment variables."
   );
 }
 
@@ -22,12 +22,14 @@ const createUltraSecureCookieStorage = () => {
       sameSite?: "strict" | "lax" | "none";
       maxAge?: number;
       path?: string;
-    } = {},
+    } = {}
   ) => {
-    if (typeof document === "undefined") return;
+    if (typeof document === "undefined") {
+      return;
+    }
 
     const {
-      httpOnly = false, // クライアントサイドではhttpOnlyは設定できない
+      httpOnly: _httpOnly = false, // クライアントサイドではhttpOnlyは設定できない
       secure = location.protocol === "https:",
       sameSite = "strict",
       maxAge = 24 * 60 * 60, // 24時間
@@ -47,7 +49,9 @@ const createUltraSecureCookieStorage = () => {
   };
 
   const getCookie = (name: string): string | null => {
-    if (typeof document === "undefined") return null;
+    if (typeof document === "undefined") {
+      return null;
+    }
 
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -61,7 +65,9 @@ const createUltraSecureCookieStorage = () => {
   };
 
   const removeCookie = (name: string) => {
-    if (typeof document === "undefined") return;
+    if (typeof document === "undefined") {
+      return;
+    }
 
     document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=strict`;
   };
@@ -69,11 +75,15 @@ const createUltraSecureCookieStorage = () => {
   return {
     getItem: (key: string) => {
       // サーバーサイドでは常にnullを返す（SSR安全）
-      if (typeof window === "undefined") return null;
+      if (typeof window === "undefined") {
+        return null;
+      }
 
       try {
         const item = getCookie(key);
-        if (!item) return null;
+        if (!item) {
+          return null;
+        }
 
         // 🛡️ 簡易的な検証（実際のトークンかどうか）
         if (key.includes("supabase") && item.length < 10) {
@@ -90,11 +100,15 @@ const createUltraSecureCookieStorage = () => {
     },
 
     setItem: (key: string, value: string) => {
-      if (typeof window === "undefined") return;
+      if (typeof window === "undefined") {
+        return;
+      }
 
       try {
         // 値の検証
-        if (!value || value.length === 0) return;
+        if (!value || value.length === 0) {
+          return;
+        }
 
         // 🔐 Cookieサイズ制限チェック（4KB制限）
         if (value.length > 4 * 1024) {
@@ -115,7 +129,9 @@ const createUltraSecureCookieStorage = () => {
     },
 
     removeItem: (key: string) => {
-      if (typeof window === "undefined") return;
+      if (typeof window === "undefined") {
+        return;
+      }
 
       try {
         removeCookie(key);

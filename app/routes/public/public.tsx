@@ -7,9 +7,7 @@ import {
   createAuthenticatedSupabaseClient,
 } from "~/lib/auth-server";
 import { assertPriority, assertStatus } from "~/features/bucket-list/types";
-import {
-  createAuthenticatedBucketListService,
-} from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -21,7 +19,7 @@ import {
 } from "~/components/ui";
 import { BucketItemDetailDialog } from "~/features/bucket-list/components/bucket-item-detail-dialog";
 
-export function meta({}: Route.MetaArgs) {
+export function meta(_args: Route.MetaArgs) {
   return [{ title: "みんなのやりたいこと" }];
 }
 
@@ -61,7 +59,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const authenticatedSupabase =
       await createAuthenticatedSupabaseClient(authResult);
     const bucketListService = createAuthenticatedBucketListService(
-      authenticatedSupabase,
+      authenticatedSupabase
     );
 
     // 公開されたやりたいことと全カテゴリを取得
@@ -81,7 +79,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       .map((category) => ({
         category,
         items: itemsWithCategory.filter(
-          (item) => item.category_id === category.id,
+          (item) => item.category_id === category.id
         ),
       }))
       .filter((group) => group.items.length > 0);
@@ -181,7 +179,7 @@ export default function PublicBucketListPage({
                 <div className="text-2xl font-bold text-green-600">
                   {
                     publicBucketItems.filter(
-                      (item) => item.status === "completed",
+                      (item) => item.status === "completed"
                     ).length
                   }
                 </div>
@@ -429,7 +427,7 @@ export default function PublicBucketListPage({
                             <p className="text-xs text-green-600">
                               達成日:{" "}
                               {new Date(item.completed_at).toLocaleDateString(
-                                "ja-JP",
+                                "ja-JP"
                               )}
                             </p>
                             {item.completion_comment && (
@@ -467,8 +465,12 @@ export default function PublicBucketListPage({
           isOpen={detailDialog.isOpen}
           onClose={closeDetailDialog}
           item={detailDialog.item}
-          onDelete={() => {}} // 読み取り専用のため未使用
-          onStatusChange={() => {}} // 読み取り専用のため未使用
+          onDelete={() => {
+            // 読み取り専用のため未使用
+          }}
+          onStatusChange={() => {
+            // 読み取り専用のため未使用
+          }}
           isSubmitting={false}
           readOnly={true}
         />

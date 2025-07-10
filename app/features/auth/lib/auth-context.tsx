@@ -19,7 +19,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // セキュリティ強化：セッション検証
   const validateSession = useCallback((session: Session | null): boolean => {
-    if (!session) return false;
+    if (!session) {
+      return false;
+    }
 
     // JWTの有効期限チェック
     const now = Math.floor(Date.now() / 1000);
@@ -118,7 +120,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // セキュリティ強化：非アクティブ時のセッション管理
   useEffect(() => {
-    if (!session || typeof window === "undefined") return;
+    if (!session || typeof window === "undefined") {
+      return;
+    }
 
     const checkInactivity = () => {
       const now = new Date();

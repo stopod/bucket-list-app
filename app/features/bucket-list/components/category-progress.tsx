@@ -44,14 +44,14 @@ export function CategoryProgress({
   const categoryStats = categories
     .map((category) => {
       const categoryItems = displayItems.filter(
-        (item) => item.category_id === category.id,
+        (item) => item.category_id === category.id
       );
       const totalItems = categoryItems.length;
       const completedItems = categoryItems.filter(
-        (item) => item.status === "completed",
+        (item) => item.status === "completed"
       ).length;
       const inProgressItems = categoryItems.filter(
-        (item) => item.status === "in_progress",
+        (item) => item.status === "in_progress"
       ).length;
       const completionRate =
         totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
@@ -131,7 +131,7 @@ export function CategoryProgress({
                   </span>
                 </div>
               </div>
-            ),
+            )
           )}
         </div>
 
@@ -143,11 +143,11 @@ export function CategoryProgress({
             </h3>
             {(() => {
               const topCategory = categoryStats.reduce((prev, current) =>
-                current.completionRate > prev.completionRate ? current : prev,
+                current.completionRate > prev.completionRate ? current : prev
               );
               const leastProgressCategory = categoryStats.reduce(
                 (prev, current) =>
-                  current.completionRate < prev.completionRate ? current : prev,
+                  current.completionRate < prev.completionRate ? current : prev
               );
 
               return (
