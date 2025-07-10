@@ -13,7 +13,15 @@
     "typecheck": "react-router typegen && tsc",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint app/ --max-warnings=0 --fix",
+    "lint:check": "eslint app/ --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "quality:check": "npm run typecheck && npm run lint:check && npm run format:check",
+    "quality:fix": "npm run format && npm run lint && npm run typecheck",
+    "clean": "rm -rf build coverage .react-router",
+    "reset": "npm run clean && npm install"
   },
   "dependencies": {
     "@conform-to/react": "^1.6.1",

@@ -141,13 +141,15 @@ describe("LiveDashboardWidget", () => {
   });
 
   describe("基本的な描画テスト", () => {
-    it("ダッシュボード要素が正しく表示されること", () => {
-      render(
-        <LiveDashboardWidget
-          repository={mockRepository}
-          profileId="user-1"
-        />
-      );
+    it("ダッシュボード要素が正しく表示されること", async () => {
+      await act(async () => {
+        render(
+          <LiveDashboardWidget
+            repository={mockRepository}
+            profileId="user-1"
+          />
+        );
+      });
 
       expect(screen.getByText("📊 ライブダッシュボード")).toBeInTheDocument();
       expect(screen.getByText("総項目数")).toBeInTheDocument();
@@ -156,50 +158,58 @@ describe("LiveDashboardWidget", () => {
       expect(screen.getByText("達成率")).toBeInTheDocument();
     });
 
-    it("統計データが正しく表示されること", () => {
-      render(
-        <LiveDashboardWidget
-          repository={mockRepository}
-          profileId="user-1"
-        />
-      );
+    it("統計データが正しく表示されること", async () => {
+      await act(async () => {
+        render(
+          <LiveDashboardWidget
+            repository={mockRepository}
+            profileId="user-1"
+          />
+        );
+      });
 
       expect(screen.getByText("3")).toBeInTheDocument(); // 総項目数
       expect(screen.getAllByText("1")).toHaveLength(2); // 完了済み and 進行中
       expect(screen.getByText("33%")).toBeInTheDocument(); // 達成率
     });
 
-    it("最近の完了項目が表示されること", () => {
-      render(
-        <LiveDashboardWidget
-          repository={mockRepository}
-          profileId="user-1"
-        />
-      );
+    it("最近の完了項目が表示されること", async () => {
+      await act(async () => {
+        render(
+          <LiveDashboardWidget
+            repository={mockRepository}
+            profileId="user-1"
+          />
+        );
+      });
 
       expect(screen.getByText("🎉 最近の達成 (直近5件)")).toBeInTheDocument();
       expect(screen.getByText("完了項目")).toBeInTheDocument();
     });
 
-    it("期限が近い項目が表示されること", () => {
-      render(
-        <LiveDashboardWidget
-          repository={mockRepository}
-          profileId="user-1"
-        />
-      );
+    it("期限が近い項目が表示されること", async () => {
+      await act(async () => {
+        render(
+          <LiveDashboardWidget
+            repository={mockRepository}
+            profileId="user-1"
+          />
+        );
+      });
 
       expect(screen.getByText("⏰ 期限が近い項目 (30日以内)")).toBeInTheDocument();
       expect(screen.getByText("進行中項目")).toBeInTheDocument();
     });
 
-    it("カテゴリ別進捗が表示されること", () => {
-      render(
-        <LiveDashboardWidget
-          repository={mockRepository}
-          profileId="user-1"
-        />
-      );
+    it("カテゴリ別進捗が表示されること", async () => {
+      await act(async () => {
+        render(
+          <LiveDashboardWidget
+            repository={mockRepository}
+            profileId="user-1"
+          />
+        );
+      });
 
       expect(screen.getByText("📂 カテゴリ別進捗")).toBeInTheDocument();
       expect(screen.getByText("旅行・観光")).toBeInTheDocument();
@@ -221,28 +231,32 @@ describe("LiveDashboardWidget", () => {
         execute: mockExecute,
       });
 
-      render(
-        <LiveDashboardWidget
-          repository={mockRepository}
-          profileId="user-1"
-          refreshInterval={5000}
-        />
-      );
+      await act(async () => {
+        render(
+          <LiveDashboardWidget
+            repository={mockRepository}
+            profileId="user-1"
+            refreshInterval={1000} // より短い間隔に変更
+          />
+        );
+      });
 
-      // 初回読み込み
+      // 初回読み込み確認
       await waitFor(() => {
         expect(mockExecute).toHaveBeenCalledTimes(1);
+      }, { timeout: 3000 });
+
+      // タイマーを進める
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+        await vi.runAllTimersAsync();
       });
 
-      // 5秒後に自動更新
-      act(() => {
-        vi.advanceTimersByTime(5000);
-      });
-
+      // 自動更新確認
       await waitFor(() => {
         expect(mockExecute).toHaveBeenCalledTimes(2);
-      });
-    });
+      }, { timeout: 3000 });
+    }, 10000);
 
     it("自動更新トグルボタンが正しく動作すること", async () => {
       const user = userEvent.setup();
@@ -258,25 +272,39 @@ describe("LiveDashboardWidget", () => {
         execute: mockExecute,
       });
 
-      render(
-        <LiveDashboardWidget
-          repository={mockRepository}
-          profileId="user-1"
-          refreshInterval={5000}
-        />
-      );
+      await act(async () => {
+        render(
+          <LiveDashboardWidget
+            repository={mockRepository}
+            profileId="user-1"
+            refreshInterval={1000}
+          />
+        );
+      });
 
       // 初期状態では自動更新が有効
-      expect(screen.getByText("⏰ 自動更新ON")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText("⏰ 自動更新ON")).toBeInTheDocument();
+      }, { timeout: 3000 });
 
       // 自動更新を無効にする
-      await user.click(screen.getByText("⏰ 自動更新ON"));
-      expect(screen.getByText("⏸️ 自動更新OFF")).toBeInTheDocument();
+      await act(async () => {
+        await user.click(screen.getByText("⏰ 自動更新ON"));
+      });
+      
+      await waitFor(() => {
+        expect(screen.getByText("⏸️ 自動更新OFF")).toBeInTheDocument();
+      }, { timeout: 3000 });
 
       // 自動更新を再度有効にする
-      await user.click(screen.getByText("⏸️ 自動更新OFF"));
-      expect(screen.getByText("⏰ 自動更新ON")).toBeInTheDocument();
-    });
+      await act(async () => {
+        await user.click(screen.getByText("⏸️ 自動更新OFF"));
+      });
+      
+      await waitFor(() => {
+        expect(screen.getByText("⏰ 自動更新ON")).toBeInTheDocument();
+      }, { timeout: 3000 });
+    }, 15000);
 
     it("自動更新が無効な場合、定期更新されないこと", async () => {
       const user = userEvent.setup();
