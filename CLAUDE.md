@@ -71,7 +71,7 @@ docker compose up -d
 - Result<T, E> による型安全なエラーハンドリング
 - 純粋なビジネスロジック関数（`business-logic.ts`）
 - 関数合成とコンビネーター活用
-- hooks基底クラス化（`use-operation-base.ts`）による重複削除
+- hooks基底パターン統一（`use-operation-base.ts`）による重複削除
 
 **実装方針**: 関数型アプローチで実装
 

@@ -59,7 +59,7 @@ app/
 │   │   ├── result-helpers.ts        # Result操作ヘルパー関数
 │   │   └── index.ts                 # ユーティリティ関数
 │   └── hooks/
-│       ├── use-operation-base.ts    # 非同期操作基底クラス
+│       ├── use-operation-base.ts    # 非同期操作基底パターン
 │       ├── use-result-operation.ts  # Result対応hooks
 │       └── use-async-operation.ts   # 非同期操作hooks
 │
@@ -660,7 +660,7 @@ class SendGridEmailService implements EmailService {
 - [ ] `features/` 下に機能フォルダを作成
 - [ ] `components/`, `hooks/`, `lib/`, `types.ts`, `index.ts` を適切に配置
 - [ ] ビジネスロジックはhooksまたはcontextに分離
-- [ ] **関数型アプローチを推奨**: 新機能はResult型とビジネスロジック関数で実装
+- [ ] **関数型アプローチ**: 機能はResult型とビジネスロジック関数で実装
 - [ ] 汎用的なコンポーネントは `components/ui/` への移動を検討
 - [ ] 適切なre-exportで外部からのアクセスを制御
 

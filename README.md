@@ -90,7 +90,7 @@ npm run test:coverage # テストカバレッジ測定
 - **Type Safety**: TypeScript による型安全性
 - **Functional Programming**: Result型による安全なエラーハンドリング
 - **SSR**: React Router v7 による Server-Side Rendering
-- **Code Quality**: hooks基底クラス化による重複削除
+- **Code Quality**: hooks基底パターン統一による重複削除
 
 ### プロジェクト構成
 
@@ -106,7 +106,7 @@ app/
 ├── shared/                 # 共通モジュール
 │   ├── types/             # 共通型定義（Result型含む）
 │   ├── utils/             # ユーティリティ
-│   ├── hooks/             # 基底クラス統一hooks
+│   ├── hooks/             # 基底パターン統一hooks
 │   └── layouts/           # レイアウト
 ├── components/ui/         # UI コンポーネント
 └── routes/                # ページルーティング

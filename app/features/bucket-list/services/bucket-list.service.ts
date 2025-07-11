@@ -1,6 +1,6 @@
 /**
  * 関数型BucketListService - Result型を活用した安全なエラーハンドリング
- * クラスベースからの関数型アプローチへの変換
+ * カリー化された関数と関数合成による純粋な関数型アプローチ
  */
 
 import type { FunctionalBucketListRepository } from "~/features/bucket-list/repositories/bucket-list.repository";
