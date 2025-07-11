@@ -3,7 +3,7 @@ import type { Route } from "./+types/dashboard";
 import { Link, useNavigation } from "react-router";
 import { AuthenticatedLayout } from "~/shared/layouts";
 import { getServerAuth } from "~/lib/auth-server";
-import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListService } from "~/features/bucket-list/lib/service-factory";
 import { isFailure } from "~/shared/types/result";
 import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { Button } from "~/components/ui/button";

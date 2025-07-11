@@ -6,7 +6,7 @@ import { getServerAuth } from "~/lib/auth-server";
 import { createAuthenticatedSupabaseClient } from "~/lib/auth-server";
 import { BucketItemForm } from "~/features/bucket-list/components/bucket-item-form";
 import type { BucketItemFormData } from "~/features/bucket-list/types";
-import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/service-factory";
 import { isFailure } from "~/shared/types/result";
 
 export function meta() {

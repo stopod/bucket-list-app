@@ -7,7 +7,7 @@ import {
   createAuthenticatedSupabaseClient,
 } from "~/lib/auth-server";
 import { assertPriority, assertStatus } from "~/features/bucket-list/types";
-import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/service-factory";
 import { isFailure } from "~/shared/types/result";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";

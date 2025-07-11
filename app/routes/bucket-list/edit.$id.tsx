@@ -17,7 +17,7 @@ import {
   assertStatus,
   assertDueType,
 } from "~/features/bucket-list/types";
-import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/service-factory";
 import { isFailure } from "~/shared/types/result";
 
 export function meta() {

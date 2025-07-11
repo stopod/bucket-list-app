@@ -86,7 +86,7 @@ npm run test:coverage # テストカバレッジ測定
 ### アーキテクチャパターン
 
 - **Clean Architecture**: Repository Pattern + Service Layer
-- **Dependency Injection**: Factory Pattern による DI
+- **Dependency Injection**: 関数合成による DI
 - **Type Safety**: TypeScript による型安全性
 - **Functional Programming**: Result型による安全なエラーハンドリング
 - **SSR**: React Router v7 による Server-Side Rendering

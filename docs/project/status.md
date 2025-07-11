@@ -91,7 +91,7 @@
 
 - **Clean Architecture**: Repository + Service層実装
 - **型安全性**: Pick/Omit型 + Result型による完全型安全性
-- **依存性注入**: Factory Pattern実装
+- **依存性注入**: 関数合成によるDI実装
 - **関数型アプローチ**: Result型・純粋関数・関数合成活用・重複削除
 
 ## 次のアクション

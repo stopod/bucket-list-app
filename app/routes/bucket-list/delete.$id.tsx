@@ -4,7 +4,7 @@ import {
   getServerAuth,
   createAuthenticatedSupabaseClient,
 } from "~/lib/auth-server";
-import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/repository-factory";
+import { createAuthenticatedBucketListRepository } from "~/features/bucket-list/lib/service-factory";
 import { isFailure } from "~/shared/types/result";
 
 export async function action({ request, params }: ActionFunctionArgs) {
