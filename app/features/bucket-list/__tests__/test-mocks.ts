@@ -214,14 +214,12 @@ export const createMockRepositoryCustom = (
  * business-logic モジュールのモック
  */
 export const createMockBusinessLogic = () => ({
-  groupItemsByCategory: vi
-    .fn()
-    .mockReturnValue([
-      {
-        category: createMockCategory(),
-        items: [createMockBucketItemWithCategory()],
-      },
-    ]),
+  groupItemsByCategory: vi.fn().mockReturnValue([
+    {
+      category: createMockCategory(),
+      items: [createMockBucketItemWithCategory()],
+    },
+  ]),
   validateBucketItemInsert: vi
     .fn()
     .mockReturnValue(success(createMockBucketItem())),

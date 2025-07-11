@@ -483,12 +483,10 @@ describe("Repository操作ヘルパー関数", () => {
     });
 
     it("最初の操作が失敗した場合、エラーが返されること", async () => {
-      const op1 = vi
-        .fn()
-        .mockResolvedValue({
-          success: false,
-          error: { type: "TestError", message: "Error 1" },
-        });
+      const op1 = vi.fn().mockResolvedValue({
+        success: false,
+        error: { type: "TestError", message: "Error 1" },
+      });
       const op2 = vi.fn().mockResolvedValue({ success: true, data: "data2" });
 
       const result = await combineRepositoryOperations(op1, op2);
@@ -519,12 +517,10 @@ describe("Repository操作ヘルパー関数", () => {
     it("いずれかの操作が失敗した場合、エラーが返されること", async () => {
       const operations = [
         vi.fn().mockResolvedValue({ success: true, data: "data1" }),
-        vi
-          .fn()
-          .mockResolvedValue({
-            success: false,
-            error: { type: "TestError", message: "Error 2" },
-          }),
+        vi.fn().mockResolvedValue({
+          success: false,
+          error: { type: "TestError", message: "Error 2" },
+        }),
         vi.fn().mockResolvedValue({ success: true, data: "data3" }),
       ];
 
