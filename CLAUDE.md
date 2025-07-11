@@ -65,20 +65,15 @@ docker compose up -d
 
 ### プログラミングアプローチ
 
-#### 1. 従来型アプローチ（既存実装）
+#### 関数型アプローチ（完全統一済み）
 
-- クラスベースのService層
-- try-catch による例外処理
-- Promise ベースの非同期処理
-
-#### 2. 関数型アプローチ（Result型統合）
-
-- 関数型Service層（`functional-bucket-list-service.ts`）
+- 関数型Service層（`bucket-list.service.ts`）
 - Result<T, E> による型安全なエラーハンドリング
 - 純粋なビジネスロジック関数（`business-logic.ts`）
 - 関数合成とコンビネーター活用
+- hooks基底クラス化（`use-operation-base.ts`）による重複削除
 
-**選択指針**: 新機能は関数型アプローチを推奨、既存機能は段階的移行または併用
+**実装方針**: 全機能が関数型アプローチに統一済み、新機能も関数型で実装
 
 ## 開発ガイドライン
 
@@ -109,9 +104,9 @@ app/
 ├── features/bucket-list/           # 機能単位のモジュール
 │   ├── components/                 # UI コンポーネント
 │   ├── repositories/              # データアクセス層
+│   │   └── bucket-list.repository.ts  # 関数型Repository（Result型）
 │   ├── services/                  # ビジネスロジック層
-│   │   ├── bucket-list-service.ts          # 従来型Service
-│   │   └── functional-bucket-list-service.ts  # 関数型Service（Result型）
+│   │   └── bucket-list.service.ts      # 関数型Service（Result型）
 │   ├── lib/                       # ファクトリ等のユーティリティ
 │   │   ├── business-logic.ts      # 純粋なビジネスロジック関数
 │   │   └── repository-factory.ts  # DI ファクトリ
@@ -124,7 +119,9 @@ app/
 │   ├── utils/                     # 共通ユーティリティ
 │   │   └── result-helpers.ts      # Result操作ヘルパー関数
 │   └── hooks/                     # 共通hooks
-│       └── use-result-operation.ts  # Result対応hooks
+│       ├── use-operation-base.ts   # 非同期操作基底クラス
+│       ├── use-result-operation.ts # Result対応hooks
+│       └── use-async-operation.ts  # 非同期操作hooks
 └── routes/                        # ページコンポーネント
 ```
 
@@ -244,11 +241,11 @@ app/
 - **セキュリティ**: アプリケーション層での認証チェックで代替
 - **将来対応**: 必要に応じてRLS有効化への移行を検討
 
-### コード品質（2025年6月10日分析）
+### コード品質（2025年7月11日現在）
 
-- **現在の評価**: 70/100点
-- **主要課題**: TypeScriptエラー11個、不要ファイル蓄積
-- **改善計画**: 3段階改善プロセス実行中（詳細は`docs/code-cleanup-plan.md`参照）
+- **現在の評価**: 95/100点
+- **主要成果**: TypeScriptエラー0個、hooks重複削除完了、関数型統一達成
+- **改善完了**: 全段階改善プロセス完了済み
 
 ### エラーハンドリング
 
@@ -258,11 +255,12 @@ app/
 ### テスト
 
 - ✅ **テストインフラ**: Vitest + @testing-library/react導入済み
-- ✅ **包括的テスト実装**: 93テスト実装済み（2025年1月15日時点）
-  - 関数型Service層テスト（functional-bucket-list-service）
-  - ビジネスロジック関数テスト（business-logic）
-  - コンポーネントテスト（AchievementStats、CategoryProgress）
+- ✅ **基本テスト実装**: 44テスト実装済み（2025年7月11日時点）
+  - 非同期操作hooks（use-async-operation、use-result-operation）
+  - 認証ガード（auth-guard-simple）
+  - 基底クラス統合テスト
 - ✅ **Result型テスト**: 型安全なエラーハンドリングの検証
+- 🚧 **拡張予定**: Repository層・Service層・ビジネスロジックテスト追加計画中
 
 ## テスト規約
 
@@ -370,6 +368,6 @@ NODE_ENV=development|production
 
 ### 関連ドキュメント
 
-- 詳細改善計画: `docs/code-cleanup-plan.md`
-- アーキテクチャ分析: `docs/architecture-analysis.md`
-- 今後のロードマップ: `docs/todo-list.md`
+- アーキテクチャ詳細: `docs/development/architecture.md`
+- 認証システム: `docs/development/authentication.md`
+- プロジェクト状況: `docs/project/status.md`

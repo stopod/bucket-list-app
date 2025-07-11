@@ -60,19 +60,18 @@ app/
 │   │   ├── result-helpers.ts        # Result操作ヘルパー関数
 │   │   └── index.ts                 # ユーティリティ関数
 │   └── hooks/
-│       └── use-result-operation.ts  # Result対応hooks
+│       ├── use-operation-base.ts    # 非同期操作基底クラス
+│       ├── use-result-operation.ts  # Result対応hooks
+│       └── use-async-operation.ts   # 非同期操作hooks
 │
 ├── routes/                          # ページルート
 │   ├── auth/                        # 認証関連ページ
 │   │   ├── login.tsx                # ログインページ
 │   │   └── register.tsx             # 登録ページ
 │   ├── home.tsx                     # ホームページ
-│   ├── instruments/
-│   │   ├── instruments.tsx          # 楽器一覧ページ
-│   │   └── types.ts                 # 楽器関連型定義
-│   └── sample/
-│       ├── sample.tsx               # サンプルページ
-│       └── types.ts                 # サンプル関連型定義
+│   ├── bucket-list/             # バケットリスト機能ページ
+│   ├── dashboard/               # ダッシュボードページ
+│   └── public/                  # 公開リストページ
 │
 └── lib/                             # グローバルライブラリ
     ├── supabase.ts                  # Supabaseクライアント設定
@@ -342,15 +341,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
 ```typescript
 // ✅ 良い例：使用場所の近くに定義
-// routes/instruments/types.ts
+// features/bucket-list/types.ts
 import type { Tables } from "~/shared/types/database";
 
-export type Instrument = Tables<"instruments">;
-
-// routes/sample/types.ts
-import type { Tables } from "~/shared/types/database";
-
-export type Profile = Tables<"profiles">;
+export type BucketItem = Tables<"bucket_items">;
+export type Category = Tables<"categories">;
 
 // features/auth/types.ts
 import type { User, Session } from "@supabase/supabase-js";
@@ -548,8 +543,10 @@ export function BucketListPage() {
 ✅ result.ts: Result型定義
 ✅ errors.ts: エラー型定義
 ✅ result-helpers.ts: Result操作関数
-✅ functional-bucket-list-service.ts: 関数型Service
+✅ bucket-list.service.ts: 関数型Service
+✅ bucket-list.repository.ts: 関数型Repository
 ✅ business-logic.ts: 純粋関数群
+✅ use-operation-base.ts: hooks基底クラス
 ```
 
 ### **2. Import/Export規則**
