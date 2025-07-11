@@ -304,7 +304,7 @@ export const mockDateToFixed = (fixedDate: string) => {
   const originalDate = global.Date;
 
   global.Date = class extends originalDate {
-    constructor(...args: any[]) {
+    constructor(...args: unknown[]) {
       if (args.length === 0) {
         super(fixed.getTime());
       } else {

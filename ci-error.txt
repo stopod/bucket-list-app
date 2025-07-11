@@ -1,0 +1,16 @@
+3s
+Run npm run lint:check
+  npm run lint:check
+  shell: /usr/bin/bash -e {0}
+
+> bucket-list-app@1.0.0 lint:check
+> eslint app/ --max-warnings=0
+
+
+/home/runner/work/bucket-list-app/bucket-list-app/app/features/bucket-list/__tests__/test-helpers.ts
+Warning:   307:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 1 problem (0 errors, 1 warning)
+
+ESLint found too many warnings (maximum: 0).
+Error: Process completed with exit code 1.
