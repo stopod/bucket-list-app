@@ -1,35 +1,55 @@
-# ユーザーフローシーケンス図
+# ユーザーフローシーケンス図 - 開発者向け詳細版
 
-このドキュメントでは、バケットリストアプリケーションの主要なユーザーフローをシーケンス図で説明します。
+このドキュメントでは、バケットリストアプリケーションの主要なユーザーフローを、具体的な関数名・ファイルパス・実装詳細を含めたシーケンス図で説明します。
 
 ## 1. ログインからダッシュボード表示
 
 ```mermaid
 sequenceDiagram
     participant User as ユーザー
-    participant App as アプリケーション
+    participant Route as Dashboard Route<br/>(app/routes/dashboard/dashboard.tsx)
+    participant Hook as useResultOperation<br/>(app/shared/hooks/use-result-operation.ts)
+    participant Service as BucketListService<br/>(app/features/bucket-list/services/bucket-list.service.ts)
+    participant Repo as Repository<br/>(app/features/bucket-list/repositories/bucket-list.repository.ts)
+    participant BL as BusinessLogic<br/>(app/features/bucket-list/lib/business-logic.ts)
     participant Auth as Supabase Auth
-    participant DB as データベース
+    participant DB as Supabase Database
 
-    User->>App: アプリケーションアクセス
-    App->>Auth: 認証状態チェック
+    User->>Route: /dashboard アクセス
+    Route->>Auth: getUser() で認証状態チェック
     
     alt 未認証の場合
-        Auth-->>App: 未認証レスポンス
-        App->>User: ログイン画面表示
-        User->>App: ログイン情報入力
-        App->>Auth: ログイン要求
-        Auth-->>App: 認証トークン
-        App->>App: 認証状態更新
+        Auth-->>Route: null (未認証)
+        Route->>User: /auth/login へリダイレクト
+        User->>Route: ログイン後 /dashboard へ戻る
     else 認証済みの場合
-        Auth-->>App: 認証済みレスポンス
+        Auth-->>Route: User オブジェクト
     end
     
-    App->>DB: ユーザー統計データ取得
-    DB-->>App: 統計データ
-    App->>DB: 最近の項目取得
-    DB-->>App: 項目データ
-    App->>User: ダッシュボード表示
+    Route->>Hook: useResultOperation() でダッシュボードデータ取得
+    Hook->>Service: getDashboardData(repository)(profileId)
+    Service->>Repo: findAllWithCategory(filters?, sort?)
+    Repo->>DB: SELECT * FROM bucket_items<br/>LEFT JOIN categories ON bucket_items.category_id = categories.id<br/>WHERE bucket_items.profile_id = $1
+    DB-->>Repo: Result<BucketItemWithCategory[], BucketListError>
+    Repo-->>Service: 項目データ（カテゴリ付き）
+    
+    Service->>Repo: findAllCategories()
+    Repo->>DB: SELECT * FROM categories ORDER BY name
+    DB-->>Repo: Result<Category[], BucketListError>
+    Repo-->>Service: カテゴリデータ
+    
+    Service->>BL: calculateUserStats(items)
+    BL-->>Service: UserBucketStats
+    Service->>BL: getRecentlyCompletedItems(items, 5)
+    BL-->>Service: 最近完了したアイテム
+    Service->>BL: getUpcomingItems(items, 30, 5)
+    BL-->>Service: 期限が近いアイテム
+    Service->>BL: groupItemsByCategory(items, categories)
+    BL-->>Service: カテゴリ別グループ化データ
+    
+    Service-->>Hook: Result<DashboardData, BucketListError>
+    Hook-->>Route: { data, loading, error, execute }
+    Route->>User: ダッシュボード表示
 ```
 
 ## 2. やりたいこと項目の新規作成
@@ -37,30 +57,46 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User as ユーザー
-    participant UI as UI コンポーネント
-    participant Service as Service層
-    participant Repository as Repository層
-    participant DB as データベース
+    participant Route as Add Route<br/>(app/routes/bucket-list/add.tsx)
+    participant Hook as useResultOperation<br/>(app/shared/hooks/use-result-operation.ts)
+    participant Service as createBucketItem<br/>(app/features/bucket-list/services/bucket-list.service.ts)
+    participant BL as BusinessLogic<br/>(app/features/bucket-list/lib/business-logic.ts)
+    participant Repo as Repository<br/>(app/features/bucket-list/repositories/bucket-list.repository.ts)
+    participant DB as Supabase Database
 
-    User->>UI: 「新規作成」ボタンクリック
-    UI->>User: 作成フォーム表示
-    User->>UI: 項目情報入力
-    User->>UI: 「作成」ボタンクリック
+    User->>Route: /bucket-list/add アクセス
+    Route->>User: BucketItemForm コンポーネント表示
+    User->>Route: 項目情報入力（title, description, category, priority, etc.）
+    User->>Route: 「作成」ボタンクリック
     
-    UI->>UI: フォームバリデーション
+    Route->>Route: フォームバリデーション（Zod schema）
     
     alt バリデーション成功
-        UI->>Service: createBucketItem()
-        Service->>Service: ビジネスロジック検証
-        Service->>Repository: create()
-        Repository->>DB: INSERT文実行
-        DB-->>Repository: 作成された項目
-        Repository-->>Service: Result<Success>
-        Service-->>UI: 成功レスポンス
-        UI->>User: 成功メッセージ表示
-        UI->>UI: 項目リスト更新
-    else バリデーション失敗
-        UI->>User: エラーメッセージ表示
+        Route->>Hook: useResultOperation().execute()
+        Hook->>Service: createBucketItem(repository)(insertData)
+        Service->>BL: validateBucketItemInsert(insertData)
+        BL->>BL: タイトル必須チェック（200文字以内）
+        BL->>BL: 説明文字数チェック（1000文字以内）
+        BL->>BL: 優先度・ステータス・期限形式チェック
+        
+        alt ビジネスロジック検証成功
+            BL-->>Service: Result<Success<BucketItemInsert>>
+            Service->>Repo: create(validatedData)
+            Repo->>DB: INSERT INTO bucket_items<br/>(title, description, category_id, priority, status, due_date, due_type, is_public, profile_id, created_at, updated_at)<br/>VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())<br/>RETURNING *
+            DB-->>Repo: Result<BucketItem, PostgrestError>
+            Repo-->>Service: Result<Success<BucketItem>, BucketListError>
+            Service-->>Hook: Result<Success<BucketItem>, BucketListError>
+            Hook-->>Route: { data: BucketItem, loading: false, error: null }
+            Route->>User: 成功メッセージ表示
+            Route->>Route: navigate('/bucket-list') でリスト画面へ
+        else ビジネスロジック検証失敗
+            BL-->>Service: Result<Failure<ValidationError>>
+            Service-->>Hook: Result<Failure<ValidationError>>
+            Hook-->>Route: { data: null, loading: false, error: ValidationError }
+            Route->>User: バリデーションエラーメッセージ表示
+        end
+    else フォームバリデーション失敗
+        Route->>User: フォームエラーメッセージ表示
     end
 ```
 
@@ -69,37 +105,76 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User as ユーザー
-    participant UI as UI コンポーネント
-    participant Service as Service層
-    participant Repository as Repository層
-    participant DB as データベース
+    participant Route as Edit Route<br/>(app/routes/bucket-list/edit.$id.tsx)
+    participant Hook as useResultOperation<br/>(app/shared/hooks/use-result-operation.ts)
+    participant Service as updateBucketItem<br/>(app/features/bucket-list/services/bucket-list.service.ts)
+    participant BL as BusinessLogic<br/>(app/features/bucket-list/lib/business-logic.ts)
+    participant Repo as Repository<br/>(app/features/bucket-list/repositories/bucket-list.repository.ts)
+    participant DB as Supabase Database
 
-    User->>UI: 項目の「編集」ボタンクリック
-    UI->>Service: getBucketItem(id)
-    Service->>Repository: findById(id)
-    Repository->>DB: SELECT文実行
-    DB-->>Repository: 項目データ
-    Repository-->>Service: Result<Success>
-    Service-->>UI: 項目データ
-    UI->>User: 編集フォーム表示（データ入力済み）
+    User->>Route: /bucket-list/edit/$id アクセス
+    Route->>Hook: useResultOperation().execute() で項目取得
+    Hook->>Repo: findById(id)
+    Repo->>DB: SELECT * FROM bucket_items WHERE id = $1
+    DB-->>Repo: Result<BucketItem | null, PostgrestError>
+    Repo-->>Hook: Result<BucketItem | null, BucketListError>
+    Hook-->>Route: { data: BucketItem, loading: false, error: null }
+    Route->>User: 編集フォーム表示（既存データ入力済み）
     
-    User->>UI: 項目情報編集
-    User->>UI: 「更新」ボタンクリック
+    User->>Route: 項目情報編集（title, description, priority, etc.）
+    User->>Route: 「更新」ボタンクリック
     
-    UI->>UI: フォームバリデーション
+    Route->>Route: フォームバリデーション（Zod schema）
     
     alt バリデーション成功
-        UI->>Service: updateBucketItem(id, data)
-        Service->>Service: ビジネスロジック検証
-        Service->>Repository: update(id, data)
-        Repository->>DB: UPDATE文実行
-        DB-->>Repository: 更新された項目
-        Repository-->>Service: Result<Success>
-        Service-->>UI: 成功レスポンス
-        UI->>User: 成功メッセージ表示
-        UI->>UI: 項目リスト更新
-    else バリデーション失敗
-        UI->>User: エラーメッセージ表示
+        Route->>Hook: useResultOperation().execute()
+        Hook->>Service: updateBucketItem(repository)(id, updateData)
+        Service->>Repo: findById(id) で既存項目取得
+        Repo->>DB: SELECT * FROM bucket_items WHERE id = $1
+        DB-->>Repo: Result<BucketItem | null, PostgrestError>
+        Repo-->>Service: Result<BucketItem | null, BucketListError>
+        
+        alt 項目が存在する場合
+            Service->>BL: canEditCompletedItem(existingItem)
+            BL->>BL: 完了済みアイテムの編集可否チェック
+            
+            alt 編集可能な場合
+                BL-->>Service: Result<Success<boolean>>
+                Service->>BL: validateBucketItemUpdate(updateData)
+                BL->>BL: タイトル空文字チェック
+                BL->>BL: 説明文字数チェック（1000文字以内）
+                BL->>BL: 優先度・ステータス・期限形式チェック
+                
+                alt ビジネスロジック検証成功
+                    BL-->>Service: Result<Success<BucketItemUpdate>>
+                    Service->>Repo: update(id, mergedData)
+                    Repo->>DB: UPDATE bucket_items<br/>SET title = $1, description = $2, priority = $3, status = $4, due_date = $5, updated_at = NOW()<br/>WHERE id = $6<br/>RETURNING *
+                    DB-->>Repo: Result<BucketItem, PostgrestError>
+                    Repo-->>Service: Result<Success<BucketItem>, BucketListError>
+                    Service-->>Hook: Result<Success<BucketItem>, BucketListError>
+                    Hook-->>Route: { data: BucketItem, loading: false, error: null }
+                    Route->>User: 成功メッセージ表示
+                    Route->>Route: navigate('/bucket-list') でリスト画面へ
+                else ビジネスロジック検証失敗
+                    BL-->>Service: Result<Failure<ValidationError>>
+                    Service-->>Hook: Result<Failure<ValidationError>>
+                    Hook-->>Route: { data: null, loading: false, error: ValidationError }
+                    Route->>User: バリデーションエラーメッセージ表示
+                end
+            else 編集不可能な場合
+                BL-->>Service: Result<Failure<BusinessRuleError>>
+                Service-->>Hook: Result<Failure<BusinessRuleError>>
+                Hook-->>Route: { data: null, loading: false, error: BusinessRuleError }
+                Route->>User: 「完了済みアイテムは編集できません」メッセージ表示
+            end
+        else 項目が存在しない場合
+            Service->>Service: createNotFoundError() 生成
+            Service-->>Hook: Result<Failure<NotFoundError>>
+            Hook-->>Route: { data: null, loading: false, error: NotFoundError }
+            Route->>User: 「項目が見つかりません」メッセージ表示
+        end
+    else フォームバリデーション失敗
+        Route->>User: フォームエラーメッセージ表示
     end
 ```
 
@@ -108,28 +183,59 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User as ユーザー
-    participant UI as UI コンポーネント
-    participant Service as Service層
-    participant Repository as Repository層
-    participant DB as データベース
+    participant List as BucketList Component<br/>(app/routes/bucket-list/bucket-list.tsx)
+    participant Hook as useResultOperation<br/>(app/shared/hooks/use-result-operation.ts)
+    participant Service as completeBucketItem<br/>(app/features/bucket-list/services/bucket-list.service.ts)
+    participant BL as BusinessLogic<br/>(app/features/bucket-list/lib/business-logic.ts)
+    participant Repo as Repository<br/>(app/features/bucket-list/repositories/bucket-list.repository.ts)
+    participant DB as Supabase Database
 
-    User->>UI: ステータス変更ボタンクリック
-    UI->>Service: toggleStatus(id)
-    Service->>Repository: findById(id)
-    Repository->>DB: SELECT文実行
-    DB-->>Repository: 現在の項目データ
-    Repository-->>Service: Result<Success>
+    User->>List: ステータス変更ボタンクリック（完了マーク）
+    List->>Hook: useResultOperation().execute()
+    Hook->>Service: completeBucketItem(repository)(id, completionComment?)
+    Service->>Repo: findById(id) で現在の項目取得
+    Repo->>DB: SELECT * FROM bucket_items WHERE id = $1
+    DB-->>Repo: Result<BucketItem | null, PostgrestError>
+    Repo-->>Service: Result<BucketItem | null, BucketListError>
     
-    Service->>Service: ステータス切り替えロジック
-    Note over Service: not_started → in_progress → completed
-    
-    Service->>Repository: update(id, {status: newStatus})
-    Repository->>DB: UPDATE文実行
-    DB-->>Repository: 更新された項目
-    Repository-->>Service: Result<Success>
-    Service-->>UI: 成功レスポンス
-    UI->>UI: UI状態更新（進捗バー等）
-    UI->>User: 視覚的フィードバック表示
+    alt 項目が存在する場合
+        Service->>BL: canEditCompletedItem(existingItem)
+        BL->>BL: 完了済みアイテムの編集可否チェック
+        
+        alt 編集可能な場合
+            BL-->>Service: Result<Success<boolean>>
+            Service->>Service: 完了データ生成<br/>{ status: "completed", completed_at: new Date().toISOString(), completion_comment: comment || null }
+            Service->>BL: validateBucketItemUpdate(completionData)
+            BL->>BL: ステータス・完了日時・コメントのバリデーション
+            
+            alt バリデーション成功
+                BL-->>Service: Result<Success<BucketItemUpdate>>
+                Service->>Repo: update(id, mergedCompletionData)
+                Repo->>DB: UPDATE bucket_items<br/>SET status = 'completed', completed_at = $1, completion_comment = $2, updated_at = NOW()<br/>WHERE id = $3<br/>RETURNING *
+                DB-->>Repo: Result<BucketItem, PostgrestError>
+                Repo-->>Service: Result<Success<BucketItem>, BucketListError>
+                Service-->>Hook: Result<Success<BucketItem>, BucketListError>
+                Hook-->>List: { data: BucketItem, loading: false, error: null }
+                List->>List: UI状態更新（進捗バー、完了マーク表示）
+                List->>User: 「完了しました！」成功メッセージ + 視覚的フィードバック
+            else バリデーション失敗
+                BL-->>Service: Result<Failure<ValidationError>>
+                Service-->>Hook: Result<Failure<ValidationError>>
+                Hook-->>List: { data: null, loading: false, error: ValidationError }
+                List->>User: バリデーションエラーメッセージ表示
+            end
+        else 編集不可能な場合（既に完了済み）
+            BL-->>Service: Result<Failure<BusinessRuleError>>
+            Service-->>Hook: Result<Failure<BusinessRuleError>>
+            Hook-->>List: { data: null, loading: false, error: BusinessRuleError }
+            List->>User: 「この項目は既に完了済みです」メッセージ表示
+        end
+    else 項目が存在しない場合
+        Service->>Service: createNotFoundError() 生成
+        Service-->>Hook: Result<Failure<NotFoundError>>
+        Hook-->>List: { data: null, loading: false, error: NotFoundError }
+        List->>User: 「項目が見つかりません」メッセージ表示
+    end
 ```
 
 ## 5. 項目の削除
@@ -137,23 +243,38 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User as ユーザー
-    participant UI as UI コンポーネント
-    participant Service as Service層
-    participant Repository as Repository層
-    participant DB as データベース
+    participant List as BucketList Component<br/>(app/routes/bucket-list/bucket-list.tsx)
+    participant Dialog as DeleteConfirmation<br/>(app/features/bucket-list/components/delete-confirmation-dialog.tsx)
+    participant Hook as useResultOperation<br/>(app/shared/hooks/use-result-operation.ts)
+    participant Service as deleteBucketItem<br/>(app/features/bucket-list/services/bucket-list.service.ts)
+    participant Repo as Repository<br/>(app/features/bucket-list/repositories/bucket-list.repository.ts)
+    participant DB as Supabase Database
 
-    User->>UI: 項目の「削除」ボタンクリック
-    UI->>User: 削除確認ダイアログ表示
-    User->>UI: 削除確認
+    User->>List: 項目の「削除」ボタンクリック
+    List->>Dialog: DeleteConfirmationDialog 表示
+    Dialog->>User: 「本当に削除しますか？」確認ダイアログ
+    User->>Dialog: 「削除」ボタンクリック
     
-    UI->>Service: deleteBucketItem(id)
-    Service->>Repository: delete(id)
-    Repository->>DB: DELETE文実行
-    DB-->>Repository: 削除結果
-    Repository-->>Service: Result<Success>
-    Service-->>UI: 成功レスポンス
-    UI->>User: 成功メッセージ表示
-    UI->>UI: 項目リストから削除
+    Dialog->>Hook: useResultOperation().execute()
+    Hook->>Service: deleteBucketItem(repository)(id)
+    Service->>Repo: delete(id)
+    Repo->>DB: DELETE FROM bucket_items WHERE id = $1
+    DB-->>Repo: Result<void, PostgrestError>
+    Repo-->>Service: Result<Success<void>, BucketListError>
+    Service-->>Hook: Result<Success<void>, BucketListError>
+    Hook-->>Dialog: { data: undefined, loading: false, error: null }
+    Dialog->>List: onDeleteSuccess() コールバック実行
+    List->>List: 項目リストから削除（状態更新）
+    List->>User: 「削除しました」成功メッセージ表示
+    Dialog->>Dialog: ダイアログを閉じる
+    
+    alt 削除に失敗した場合
+        DB-->>Repo: Result<void, PostgrestError>
+        Repo-->>Service: Result<Failure<DatabaseError>, BucketListError>
+        Service-->>Hook: Result<Failure<DatabaseError>, BucketListError>
+        Hook-->>Dialog: { data: null, loading: false, error: DatabaseError }
+        Dialog->>User: 「削除に失敗しました」エラーメッセージ表示
+    end
 ```
 
 ## 6. 検索・フィルタリング
@@ -161,32 +282,48 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User as ユーザー
-    participant UI as UI コンポーネント
-    participant Service as Service層
-    participant Repository as Repository層
-    participant DB as データベース
+    participant List as BucketList Component<br/>(app/routes/bucket-list/bucket-list.tsx)
+    participant Hook as useResultOperation<br/>(app/shared/hooks/use-result-operation.ts)
+    participant Service as getUserBucketItems<br/>(app/features/bucket-list/services/bucket-list.service.ts)
+    participant Repo as Repository<br/>(app/features/bucket-list/repositories/bucket-list.repository.ts)
+    participant DB as Supabase Database
 
-    User->>UI: 検索キーワード入力
-    UI->>UI: デバウンス処理（300ms）
+    User->>List: 検索キーワード入力（SearchInput）
+    List->>List: デバウンス処理（300ms）
     
     alt 検索実行
-        UI->>Service: searchBucketItems(query)
-        Service->>Repository: search(query)
-        Repository->>DB: SELECT文実行（LIKE検索）
-        DB-->>Repository: 検索結果
-        Repository-->>Service: Result<Success>
-        Service-->>UI: 検索結果データ
-        UI->>User: フィルタリング結果表示
+        List->>Hook: useResultOperation().execute()
+        Hook->>Service: getUserBucketItems(repository)(profileId, { search: query }, sort)
+        Service->>Repo: findByProfileId(profileId, { search: query }, sort)
+        Repo->>DB: SELECT * FROM bucket_items<br/>WHERE profile_id = $1<br/>AND (title ILIKE '%' || $2 || '%' OR description ILIKE '%' || $2 || '%')<br/>ORDER BY created_at DESC
+        DB-->>Repo: Result<BucketItem[], PostgrestError>
+        Repo-->>Service: Result<Success<BucketItem[]>, BucketListError>
+        Service-->>Hook: Result<Success<BucketItem[]>, BucketListError>
+        Hook-->>List: { data: BucketItem[], loading: false, error: null }
+        List->>User: 検索結果表示（フィルタリング済み項目）
     end
     
-    User->>UI: カテゴリフィルタ選択
-    UI->>Service: filterByCategory(category)
-    Service->>Repository: findByCategory(category)
-    Repository->>DB: SELECT文実行（WHERE条件）
-    DB-->>Repository: フィルタ結果
-    Repository-->>Service: Result<Success>
-    Service-->>UI: フィルタ結果データ
-    UI->>User: カテゴリ別項目表示
+    User->>List: カテゴリフィルタ選択（CategoryFilter）
+    List->>Hook: useResultOperation().execute()
+    Hook->>Service: getUserBucketItems(repository)(profileId, { category_id: selectedCategory }, sort)
+    Service->>Repo: findByProfileId(profileId, { category_id: selectedCategory }, sort)
+    Repo->>DB: SELECT * FROM bucket_items<br/>WHERE profile_id = $1 AND category_id = $2<br/>ORDER BY created_at DESC
+    DB-->>Repo: Result<BucketItem[], PostgrestError>
+    Repo-->>Service: Result<Success<BucketItem[]>, BucketListError>
+    Service-->>Hook: Result<Success<BucketItem[]>, BucketListError>
+    Hook-->>List: { data: BucketItem[], loading: false, error: null }
+    List->>User: カテゴリ別項目表示
+    
+    User->>List: 複合フィルタ（優先度 + ステータス + 検索）
+    List->>Hook: useResultOperation().execute()
+    Hook->>Service: getUserBucketItems(repository)(profileId, { priority: "high", status: "not_started", search: "旅行" }, sort)
+    Service->>Repo: findByProfileId(profileId, complexFilters, sort)
+    Repo->>DB: SELECT * FROM bucket_items<br/>WHERE profile_id = $1<br/>AND priority = $2 AND status = $3<br/>AND (title ILIKE '%' || $4 || '%' OR description ILIKE '%' || $4 || '%')<br/>ORDER BY created_at DESC
+    DB-->>Repo: Result<BucketItem[], PostgrestError>
+    Repo-->>Service: Result<Success<BucketItem[]>, BucketListError>
+    Service-->>Hook: Result<Success<BucketItem[]>, BucketListError>
+    Hook-->>List: { data: BucketItem[], loading: false, error: null }
+    List->>User: 複合フィルタ結果表示
 ```
 
 ## 7. 公開リスト閲覧
@@ -194,28 +331,52 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User as ユーザー
-    participant UI as UI コンポーネント
-    participant Service as Service層
-    participant Repository as Repository層
-    participant DB as データベース
+    participant Route as Public Route<br/>(app/routes/public/public.tsx)
+    participant Hook as useResultOperation<br/>(app/shared/hooks/use-result-operation.ts)
+    participant Service as getPublicBucketItems<br/>(app/features/bucket-list/services/bucket-list.service.ts)
+    participant Repo as Repository<br/>(app/features/bucket-list/repositories/bucket-list.repository.ts)
+    participant DB as Supabase Database
 
-    User->>UI: 「公開リスト」ページアクセス
-    UI->>Service: getPublicBucketItems()
-    Service->>Repository: findPublic()
-    Repository->>DB: SELECT文実行（is_public=true）
-    DB-->>Repository: 公開項目データ
-    Repository-->>Service: Result<Success>
-    Service-->>UI: 公開項目リスト
-    UI->>User: 公開リスト表示
+    User->>Route: /public ページアクセス
+    Route->>Hook: useResultOperation().execute()
+    Hook->>Service: getPublicBucketItems(repository)()
+    Service->>Repo: findPublic()
+    Repo->>DB: SELECT bucket_items.*, categories.name as category_name, categories.color as category_color<br/>FROM bucket_items<br/>LEFT JOIN categories ON bucket_items.category_id = categories.id<br/>WHERE bucket_items.is_public = true<br/>ORDER BY bucket_items.created_at DESC
+    DB-->>Repo: Result<BucketItemWithCategory[], PostgrestError>
+    Repo-->>Service: Result<Success<BucketItemWithCategory[]>, BucketListError>
+    Service-->>Hook: Result<Success<BucketItemWithCategory[]>, BucketListError>
+    Hook-->>Route: { data: BucketItemWithCategory[], loading: false, error: null }
+    Route->>User: 公開リスト表示（カテゴリ情報付き）
     
-    User->>UI: 特定項目の詳細表示
-    UI->>Service: getPublicBucketItem(id)
-    Service->>Repository: findPublicById(id)
-    Repository->>DB: SELECT文実行（公開権限チェック）
-    DB-->>Repository: 項目詳細データ
-    Repository-->>Service: Result<Success>
-    Service-->>UI: 項目詳細
-    UI->>User: 詳細情報表示
+    User->>Route: 特定項目の詳細表示（DetailDialogボタンクリック）
+    Route->>Hook: useResultOperation().execute()
+    Hook->>Service: getBucketItem(repository)(id)
+    Service->>Repo: findById(id)
+    Repo->>DB: SELECT bucket_items.*, categories.name as category_name, categories.color as category_color<br/>FROM bucket_items<br/>LEFT JOIN categories ON bucket_items.category_id = categories.id<br/>WHERE bucket_items.id = $1 AND bucket_items.is_public = true
+    DB-->>Repo: Result<BucketItemWithCategory | null, PostgrestError>
+    Repo-->>Service: Result<Success<BucketItemWithCategory | null>, BucketListError>
+    Service-->>Hook: Result<Success<BucketItemWithCategory | null>, BucketListError>
+    Hook-->>Route: { data: BucketItemWithCategory, loading: false, error: null }
+    Route->>User: BucketItemDetailDialog 表示（詳細情報）
+    
+    alt 非公開項目または存在しない項目の場合
+        DB-->>Repo: Result<null, PostgrestError>
+        Repo-->>Service: Result<Success<null>, BucketListError>
+        Service-->>Hook: Result<Success<null>, BucketListError>
+        Hook-->>Route: { data: null, loading: false, error: null }
+        Route->>User: 「項目が見つかりません」メッセージ表示
+    end
+    
+    User->>Route: 検索・フィルタリング（公開リスト内）
+    Route->>Hook: useResultOperation().execute()
+    Hook->>Service: getPublicBucketItems(repository)(filters)
+    Service->>Repo: findPublic(filters)
+    Repo->>DB: SELECT bucket_items.*, categories.name as category_name, categories.color as category_color<br/>FROM bucket_items<br/>LEFT JOIN categories ON bucket_items.category_id = categories.id<br/>WHERE bucket_items.is_public = true<br/>AND (title ILIKE '%' || $1 || '%' OR description ILIKE '%' || $1 || '%')<br/>ORDER BY bucket_items.created_at DESC
+    DB-->>Repo: Result<BucketItemWithCategory[], PostgrestError>
+    Repo-->>Service: Result<Success<BucketItemWithCategory[]>, BucketListError>
+    Service-->>Hook: Result<Success<BucketItemWithCategory[]>, BucketListError>
+    Hook-->>Route: { data: BucketItemWithCategory[], loading: false, error: null }
+    Route->>User: フィルタリング済み公開リスト表示
 ```
 
 ## アーキテクチャ特徴
@@ -224,33 +385,194 @@ sequenceDiagram
 
 全てのService層およびRepository層では、Result<T, E>型を使用した型安全なエラーハンドリングを実装しています：
 
-- **成功時**: `Result<Success<T>>`
-- **失敗時**: `Result<Failure<E>>`
+- **成功時**: `Result<Success<T>>` - `{ success: true, data: T }`
+- **失敗時**: `Result<Failure<E>>` - `{ success: false, error: E }`
+
+**定義場所**: `app/shared/types/result.ts`
+
+**使用例**:
+```typescript
+// Service層での使用
+const result = await createBucketItem(repository)(insertData);
+if (isSuccess(result)) {
+  // result.data: BucketItem
+} else {
+  // result.error: BucketListError
+}
+
+// Repository層での使用
+const dbResult = await supabase.from('bucket_items').select('*');
+return dbResult.error 
+  ? failure(createDatabaseError(dbResult.error.message))
+  : success(dbResult.data);
+```
 
 ### 関数型プログラミング
 
 Service層は完全に関数型で実装されており、以下の特徴があります：
 
-- 純粋関数による副作用の分離
-- 関数合成とコンビネーターの活用
-- 不変性の原則
+- **純粋関数による副作用の分離**: ビジネスロジックは `business-logic.ts` に集約
+- **関数合成とコンビネーターの活用**: `combineResults()` 等のヘルパー関数使用
+- **不変性の原則**: 全ての操作で新しいオブジェクトを返す
+- **カリー化**: `createBucketItem(repository)(data)` のような関数構成
+
+**実装例**:
+```typescript
+// カリー化された関数型Service
+export const createBucketItem = 
+  (repository: FunctionalBucketListRepository) =>
+  async (data: BucketItemInsert): Promise<Result<BucketItem, BucketListError>> => {
+    const validationResult = validateBucketItemInsert(data);
+    if (isFailure(validationResult)) return validationResult;
+    
+    return repository.create(validationResult.data);
+  };
+```
+
+### Hooks による状態管理
+
+`useResultOperation` hooks により、非同期操作の状態管理を統一：
+
+- **loading**: 非同期処理中の状態
+- **error**: エラー状態（BucketListError型）
+- **data**: 成功時のデータ
+- **execute**: 非同期処理実行関数
+
+**実装場所**: `app/shared/hooks/use-result-operation.ts`
 
 ### SSR対応
 
 React Router v7によるServer-Side Renderingにより、初期ページロード時のデータ取得が最適化されています。
 
+**Route定義**: `app/routes/` 配下の各ファイル
+
 ## エラーハンドリングパターン
 
 各フローで発生する可能性のあるエラーとその対処：
 
-1. **認証エラー**: 自動ログイン画面へリダイレクト
-2. **バリデーションエラー**: フォーム上にエラーメッセージ表示
-3. **データベースエラー**: 適切なエラーメッセージとリトライ機能
-4. **ネットワークエラー**: 接続状態の確認とリトライ提案
+### 1. 認証エラー (AuthenticationError)
+```typescript
+// app/shared/types/errors.ts
+interface AuthenticationError {
+  type: "AuthenticationError";
+  message: string;
+  reason: "invalid_credentials" | "token_expired" | "insufficient_permissions" | "user_not_found";
+}
+```
+**対処**: 自動ログイン画面へリダイレクト
+
+### 2. バリデーションエラー (ValidationError)
+```typescript
+interface ValidationError {
+  type: "ValidationError";
+  field: string;
+  message: string;
+  code?: string;
+}
+```
+**対処**: フォーム上にエラーメッセージ表示
+
+### 3. データベースエラー (DatabaseError)
+```typescript
+interface DatabaseError {
+  type: "DatabaseError";
+  message: string;
+  code?: string;
+  operation?: "create" | "read" | "update" | "delete";
+}
+```
+**対処**: 適切なエラーメッセージとリトライ機能
+
+### 4. ビジネスルールエラー (BusinessRuleError)
+```typescript
+interface BusinessRuleError {
+  type: "BusinessRuleError";
+  rule: string;
+  message: string;
+  context?: Record<string, unknown>;
+}
+```
+**対処**: ビジネスルール違反の説明とガイダンス
+
+### 5. リソース未発見エラー (NotFoundError)
+```typescript
+interface NotFoundError {
+  type: "NotFoundError";
+  resource: string;
+  id?: string;
+  message: string;
+}
+```
+**対処**: 「項目が見つかりません」メッセージ表示
 
 ## パフォーマンス最適化
 
-- **デバウンス処理**: 検索入力での不要なAPI呼び出し削減
-- **キャッシュ戦略**: 頻繁にアクセスされるデータのキャッシュ
-- **遅延読み込み**: 大量データの段階的ロード
-- **リアルタイム更新**: 必要最小限のデータ更新
+### 1. デバウンス処理
+```typescript
+// 検索入力での不要なAPI呼び出し削減
+const [searchTerm, setSearchTerm] = useState('');
+const debouncedSearch = useCallback(
+  debounce((term: string) => {
+    execute(getUserBucketItems(repository)(profileId, { search: term }));
+  }, 300),
+  [execute, repository, profileId]
+);
+```
+
+### 2. Result型による効率的なエラーハンドリング
+```typescript
+// 複数の非同期操作の結果をまとめて処理
+const results = await Promise.all([
+  repository.findAllWithCategory(),
+  repository.findAllCategories()
+]);
+
+const combinedResult = combineResults(results);
+if (isSuccess(combinedResult)) {
+  // 全て成功時の処理
+}
+```
+
+### 3. 適切なSQL最適化
+```sql
+-- インデックスを活用した効率的なクエリ
+SELECT bucket_items.*, categories.name as category_name 
+FROM bucket_items 
+LEFT JOIN categories ON bucket_items.category_id = categories.id 
+WHERE bucket_items.profile_id = $1 
+  AND bucket_items.is_public = true 
+ORDER BY bucket_items.created_at DESC;
+```
+
+## 開発者向けデバッグ情報
+
+### 1. Result型のデバッグ
+```typescript
+// Result型の詳細ログ出力
+const result = await someOperation();
+console.log('Operation result:', {
+  success: isSuccess(result),
+  data: isSuccess(result) ? result.data : null,
+  error: isFailure(result) ? result.error : null
+});
+```
+
+### 2. 非同期操作の状態監視
+```typescript
+// useResultOperation の状態監視
+const { loading, error, data } = useResultOperation();
+console.log('Hook state:', { loading, error: error?.type, hasData: !!data });
+```
+
+### 3. SQL クエリのデバッグ
+Supabase のログやブラウザの Network タブでクエリの実行状況を確認可能。
+
+## 関連ファイル
+
+- **Service層**: `app/features/bucket-list/services/bucket-list.service.ts`
+- **Repository層**: `app/features/bucket-list/repositories/bucket-list.repository.ts`
+- **Business Logic**: `app/features/bucket-list/lib/business-logic.ts`
+- **Error Types**: `app/shared/types/errors.ts`
+- **Result Types**: `app/shared/types/result.ts`
+- **Hooks**: `app/shared/hooks/use-result-operation.ts`
+- **Routes**: `app/routes/` 配下の各ファイル
