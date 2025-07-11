@@ -1,69 +1,49 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
+import {
+  useOperationState,
+  useParallelOperationState,
+} from "./use-operation-base";
 
-interface UseAsyncOperationOptions {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSuccess?: (result: any) => void;
+interface UseAsyncOperationOptions<T> {
+  onSuccess?: (data: T) => void;
   onError?: (error: Error) => void;
   throwOnError?: boolean;
-}
-
-interface AsyncOperationState {
-  isLoading: boolean;
-  error: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any;
+  initialData?: T | null;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useAsyncOperation<T = any>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   asyncFunction: (...args: any[]) => Promise<T>,
-  options: UseAsyncOperationOptions = {}
+  options: UseAsyncOperationOptions<T> = {}
 ) {
-  const { onSuccess, onError, throwOnError = false } = options;
+  const { throwOnError = false, onSuccess, onError, initialData } = options;
 
-  const [state, setState] = useState<AsyncOperationState>({
-    isLoading: false,
-    error: null,
-    data: null,
+  // BaseOperationOptionsに適合するようにエラーハンドリングを調整
+  const { state, actions } = useOperationState<T, string>({
+    onSuccess,
+    onError: onError
+      ? (errorMessage: string) => {
+          onError(new Error(errorMessage));
+        }
+      : undefined,
+    initialData,
   });
 
   const execute = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (...args: any[]) => {
-      setState((prev) => ({
-        ...prev,
-        isLoading: true,
-        error: null,
-      }));
+      actions.setLoading();
 
       try {
         const result = await asyncFunction(...args);
-
-        setState({
-          isLoading: false,
-          error: null,
-          data: result,
-        });
-
-        if (onSuccess) {
-          onSuccess(result);
-        }
-
+        actions.setSuccess(result);
         return result;
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
 
-        setState({
-          isLoading: false,
-          error: errorMessage,
-          data: null,
-        });
-
-        if (onError) {
-          onError(error instanceof Error ? error : new Error(errorMessage));
-        }
+        actions.setError(errorMessage);
 
         if (throwOnError) {
           throw error;
@@ -72,23 +52,23 @@ export function useAsyncOperation<T = any>(
         return null;
       }
     },
-    [asyncFunction, onSuccess, onError, throwOnError]
+    [asyncFunction, actions, throwOnError]
   );
 
-  const reset = useCallback(() => {
-    setState({
-      isLoading: false,
-      error: null,
-      data: null,
-    });
-  }, []);
+  const { reset } = actions;
+
+  // 従来のuseAsyncOperationの動作を保持（hasExecutedを考慮しない）
+  const asyncDerivedState = {
+    isSuccess: !state.isLoading && !state.error,
+    isError: !state.isLoading && !!state.error,
+    hasData: state.data !== null,
+  };
 
   return {
     ...state,
+    ...asyncDerivedState,
     execute,
     reset,
-    isSuccess: !state.isLoading && !state.error,
-    isError: !state.isLoading && !!state.error,
   };
 }
 
@@ -96,50 +76,31 @@ export function useAsyncOperation<T = any>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useParallelAsyncOperations<T = any>(
   operations: Array<() => Promise<T>>,
-  options: UseAsyncOperationOptions = {}
+  options: UseAsyncOperationOptions<T[]> = {}
 ) {
-  const { onSuccess, onError, throwOnError = false } = options;
+  const { throwOnError = false, onSuccess, onError } = options;
 
-  const [state, setState] = useState<AsyncOperationState>({
-    isLoading: false,
-    error: null,
-    data: null,
+  const { state, actions } = useParallelOperationState<T, string>({
+    onSuccess,
+    onError: onError
+      ? (errorMessage: string) => {
+          onError(new Error(errorMessage));
+        }
+      : undefined,
   });
 
   const executeAll = useCallback(async () => {
-    setState((prev) => ({
-      ...prev,
-      isLoading: true,
-      error: null,
-    }));
+    actions.setLoading();
 
     try {
       const results = await Promise.all(operations.map((op) => op()));
-
-      setState({
-        isLoading: false,
-        error: null,
-        data: results,
-      });
-
-      if (onSuccess) {
-        onSuccess(results);
-      }
-
+      actions.setSuccess(results);
       return results;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
 
-      setState({
-        isLoading: false,
-        error: errorMessage,
-        data: null,
-      });
-
-      if (onError) {
-        onError(error instanceof Error ? error : new Error(errorMessage));
-      }
+      actions.setError(errorMessage);
 
       if (throwOnError) {
         throw error;
@@ -147,22 +108,21 @@ export function useParallelAsyncOperations<T = any>(
 
       return null;
     }
-  }, [operations, onSuccess, onError, throwOnError]);
+  }, [operations, actions, throwOnError]);
 
-  const reset = useCallback(() => {
-    setState({
-      isLoading: false,
-      error: null,
-      data: null,
-    });
-  }, []);
+  const { reset } = actions;
+
+  // 従来のuseParallelAsyncOperationsの動作を保持（hasExecutedを考慮しない）
+  const asyncDerivedState = {
+    isSuccess: !state.isLoading && !state.error,
+    isError: !state.isLoading && !!state.error,
+  };
 
   return {
     ...state,
+    ...asyncDerivedState,
     executeAll,
     reset,
-    isSuccess: !state.isLoading && !state.error,
-    isError: !state.isLoading && !!state.error,
   };
 }
 
@@ -171,7 +131,7 @@ export function useParallelAsyncOperations<T = any>(
 export function useFormSubmission<T = any>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   submitFunction: (formData: any) => Promise<T>,
-  options: UseAsyncOperationOptions & {
+  options: UseAsyncOperationOptions<T> & {
     resetFormOnSuccess?: boolean;
     redirectOnSuccess?: string;
   } = {}

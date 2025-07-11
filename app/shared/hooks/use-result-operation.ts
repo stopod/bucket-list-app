@@ -1,19 +1,17 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import type { Result } from "~/shared/types/result";
 import type { BucketListError } from "~/shared/types/errors";
 import { isSuccess, isFailure } from "~/shared/types/result";
+import {
+  useOperationState,
+  useParallelOperationState,
+  type BaseOperationOptions,
+} from "./use-operation-base";
 
-interface UseResultOperationOptions<T, E = BucketListError> {
-  onSuccess?: (data: T) => void;
-  onError?: (error: E) => void;
-  initialData?: T | null;
-}
-
-interface ResultOperationState<T, E = BucketListError> {
-  isLoading: boolean;
-  error: E | null;
-  data: T | null;
-}
+type UseResultOperationOptions<T, E = BucketListError> = BaseOperationOptions<
+  T,
+  E
+>;
 
 /**
  * Result型に対応した非同期操作管理Hook
@@ -22,16 +20,7 @@ interface ResultOperationState<T, E = BucketListError> {
 export function useResultOperation<T, E = BucketListError>(
   options: UseResultOperationOptions<T, E> = {}
 ) {
-  const { onSuccess, onError, initialData = null } = options;
-
-  const [state, setState] = useState<
-    ResultOperationState<T, E> & { hasExecuted: boolean }
-  >({
-    isLoading: false,
-    error: null,
-    data: initialData,
-    hasExecuted: false,
-  });
+  const { state, derivedState, actions } = useOperationState<T, E>(options);
 
   const execute = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,89 +28,36 @@ export function useResultOperation<T, E = BucketListError>(
       resultFunction: (...args: Args) => Promise<Result<T, E>>,
       ...args: Args
     ): Promise<Result<T, E>> => {
-      setState((prev) => ({
-        ...prev,
-        isLoading: true,
-        error: null,
-      }));
+      actions.setLoading();
 
       try {
         const result = await resultFunction(...args);
 
         if (isSuccess(result)) {
-          setState({
-            isLoading: false,
-            error: null,
-            data: result.data,
-            hasExecuted: true,
-          });
-
-          if (onSuccess) {
-            onSuccess(result.data);
-          }
+          actions.setSuccess(result.data);
         } else {
-          setState({
-            isLoading: false,
-            error: result.error,
-            data: null,
-            hasExecuted: true,
-          });
-
-          if (onError) {
-            onError(result.error);
-          }
+          actions.setError(result.error);
         }
 
         return result;
       } catch (error) {
         // 予期しないエラー（ネットワークエラーなど）
         const unexpectedError = error as E;
-
-        setState({
-          isLoading: false,
-          error: unexpectedError,
-          data: null,
-          hasExecuted: true,
-        });
-
-        if (onError) {
-          onError(unexpectedError);
-        }
-
+        actions.setError(unexpectedError);
         return { success: false, error: unexpectedError } as Result<T, E>;
       }
     },
-    [onSuccess, onError]
+    [actions]
   );
 
-  const reset = useCallback(() => {
-    setState({
-      isLoading: false,
-      error: null,
-      data: initialData,
-      hasExecuted: false,
-    });
-  }, [initialData]);
-
-  const clearError = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      error: null,
-    }));
-  }, []);
+  const { reset, clearError } = actions;
 
   return {
     ...state,
+    ...derivedState,
     execute,
     reset,
     clearError,
-    isSuccess:
-      !state.isLoading &&
-      !state.error &&
-      state.hasExecuted &&
-      state.data !== null,
-    isError: !state.isLoading && !!state.error,
-    hasData: state.data !== null,
   };
 }
 
@@ -131,16 +67,9 @@ export function useResultOperation<T, E = BucketListError>(
 export function useParallelResultOperations<T, E = BucketListError>(
   options: UseResultOperationOptions<T[], E> = {}
 ) {
-  const { onSuccess, onError } = options;
-
-  const [state, setState] = useState<
-    ResultOperationState<T[], E> & { hasExecuted: boolean }
-  >({
-    isLoading: false,
-    error: null,
-    data: null,
-    hasExecuted: false,
-  });
+  const { state, derivedState, actions } = useParallelOperationState<T, E>(
+    options
+  );
 
   const executeAll = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -148,11 +77,7 @@ export function useParallelResultOperations<T, E = BucketListError>(
       resultFunctions: Array<(...args: Args) => Promise<Result<T, E>>>,
       ...args: Args
     ): Promise<Result<T[], E>> => {
-      setState((prev) => ({
-        ...prev,
-        isLoading: true,
-        error: null,
-      }));
+      actions.setLoading();
 
       try {
         const results = await Promise.all(
@@ -163,73 +88,30 @@ export function useParallelResultOperations<T, E = BucketListError>(
         const successData: T[] = [];
         for (const result of results) {
           if (isFailure(result)) {
-            setState({
-              isLoading: false,
-              error: result.error,
-              data: null,
-              hasExecuted: true,
-            });
-
-            if (onError) {
-              onError(result.error);
-            }
-
+            actions.setError(result.error);
             return result;
           }
           successData.push(result.data);
         }
 
-        setState({
-          isLoading: false,
-          error: null,
-          data: successData,
-          hasExecuted: true,
-        });
-
-        if (onSuccess) {
-          onSuccess(successData);
-        }
-
+        actions.setSuccess(successData);
         return { success: true, data: successData } as Result<T[], E>;
       } catch (error) {
         const unexpectedError = error as E;
-
-        setState({
-          isLoading: false,
-          error: unexpectedError,
-          data: null,
-          hasExecuted: true,
-        });
-
-        if (onError) {
-          onError(unexpectedError);
-        }
-
+        actions.setError(unexpectedError);
         return { success: false, error: unexpectedError } as Result<T[], E>;
       }
     },
-    [onSuccess, onError]
+    [actions]
   );
 
-  const reset = useCallback(() => {
-    setState({
-      isLoading: false,
-      error: null,
-      data: null,
-      hasExecuted: false,
-    });
-  }, []);
+  const { reset } = actions;
 
   return {
     ...state,
+    ...derivedState,
     executeAll,
     reset,
-    isSuccess:
-      !state.isLoading &&
-      !state.error &&
-      state.hasExecuted &&
-      state.data !== null,
-    isError: !state.isLoading && !!state.error,
   };
 }
 
