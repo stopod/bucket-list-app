@@ -756,18 +756,26 @@ export function getAuthCookie(name: string): string | null {
 ### 入力値検証・XSS対策の詳細実装
 
 ```typescript
-// app/lib/security-utils.ts - 拡張版
-export class SecurityValidator {
-  // メール検証（詳細版）
-  static validateEmail(email: string): boolean {
-    if (!email || typeof email !== "string") return false;
+// app/lib/security-utils.ts - 関数型拡張版
 
-    // 基本的な形式チェック
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) return false;
+// メール検証関数（詳細版）
+export const validateEmail = (email: string): Result<string, ValidationError> => {
+  if (!email || typeof email !== "string") {
+    return failure(createValidationError('INVALID_TYPE', 'Email must be a string'));
+  }
 
-    // 長さ制限
-    if (email.length > 254) return false;
+  // 基本的な形式チェック
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(email)) {
+    return failure(createValidationError('INVALID_FORMAT', 'Invalid email format'));
+  }
+
+  // 長さ制限
+  if (email.length > 254) {
+    return failure(createValidationError('TOO_LONG', 'Email too long'));
+  }
+
+  return success(email);
 
     // ローカル部の長さチェック
     const [localPart] = email.split("@");
@@ -856,18 +864,17 @@ export class SecurityValidator {
   }
 }
 
-// レート制限の詳細実装
-export class RateLimiter {
-  private static attempts = new Map<
-    string,
-    {
-      count: number;
-      windowStart: number;
-      isBlocked: boolean;
-    }
-  >();
+// レート制限の関数型実装
+type RateLimitState = {
+  count: number;
+  windowStart: number;
+  isBlocked: boolean;
+};
 
-  static checkLimit(
+const createRateLimiter = () => {
+  const attempts = new Map<string, RateLimitState>();
+
+  const checkLimit = (
     identifier: string,
     maxAttempts: number = 5,
     windowMs: number = 15 * 60 * 1000,
@@ -944,18 +951,23 @@ export class RateLimiter {
 ### セッションセキュリティ
 
 ```typescript
-// app/lib/session-security.ts
-export class SessionSecurity {
-  // セッション固定攻撃対策
-  static regenerateSessionId(session: Session): void {
+// app/lib/session-security.ts - 関数型アプローチ
+
+// セッション固定攻撃対策
+export const regenerateSessionId = (session: Session): Result<void, SessionError> => {
+  try {
     // 新しいセッショントークンの生成を要求
     // Note: Supabaseの場合は自動的に処理される
     console.log("Session regenerated for security");
+    return success(undefined);
+  } catch (error) {
+    return failure(createSessionError('REGENERATION_FAILED', error));
   }
+};
 
-  // セッションハイジャック検出
-  static validateSessionIntegrity(
-    session: Session,
+// セッションハイジャック検出
+export const validateSessionIntegrity = (
+  session: Session,
     userAgent: string,
     ipAddress: string,
   ): boolean {

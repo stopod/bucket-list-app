@@ -219,7 +219,16 @@ git commit -m "feat: 新機能の追加"
 git push origin feature/new-feature
 ```
 
-## 📚 ドキュメント
+## ドキュメント構成
+
+| ドキュメント                                                                           | 目的                       | 対象者               |
+| -------------------------------------------------------------------------------------- | -------------------------- | -------------------- |
+| [CLAUDE.md](./CLAUDE.md)                                                               | 開発ガイドライン           | 開発者・メンテナー   |
+| [docs/development/implementation-guide.md](./docs/development/implementation-guide.md) | **新規参加者向け実装指針** | 新規開発者           |
+| [docs/development/architecture.md](./docs/development/architecture.md)                 | アーキテクチャ詳細         | 開発者・アーキテクト |
+| [docs/auth-learning/](./docs/auth-learning/)                                           | 認証認可学習資料（教育用） | 学習者               |
+
+**新規参加者へ**: まず [docs/development/implementation-guide.md](./docs/development/implementation-guide.md) を読んで、このプロジェクトの関数型アプローチを理解してください。
 
 ### 詳細ドキュメント
 

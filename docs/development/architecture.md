@@ -627,22 +627,37 @@ routes/
 ```typescript
 // ✅ インターフェース経由で依存を抽象化
 // lib/email-service.ts
-interface EmailService {
-  send(to: string, subject: string, body: string): Promise<void>;
-}
+type EmailService = {
+  send: (to: string, subject: string, body: string) => Promise<Result<void, EmailError>>;
+};
 
-class SupabaseEmailService implements EmailService {
-  async send(to: string, subject: string, body: string) {
-    // Supabase実装
+// 関数型EmailService作成関数
+const createSupabaseEmailService = (supabaseClient: SupabaseClient): EmailService => ({
+  send: async (to: string, subject: string, body: string) => {
+    // Supabase実装 with Result型
+    return wrapAsync(
+      () => supabaseClient.functions.invoke('send-email', { body: { to, subject, body } }),
+      (error) => createEmailError('SEND_FAILED', error)
+    );
   }
-}
+});
 
 // 将来的に他のサービスに変更可能
-class SendGridEmailService implements EmailService {
-  async send(to: string, subject: string, body: string) {
-    // SendGrid実装
+const createSendGridEmailService = (apiKey: string): EmailService => ({
+  send: async (to: string, subject: string, body: string) => {
+    // SendGrid実装 with Result型
+    return wrapAsync(
+      () => sendGridApi.send({ to, subject, body }),
+      (error) => createEmailError('SEND_FAILED', error)
+    );
   }
-}
+});
+
+// 関数合成による依存性注入
+const createEmailServiceFactory = () => ({
+  supabase: createSupabaseEmailService,
+  sendgrid: createSendGridEmailService
+});
 ```
 
 ## 📋 実装チェックリスト
