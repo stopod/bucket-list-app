@@ -327,8 +327,8 @@ npm run typecheck && npm test && npm run lint && npm run build
 
 このワークフローと合わせて以下のガイドを参照してください：
 
-- `functional-typescript-architecture.md`: アーキテクチャ設計思想
-- `test-driven-development.md`: テスト駆動開発の詳細
+- `../development/architecture.md`: アーキテクチャ設計思想
+- `../development/testing.md`: テスト駆動開発の詳細
 - `cleanup-automation.md`: コードクリーンアップ手法
 - `project-setup-template.md`: プロジェクト初期設定
 

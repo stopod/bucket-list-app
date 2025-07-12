@@ -472,8 +472,8 @@ jobs:
 ### 必読ガイド
 
 - `development-workflow.md`: 開発プロセス全体
-- `functional-typescript-architecture.md`: アーキテクチャ設計指針
-- `test-driven-development.md`: テスト戦略
+- `../development/architecture.md`: アーキテクチャ設計指針
+- `../development/testing.md`: テスト戦略
 - `project-setup-template.md`: 初期設定テンプレート
 
 ### 外部リソース

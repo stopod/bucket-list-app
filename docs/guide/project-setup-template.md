@@ -77,7 +77,7 @@ project-root/
 │   │       │   ├── __tests__/
 │   │       │   ├── business-logic.ts
 │   │       │   ├── schemas.ts
-│   │       │   ├── repository-factory.ts
+│   │       │   ├── service-factory.ts
 │   │       │   └── index.ts
 │   │       ├── hooks/             # Custom React hooks
 │   │       │   ├── __tests__/
@@ -116,8 +116,8 @@ project-root/
 ├── docs/                          # Documentation
 │   ├── guide/                     # Development guides
 │   │   ├── development-workflow.md
-│   │   ├── functional-typescript-architecture.md
-│   │   ├── test-driven-development.md
+│   │   ├── (アーキテクチャは ../development/architecture.md に統合)
+│   │   ├── (テスト戦略は ../development/testing.md に統合)
 │   │   ├── cleanup-automation.md
 │   │   └── project-setup-template.md
 │   ├── development/               # Technical documentation
@@ -753,8 +753,8 @@ ls -la dist/
 
 ## 関連ドキュメント
 - `docs/guide/development-workflow.md`: 開発フロー詳細
-- `docs/guide/functional-typescript-architecture.md`: アーキテクチャ設計
-- `docs/guide/test-driven-development.md`: TDD実践方法
+- `docs/development/architecture.md`: アーキテクチャ設計
+- `docs/development/testing.md`: TDD実践方法
 - `docs/guide/cleanup-automation.md`: 品質管理プロセス
 ```
 

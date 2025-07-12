@@ -696,6 +696,421 @@ const createEmailServiceFactory = () => ({
 - [ ] セキュリティホールが発生していないか
 - [ ] パフォーマンスに悪影響がないか
 
+## 関数型プログラミング詳細
+
+### Result型によるエラーハンドリング
+
+#### Result型の定義
+
+```typescript
+// shared/types/result.ts
+export type Result<T, E = Error> = Success<T> | Failure<E>;
+
+export interface Success<T> {
+  readonly success: true;
+  readonly data: T;
+}
+
+export interface Failure<E> {
+  readonly success: false;
+  readonly error: E;
+}
+
+// Type Guards
+export const isSuccess = <T, E>(result: Result<T, E>): result is Success<T> =>
+  result.success === true;
+
+export const isFailure = <T, E>(result: Result<T, E>): result is Failure<E> =>
+  result.success === false;
+
+// Constructors
+export const success = <T>(data: T): Success<T> => ({
+  success: true,
+  data,
+});
+
+export const failure = <E>(error: E): Failure<E> => ({
+  success: false,
+  error,
+});
+```
+
+#### エラー型の定義
+
+```typescript
+// shared/types/errors.ts
+export interface DomainError {
+  readonly type: string;
+  readonly message: string;
+  readonly details?: Record<string, unknown>;
+}
+
+export interface ValidationError extends DomainError {
+  readonly type: 'ValidationError';
+  readonly field?: string;
+}
+
+export interface NotFoundError extends DomainError {
+  readonly type: 'NotFoundError';
+  readonly resource: string;
+  readonly id: string;
+}
+
+export interface DatabaseError extends DomainError {
+  readonly type: 'DatabaseError';
+  readonly operation: string;
+}
+
+// Error Constructors
+export const validationError = (
+  message: string,
+  field?: string,
+  details?: Record<string, unknown>
+): ValidationError => ({
+  type: 'ValidationError',
+  message,
+  field,
+  details,
+});
+
+export const notFoundError = (
+  resource: string,
+  id: string,
+  message?: string
+): NotFoundError => ({
+  type: 'NotFoundError',
+  resource,
+  id,
+  message: message || `${resource} with id ${id} not found`,
+});
+
+export const databaseError = (
+  operation: string,
+  message: string,
+  details?: Record<string, unknown>
+): DatabaseError => ({
+  type: 'DatabaseError',
+  operation,
+  message,
+  details,
+});
+```
+
+### Repository Pattern実装
+
+#### Repository Interface
+
+```typescript
+// features/bucket-list/repositories/bucket-list-repository.ts
+import { Result } from '../../../shared/types/result';
+import { DomainError } from '../../../shared/types/errors';
+import { BucketItem, BucketItemCreate, BucketItemUpdate } from '../types';
+
+export interface BucketListRepository {
+  findAll(userId: string): Promise<Result<BucketItem[], DomainError>>;
+  findById(id: string, userId: string): Promise<Result<BucketItem, DomainError>>;
+  create(item: BucketItemCreate): Promise<Result<BucketItem, DomainError>>;
+  update(id: string, item: BucketItemUpdate): Promise<Result<BucketItem, DomainError>>;
+  delete(id: string, userId: string): Promise<Result<void, DomainError>>;
+}
+```
+
+#### Concrete Implementation
+
+```typescript
+// features/bucket-list/repositories/supabase-bucket-list-repository.ts
+import { supabase } from '../../../lib/supabase';
+import { BucketListRepository } from './bucket-list-repository';
+import { success, failure } from '../../../shared/types/result';
+import { databaseError, notFoundError } from '../../../shared/types/errors';
+
+export class SupabaseBucketListRepository implements BucketListRepository {
+  async findAll(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('bucket_items')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        return failure(databaseError('findAll', error.message));
+      }
+
+      return success(data || []);
+    } catch (error) {
+      return failure(databaseError('findAll', String(error)));
+    }
+  }
+  
+  // 他のメソッドも同様にResult型を返すよう実装
+}
+```
+
+### 関数型Serviceの実装パターン
+
+#### カリー化された関数でのService実装
+
+```typescript
+// 高階関数：Repository依存のService関数を生成
+export const createBucketItem = (repository: BucketListRepository) => 
+  async (data: Partial<BucketItemCreate>): Promise<Result<BucketItem, DomainError>> => {
+    // バリデーション
+    const validationResult = validateBucketItemCreate(data);
+    if (!validationResult.success) {
+      return failure(validationResult.error);
+    }
+
+    // リポジトリ操作
+    return await repository.create(validationResult.data);
+  };
+
+// 関数型Service作成関数（実際の実装パターン）
+export const createFunctionalBucketListService = (
+  repository: FunctionalBucketListRepository
+) => ({
+  createBucketItem: createBucketItem(repository),
+  updateBucketItem: updateBucketItem(repository),
+  deleteBucketItem: deleteBucketItem(repository),
+  getUserBucketItems: getUserBucketItems(repository),
+  getBucketItemById: getBucketItemById(repository),
+});
+```
+
+#### 純粋関数でのビジネスロジック
+
+```typescript
+// lib/business-logic.ts - 純粋関数
+export const validateBucketItemCreate = (
+  data: Partial<BucketItemCreate>
+): Result<BucketItemCreate, ValidationError> => {
+  if (!data.title?.trim()) {
+    return failure(validationError('Title is required', 'title'));
+  }
+
+  if (data.title.length > 200) {
+    return failure(validationError('Title must be 200 characters or less', 'title'));
+  }
+
+  return success({
+    title: data.title.trim(),
+    description: data.description?.trim() || '',
+    category_id: data.category_id!,
+    priority: data.priority || 'medium',
+    status: data.status || 'not_started',
+    is_public: data.is_public || false,
+    due_date: data.due_date || null,
+    due_type: data.due_type || 'unspecified',
+    user_id: data.user_id!,
+  });
+};
+
+// 純粋関数：統計計算
+export const calculateAchievementStats = (items: BucketItem[]) => {
+  const total = items.length;
+  const completed = items.filter(item => item.status === 'completed').length;
+  const inProgress = items.filter(item => item.status === 'in_progress').length;
+  const notStarted = items.filter(item => item.status === 'not_started').length;
+  
+  return {
+    total,
+    completed,
+    inProgress,
+    notStarted,
+    completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+  };
+};
+
+// 純粋関数：フィルタリング
+export const filterBucketItems = (
+  items: BucketItem[],
+  filters: {
+    category?: string;
+    status?: Status;
+    priority?: Priority;
+    search?: string;
+  }
+) => {
+  return items.filter(item => {
+    if (filters.category && item.category_id !== filters.category) return false;
+    if (filters.status && item.status !== filters.status) return false;
+    if (filters.priority && item.priority !== filters.priority) return false;
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      return (
+        item.title.toLowerCase().includes(searchLower) ||
+        item.description?.toLowerCase().includes(searchLower)
+      );
+    }
+    return true;
+  });
+};
+```
+
+### React Integration
+
+#### Result型対応Custom Hook
+
+```typescript
+// shared/hooks/use-result-operation.ts
+import { useState, useCallback } from 'react';
+import { Result, isSuccess, isFailure } from '../types/result';
+
+export interface UseResultOperationState<T, E> {
+  data: T | null;
+  error: E | null;
+  loading: boolean;
+}
+
+export const useResultOperation = <T, E>() => {
+  const [state, setState] = useState<UseResultOperationState<T, E>>({
+    data: null,
+    error: null,
+    loading: false,
+  });
+
+  const execute = useCallback(
+    async (operation: () => Promise<Result<T, E>>) => {
+      setState({ data: null, error: null, loading: true });
+
+      try {
+        const result = await operation();
+
+        if (isSuccess(result)) {
+          setState({ data: result.data, error: null, loading: false });
+          return result.data;
+        } else {
+          setState({ data: null, error: result.error, loading: false });
+          throw result.error;
+        }
+      } catch (error) {
+        const errorValue = error as E;
+        setState({ data: null, error: errorValue, loading: false });
+        throw error;
+      }
+    },
+    []
+  );
+
+  return {
+    ...state,
+    execute,
+    isLoading: state.loading,
+    hasError: state.error !== null,
+    hasData: state.data !== null,
+  };
+};
+```
+
+### Dependency Injection
+
+#### 関数型Service Factory（実際の実装）
+
+```typescript
+// features/bucket-list/lib/service-factory.ts
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "~/shared/types/database";
+import { createFunctionalBucketListRepository } from "../repositories/bucket-list.repository";
+import { createFunctionalBucketListService } from "../services/bucket-list.service";
+
+// 認証済みクライアント用のRepository作成関数
+export function createAuthenticatedBucketListRepository(
+  supabase: SupabaseClient<Database>
+) {
+  return createFunctionalBucketListRepository(supabase);
+}
+
+// 認証済みクライアント用のサービス作成関数
+export function createAuthenticatedBucketListService(
+  supabase: SupabaseClient<Database>
+) {
+  const repository = createFunctionalBucketListRepository(supabase);
+  return createFunctionalBucketListService(repository);
+}
+```
+
+#### 関数型Repository実装
+
+```typescript
+// features/bucket-list/repositories/bucket-list.repository.ts
+// 関数型アプローチによるRepository作成関数
+export const createFunctionalBucketListRepository = (
+  supabase: SupabaseClient<Database>
+): FunctionalBucketListRepository => ({
+  // Result型を返す全メソッド
+  getUserBucketItems: async (profileId, filters, sort) => {
+    try {
+      // Supabaseクエリの実行
+      const { data, error } = await supabase
+        .from('bucket_items')
+        .select('*')
+        .eq('profile_id', profileId);
+      
+      if (error) {
+        return failure(createDatabaseError('getUserBucketItems', error));
+      }
+      
+      return success(data || []);
+    } catch (error) {
+      return failure(createDatabaseError('getUserBucketItems', error));
+    }
+  },
+  // 他のメソッドも同様にResult型で実装...
+});
+```
+
+#### 関数型Service実装
+
+```typescript
+// services/bucket-list.service.ts
+// 関数型Service作成関数（実際の実装）
+export const createFunctionalBucketListService = (
+  repository: FunctionalBucketListRepository
+) => ({
+  // Result型を返すService関数群
+  getUserBucketItems: async (profileId: string, filters?, sort?) => {
+    return await repository.getUserBucketItems(profileId, filters, sort);
+  },
+  
+  createBucketItem: async (data: BucketItemInsert) => {
+    // バリデーション
+    const validationResult = validateBucketItemInsert(data);
+    if (isFailure(validationResult)) {
+      return validationResult;
+    }
+    
+    // Repository呼び出し
+    return await repository.createBucketItem(validationResult.data);
+  },
+  
+  // 他のメソッドも同様にResult型で実装...
+});
+```
+
+#### 使用例
+
+```typescript
+// コンポーネントでの使用例
+import { supabase } from '~/lib/supabase';
+import { createAuthenticatedBucketListService } from '~/features/bucket-list/lib/service-factory';
+
+export function BucketListPage() {
+  const bucketListService = createAuthenticatedBucketListService(supabase);
+  
+  const handleLoadItems = async (profileId: string) => {
+    const result = await bucketListService.getUserBucketItems(profileId);
+    
+    if (isSuccess(result)) {
+      console.log('取得成功:', result.data);
+    } else {
+      console.error('取得失敗:', result.error);
+    }
+  };
+  
+  // ...
+}
+```
+
 ---
 
 このアーキテクチャにより、**可読性が高く、保守しやすく、拡張性のあるSSRアプリケーション**を構築できます。新機能追加時や機能変更時は、この方針に従って実装することで、一貫性のあるコードベースを維持できます。

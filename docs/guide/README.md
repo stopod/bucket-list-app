@@ -9,12 +9,12 @@
 - **内容**: ブランチ戦略、コミット規約、テスト駆動開発の強制
 - **適用タイミング**: プロジェクト開始時から継続的に使用
 
-### 🏗️ [関数型TypeScriptアーキテクチャガイド](./functional-typescript-architecture.md) 
+### 🏗️ [アーキテクチャガイド](../development/architecture.md) 
 - **目的**: アーキテクチャ設計の統一
 - **内容**: Result型、Repository Pattern、関数型Service層の実装
 - **適用タイミング**: 新機能実装時、リファクタリング時
 
-### 🧪 [テスト駆動開発ガイド](./test-driven-development.md)
+### 🧪 [テスト駆動開発ガイド](../development/testing.md)
 - **目的**: 品質保証とテスト戦略の統一
 - **内容**: TDDサイクル、日本語テストケース記述、Result型テスト
 - **適用タイミング**: 全機能実装時（絶対遵守）
@@ -35,20 +35,20 @@
 
 1. **[プロジェクト設定テンプレート](./project-setup-template.md)** を読んで初期設定
 2. **[開発ワークフローガイド](./development-workflow.md)** を読んで開発プロセスを理解
-3. **[関数型TypeScriptアーキテクチャガイド](./functional-typescript-architecture.md)** を読んで設計方針を把握
-4. **[テスト駆動開発ガイド](./test-driven-development.md)** を読んでTDD手法を確認
+3. **[アーキテクチャガイド](../development/architecture.md)** を読んで設計方針を把握
+4. **[テスト駆動開発ガイド](../development/testing.md)** を読んでTDD手法を確認
 
 ### 既存プロジェクト改善時
 
 1. **[コードクリーンアップ自動化ガイド](./cleanup-automation.md)** を読んで段階的改善を実施
 2. **[開発ワークフローガイド](./development-workflow.md)** に従って開発プロセスを標準化
-3. 新機能は **[関数型TypeScriptアーキテクチャガイド](./functional-typescript-architecture.md)** に完全準拠
+3. 新機能は **[アーキテクチャガイド](../development/architecture.md)** に完全準拠
 
 ### 日常開発時
 
 1. **[開発ワークフローガイド](./development-workflow.md)** の手順を厳守
-2. **[テスト駆動開発ガイド](./test-driven-development.md)** のTDDサイクルを実践
-3. **[関数型TypeScriptアーキテクチャガイド](./functional-typescript-architecture.md)** の設計パターンを適用
+2. **[テスト駆動開発ガイド](../development/testing.md)** のTDDサイクルを実践
+3. **[アーキテクチャガイド](../development/architecture.md)** の設計パターンを適用
 
 ## ⚡ クイックリファレンス
 

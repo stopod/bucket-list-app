@@ -109,7 +109,7 @@ app/
 │   │   └── bucket-list.service.ts      # 関数型Service（Result型）
 │   ├── lib/                       # ファクトリ等のユーティリティ
 │   │   ├── business-logic.ts      # 純粋なビジネスロジック関数
-│   │   └── repository-factory.ts  # DI ファクトリ
+│   │   └── service-factory.ts     # 関数合成DIファクトリ
 │   └── types.ts                   # 型定義
 ├── shared/                        # 共通モジュール
 │   ├── layouts/                   # レイアウトコンポーネント
