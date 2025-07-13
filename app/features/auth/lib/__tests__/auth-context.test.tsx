@@ -311,6 +311,7 @@ describe("auth-context", () => {
     it("Supabaseエラーが適切にログ出力されること", () => {
       const consoleSpy = vi
         .spyOn(console, "error")
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         .mockImplementation(() => {});
 
       // エラーログのテスト
